@@ -10,4 +10,6 @@ require (
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	gorm.io/driver/mysql v1.1.2
+	gorm.io/gorm v1.21.15
 )

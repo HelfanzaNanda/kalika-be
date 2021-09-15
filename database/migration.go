@@ -29,5 +29,8 @@ func Migrate() {
 }
 
 var migration = map[string]func(){
-	//"0001": func() { db.AutoMigrate(&models.Auth{}) },
+	"0001": func() { db.AutoMigrate(&models.User{}) },
+	"0002": func() { db.AutoMigrate(&models.Role{}) },
+	"0003": func() { db.AutoMigrate(&models.Permission{}) },
+	"0004": func() { db.AutoMigrate(&models.RoleHasPermission{}) },
 }

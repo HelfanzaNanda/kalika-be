@@ -15,11 +15,13 @@ var Default = map[string]Config{
 	"DB_DRIVER": "mysql",
 	"DB_HOST": "127.0.0.1",
 	"DB_NAME": "kalika_pos",
+	"DB_PORT": "3306",
 	"DB_USER": "root",
 	"DB_PASSWORD": "root",
 	"DB_MAX_OPEN_CONNS": "100",
 	"DB_MAX_IDLE_CONNS": "2",
 	"DB_CONN_MAX_LIFETIME": "0ms",
+	"JWT_KEY": "74217b8dadbb365783580f9e92487d701cd38fe6",
 }
 
 type Config string

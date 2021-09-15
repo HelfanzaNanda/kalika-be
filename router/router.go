@@ -3,10 +3,21 @@ package router
 import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"gorm.io/gorm"
 	"kalika-be/controllers"
+	"kalika-be/middlewares"
+	"kalika-be/repository"
+	"kalika-be/services"
 )
 
-func Routes() *echo.Echo {
+func Routes(db *gorm.DB) *echo.Echo {
+	//validate := validator.New()
+
+	//USER THINGS
+	userRepository := repository.NewUserRepository()
+	userService := services.NewUserService(userRepository, db)
+	userController := controllers.NewUserController(userService)
+
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -17,7 +28,9 @@ func Routes() *echo.Echo {
 	}))
 
 	api := e.Group("/api")
-	userController := controllers.NewUserController()
+	api.POST("/login", userController.Login)
+
+	api.Use(middlewares.Auth)
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)

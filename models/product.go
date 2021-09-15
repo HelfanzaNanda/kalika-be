@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Product struct {
-	Id string `json:"id" gorm:"AUTO_INCREMENT"`
+	Id int `json:"id" gorm:"AUTO_INCREMENT"`
 	Name string `json:"name"`
 	StockMinimum int `json:"stock_minimum""`
 	ProductionMinimum int `json:"production_minimum""`

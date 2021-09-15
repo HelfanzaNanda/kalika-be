@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type DivisionController interface {
@@ -14,31 +17,44 @@ type DivisionController interface {
 }
 
 type DivisionControllerImpl struct {
-
+	DivisionService services.DivisionService
 }
 
-func NewDivisionController() DivisionController {
-	return &DivisionControllerImpl{}
+func NewDivisionController(divisionService services.DivisionService) DivisionController {
+	return &DivisionControllerImpl{
+		DivisionService: divisionService,
+	}
 }
 
-func (controller *DivisionControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *DivisionControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	userResponse, _ := dc.DivisionService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
-func (controller *DivisionControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *DivisionControllerImpl) FindAll(ctx echo.Context) error {
+	userResponse, _ := dc.DivisionService.FindAll(ctx)
+
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
-func (controller *DivisionControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *DivisionControllerImpl) Create(ctx echo.Context) error {
+	userResponse, _ := dc.DivisionService.Create(ctx)
+
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
-func (controller *DivisionControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *DivisionControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	userResponse, _ := dc.DivisionService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
-func (controller *DivisionControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *DivisionControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	userResponse, _ := dc.DivisionService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(userResponse.Code, userResponse)
 }

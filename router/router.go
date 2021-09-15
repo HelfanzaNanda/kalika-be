@@ -33,7 +33,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 
 	api.Use(middlewares.Auth)
 
-	divisionController := controllers.NewDivisionController()
+	divisionRepository := repository.NewDivisionRepository()
+	divisionService := services.NewDivisionService(divisionRepository, db)
+	divisionController := controllers.NewDivisionController(divisionService)
+	
 	categoryController := controllers.NewCategoryController()
 	cakeVariantController := controllers.NewCakeVariantController()
 	cakeTypeController := controllers.NewCakeTypeController()

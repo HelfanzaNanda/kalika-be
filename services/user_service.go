@@ -6,15 +6,15 @@ import (
 	"gorm.io/gorm"
 	"kalika-be/config"
 	"kalika-be/helpers"
-	"kalika-be/models"
+	"kalika-be/models/domain"
 	"kalika-be/models/web"
 	"kalika-be/repository"
 )
 
 type (
 	UserService interface {
-		Create(ctx echo.Context) (map[string]interface{}, error)
-		Update(ctx echo.Context) (res web.Response, err error)
+		Create(ctx echo.Context) (res web.Response, err error)
+		Update(ctx echo.Context, id int) (res web.Response, err error)
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
@@ -34,10 +34,10 @@ func NewUserService(userRepository repository.UserRepository, db *gorm.DB) UserS
 	}
 }
 
-func (u *UserServiceImpl) Create(ctx echo.Context) (map[string]interface{}, error) {
-	o := new(models.User)
+func (u *UserServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	o := new(domain.User)
 	if err := ctx.Bind(o); err != nil {
-		return nil, echo.NewHTTPError(400, err.Error())
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
 
 	tx := u.db.Begin()
@@ -45,32 +45,34 @@ func (u *UserServiceImpl) Create(ctx echo.Context) (map[string]interface{}, erro
 
 	userRepo, err := u.UserRepository.Create(ctx, tx, o)
 	if err != nil {
-		fmt.Println("ERROR CREATING USER")
-		fmt.Println(err)
+		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	toMap, err := helpers.StructToMap(userRepo)
-	if err != nil {
-		fmt.Println("ERROR STRUCT TO MAP")
-		fmt.Println(err)
-	}
-
-	return toMap, nil
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", userRepo), err
 }
 
-func (u UserServiceImpl) Update(ctx echo.Context) (res web.Response, err error) {
-	panic("implement me")
+func (u UserServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
+	o := new(domain.User)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+	o.Id = id
+
+	tx := u.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	userRepo, err := u.UserRepository.Update(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+
+	return helpers.Response("OK", "Sukses Mengubah Data", userRepo), err
 }
 
 func (u UserServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(models.User)
+	o := new(domain.User)
 	if err := ctx.Bind(o); err != nil {
-		res.Code = 404
-		res.Status = err.Error()
-		res.Data = nil
-		res.Message = "Data tidak ditemukan"
-
-		return res, err
+		return helpers.Response(err.Error(), "Error Data Bnding", nil), err
 	}
 	o.Id = id
 
@@ -79,20 +81,10 @@ func (u UserServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err
 
 	_, err = u.UserRepository.Delete(ctx, tx, o)
 	if err != nil {
-		if err.Error() == "NOT_FOUND" {
-			res.Code = 404
-			res.Status = err.Error()
-			res.Data = false
-			res.Message = "Data tidak ditemukan"
-
-			return res, err
-		}
+		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	res.Code = 200
-	res.Status = "OK"
-	res.Data = true
-	res.Message = "Sukses Menghapus Data"
+	return helpers.Response("OK", "Sukses Menghapus Data", true), err
 
 	return res, nil
 }
@@ -104,21 +96,10 @@ func (u UserServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, e
 	userRepo, err := u.UserRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
 
 	if err != nil {
-		if err.Error() == "NOT_FOUND" {
-			res.Code = 404
-			res.Status = err.Error()
-			res.Data = nil
-			res.Message = "Data tidak ditemukan"
-
-			return res, err
-		}
+		return helpers.Response(err.Error(), "", nil), err
 	}
-	res.Code = 200
-	res.Status = "OK"
-	res.Data = userRepo
-	res.Message = "Sukses Mengambil Data"
 
-	return res, nil
+	return helpers.Response("OK", "Sukses Mengambil Data", userRepo), err
 }
 
 func (u UserServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
@@ -127,16 +108,13 @@ func (u UserServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error)
 
 	userRepo, err := u.UserRepository.FindAll(ctx, tx)
 
-	res.Code = 200
-	res.Status = "OK"
-	res.Data = userRepo
-	res.Message = "Sukses Mengambil Data"
+	return helpers.Response("OK", "Sukses Mengambil Data", userRepo), err
 
 	return res, nil
 }
 
 func (u UserServiceImpl) Login(ctx echo.Context) (map[string]interface{}, error) {
-	o := new(models.User)
+	o := new(domain.User)
 	l := new(web.Login)
 	if err := ctx.Bind(o); err != nil {
 		return nil, echo.NewHTTPError(400, err.Error())

@@ -8,7 +8,7 @@ import (
 
 func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		// ACTIVATED ON DEVELOPMENT
+		// DISABLED ONPRODUCTION
 		return next(c)
 
 		headerAuthorization := c.Request().Header.Get(echo.HeaderAuthorization)

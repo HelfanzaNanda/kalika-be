@@ -30,49 +30,36 @@ func NewUserController(userService services.UserService) UserController {
 
 func (uc *UserControllerImpl) FindById(ctx echo.Context) error {
 	id := ctx.Param("id")
-	userResponse, err := uc.UserService.FindById(ctx, helpers.StringToInt(id))
+	userResponse, _ := uc.UserService.FindById(ctx, helpers.StringToInt(id))
 
-	if err != nil {
-		if err.Error() == "NOT_FOUND" {
-			return ctx.JSON(http.StatusNotFound, userResponse)
-		}
-	}
-	return ctx.JSON(http.StatusOK, userResponse)
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
 func (uc *UserControllerImpl) FindAll(ctx echo.Context) error {
-	userResponse, err := uc.UserService.FindAll(ctx)
+	userResponse, _ := uc.UserService.FindAll(ctx)
 
-	if err != nil {
-		if err.Error() == "NOT_FOUND" {
-			return ctx.JSON(http.StatusNotFound, userResponse)
-		}
-	}
-	return ctx.JSON(http.StatusOK, userResponse)
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
 func (uc *UserControllerImpl) Create(ctx echo.Context) error {
-	userResponse, err := uc.UserService.Create(ctx)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(http.StatusOK, userResponse)
+	userResponse, _ := uc.UserService.Create(ctx)
+
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
 func (uc *UserControllerImpl) Update(ctx echo.Context) error {
-	return nil
+	id := ctx.Param("id")
+
+	userResponse, _ := uc.UserService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
 func (uc *UserControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
-	userResponse, err := uc.UserService.Delete(ctx, helpers.StringToInt(id))
+	userResponse, _ := uc.UserService.Delete(ctx, helpers.StringToInt(id))
 
-	if err != nil {
-		if err.Error() == "NOT_FOUND" {
-			return ctx.JSON(http.StatusNotFound, userResponse)
-		}
-	}
-	return ctx.JSON(http.StatusOK, userResponse)
+	return ctx.JSON(userResponse.Code, userResponse)
 }
 
 func (uc *UserControllerImpl) Login(ctx echo.Context) error {

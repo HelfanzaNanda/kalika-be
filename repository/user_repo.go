@@ -13,10 +13,10 @@ import (
 type (
 	UserRepository interface{
 		Create(ctx echo.Context, db *gorm.DB, user *models.User) (models.User, error)
-		Update(ctx echo.Context, db *gorm.DB, user *models.User) models.User
-		Delete(ctx echo.Context, db *gorm.DB, user *models.User) bool
-		FindById(ctx echo.Context, db *gorm.DB, key string, value string) models.User
-		FindAll(ctx echo.Context, db *gorm.DB) []models.User
+		Update(ctx echo.Context, db *gorm.DB, user *models.User) (models.User, error)
+		Delete(ctx echo.Context, db *gorm.DB, user *models.User) (bool, error)
+		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (models.User, error)
+		FindAll(ctx echo.Context, db *gorm.DB) ([]models.User, error)
 		Login(ctx echo.Context, db *gorm.DB, user *models.User) (models.User, error)
 	}
 
@@ -39,26 +39,34 @@ func (u UserRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, user *models.U
 	//fmt.Println(ctx.Get("userInfo").(map[string]interface{})["name"])
 	user.Password = string(hashedPassword)
 	db.Create(user)
-	userRes := u.FindById(ctx, db, "id", helpers.IntToString(user.Id))
+	userRes,_ := u.FindById(ctx, db, "id", helpers.IntToString(user.Id))
 
 	return userRes, nil
 }
 
-func (u UserRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, user *models.User) models.User {
-	return models.User{}
+func (u UserRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, user *models.User) (models.User, error) {
+	return models.User{}, nil
 }
 
-func (u UserRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, user *models.User) bool {
-	return true
+func (u UserRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, user *models.User) (bool, error) {
+	results := db.Where("id = ?", user.Id).Delete(&user)
+	if results.RowsAffected < 1 {
+		return false, errors.New("NOT_FOUND")
+	}
+	return true, nil
 }
 
-func (u UserRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (userRes models.User) {
-	db.Where(key+" = ?", value).First(&userRes)
-	return userRes
+func (u UserRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (userRes models.User, err error) {
+	results := db.Where(key+" = ?", value).First(&userRes)
+	if results.RowsAffected < 1 {
+		return userRes, errors.New("NOT_FOUND")
+	}
+	return userRes, nil
 }
 
-func (u UserRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) []models.User {
-	return []models.User{}
+func (u UserRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (res []models.User, err error) {
+	db.Find(&res)
+	return res, nil
 }
 
 func (u UserRepositoryImpl) Login(ctx echo.Context, db *gorm.DB, user *models.User) (userRes models.User, err error) {

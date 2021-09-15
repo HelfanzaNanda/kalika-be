@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
 	"kalika-be/services"
 	"net/http"
 )
@@ -29,13 +29,26 @@ func NewUserController(userService services.UserService) UserController {
 }
 
 func (uc *UserControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+	id := ctx.Param("id")
+	userResponse, err := uc.UserService.FindById(ctx, helpers.StringToInt(id))
+
+	if err != nil {
+		if err.Error() == "NOT_FOUND" {
+			return ctx.JSON(http.StatusNotFound, userResponse)
+		}
+	}
+	return ctx.JSON(http.StatusOK, userResponse)
 }
 
 func (uc *UserControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+	userResponse, err := uc.UserService.FindAll(ctx)
+
+	if err != nil {
+		if err.Error() == "NOT_FOUND" {
+			return ctx.JSON(http.StatusNotFound, userResponse)
+		}
+	}
+	return ctx.JSON(http.StatusOK, userResponse)
 }
 
 func (uc *UserControllerImpl) Create(ctx echo.Context) error {
@@ -51,7 +64,15 @@ func (uc *UserControllerImpl) Update(ctx echo.Context) error {
 }
 
 func (uc *UserControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+	id := ctx.Param("id")
+	userResponse, err := uc.UserService.Delete(ctx, helpers.StringToInt(id))
+
+	if err != nil {
+		if err.Error() == "NOT_FOUND" {
+			return ctx.JSON(http.StatusNotFound, userResponse)
+		}
+	}
+	return ctx.JSON(http.StatusOK, userResponse)
 }
 
 func (uc *UserControllerImpl) Login(ctx echo.Context) error {

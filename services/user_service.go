@@ -14,10 +14,10 @@ import (
 type (
 	UserService interface {
 		Create(ctx echo.Context) (map[string]interface{}, error)
-		Update(ctx echo.Context)
-		Delete(ctx echo.Context)
-		FindById(ctx echo.Context)
-		FindAll(ctx echo.Context)
+		Update(ctx echo.Context) (res web.Response, err error)
+		Delete(ctx echo.Context, id int) (res web.Response, err error)
+		FindById(ctx echo.Context, id int) (res web.Response, err error)
+		FindAll(ctx echo.Context) (web.Response, error)
 		Login(ctx echo.Context) (map[string]interface{}, error)
 	}
 
@@ -58,20 +58,81 @@ func (u *UserServiceImpl) Create(ctx echo.Context) (map[string]interface{}, erro
 	return toMap, nil
 }
 
-func (u UserServiceImpl) Update(ctx echo.Context) {
+func (u UserServiceImpl) Update(ctx echo.Context) (res web.Response, err error) {
 	panic("implement me")
 }
 
-func (u UserServiceImpl) Delete(ctx echo.Context) {
-	panic("implement me")
+func (u UserServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
+	o := new(models.User)
+	if err := ctx.Bind(o); err != nil {
+		res.Code = 404
+		res.Status = err.Error()
+		res.Data = nil
+		res.Message = "Data tidak ditemukan"
+
+		return res, err
+	}
+	o.Id = id
+
+	tx := u.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	_, err = u.UserRepository.Delete(ctx, tx, o)
+	if err != nil {
+		if err.Error() == "NOT_FOUND" {
+			res.Code = 404
+			res.Status = err.Error()
+			res.Data = false
+			res.Message = "Data tidak ditemukan"
+
+			return res, err
+		}
+	}
+
+	res.Code = 200
+	res.Status = "OK"
+	res.Data = true
+	res.Message = "Sukses Menghapus Data"
+
+	return res, nil
 }
 
-func (u UserServiceImpl) FindById(ctx echo.Context) {
-	panic("implement me")
+func (u UserServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+	tx := u.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	userRepo, err := u.UserRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+
+	if err != nil {
+		if err.Error() == "NOT_FOUND" {
+			res.Code = 404
+			res.Status = err.Error()
+			res.Data = nil
+			res.Message = "Data tidak ditemukan"
+
+			return res, err
+		}
+	}
+	res.Code = 200
+	res.Status = "OK"
+	res.Data = userRepo
+	res.Message = "Sukses Mengambil Data"
+
+	return res, nil
 }
 
-func (u UserServiceImpl) FindAll(ctx echo.Context) {
-	panic("implement me")
+func (u UserServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
+	tx := u.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	userRepo, err := u.UserRepository.FindAll(ctx, tx)
+
+	res.Code = 200
+	res.Status = "OK"
+	res.Data = userRepo
+	res.Message = "Sukses Mengambil Data"
+
+	return res, nil
 }
 
 func (u UserServiceImpl) Login(ctx echo.Context) (map[string]interface{}, error) {
@@ -81,6 +142,7 @@ func (u UserServiceImpl) Login(ctx echo.Context) (map[string]interface{}, error)
 		return nil, echo.NewHTTPError(400, err.Error())
 	}
 	tx := u.db.Begin()
+	defer helpers.CommitOrRollback(tx)
 
 	userRepo, err := u.UserRepository.Login(ctx, tx, o)
 	if err != nil {

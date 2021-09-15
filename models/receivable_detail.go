@@ -1,17 +1,15 @@
 package models
-
 import (
 	"time"
 )
 
-type Store struct {
+type ReceivableDetail struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
-	Code string `json:"code"`
-	Name string `json:"name"`
-	Phone string `json:"phone"`
-	Address string `json:"address"`
-	PicName string `json:"pic_name"`
-	PicPhone string `json:"pic_phone"`
+	ReceivableId int `json:"receivable_id"`
+	DatePay time.Time `json:"date_pay"`
+	Total float64 `json:"total"`
+	PaymentMethod string `json:"payment_method"`
+	Note string `json:"note"`
 	CreatedAt time.Time`json:"created_at,omitempty" example:"2020-03-16T13:55:09.598136+07:00"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" example:"2020-03-16T13:55:09.598136+07:00"`
 }

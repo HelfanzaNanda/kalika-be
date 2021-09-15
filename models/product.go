@@ -5,8 +5,8 @@ import "time"
 type Product struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
 	Name string `json:"name"`
-	StockMinimum int `json:"stock_minimum""`
-	ProductionMinimum int `json:"production_minimum""`
+	StockMinimum int `json:"stock_minimum"`
+	ProductionMinimum int `json:"production_minimum"`
 	DivisionId int `json:"division_id"`
 	CategoryId int `json:"category_id"`
 	Active bool `json:"active"`

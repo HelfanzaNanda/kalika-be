@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type CakeTypeController interface {
@@ -12,33 +15,45 @@ type CakeTypeController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type CakeTypeControllerImpl struct {
-
+		CakeTypeService services.CakeTypeService
 }
 
-func NewCakeTypeController() CakeTypeController {
-	return &CakeTypeControllerImpl{}
+func NewCakeTypeController(cakeTypeService services.CakeTypeService) CakeTypeController {
+	return &CakeTypeControllerImpl{
+		CakeTypeService: cakeTypeService,
+	}
 }
 
-func (controller *CakeTypeControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *CakeTypeControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	cakeTypeResponse, _ := dc.CakeTypeService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(cakeTypeResponse.Code, cakeTypeResponse)
 }
 
-func (controller *CakeTypeControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *CakeTypeControllerImpl) FindAll(ctx echo.Context) error {
+	cakeTypeResponse, _ := dc.CakeTypeService.FindAll(ctx)
+
+	return ctx.JSON(cakeTypeResponse.Code, cakeTypeResponse)
 }
 
-func (controller *CakeTypeControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *CakeTypeControllerImpl) Create(ctx echo.Context) error {
+	cakeTypeResponse, _ := dc.CakeTypeService.Create(ctx)
+
+	return ctx.JSON(cakeTypeResponse.Code, cakeTypeResponse)
 }
 
-func (controller *CakeTypeControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *CakeTypeControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	cakeTypeResponse, _ := dc.CakeTypeService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(cakeTypeResponse.Code, cakeTypeResponse)
 }
 
-func (controller *CakeTypeControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *CakeTypeControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	cakeTypeResponse, _ := dc.CakeTypeService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(cakeTypeResponse.Code, cakeTypeResponse)
 }

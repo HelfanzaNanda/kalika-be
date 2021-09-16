@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type ReceivableController interface {
@@ -12,33 +15,45 @@ type ReceivableController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type ReceivableControllerImpl struct {
-
+		ReceivableService services.ReceivableService
 }
 
-func NewReceivableController() ReceivableController {
-	return &ReceivableControllerImpl{}
+func NewReceivableController(receivableService services.ReceivableService) ReceivableController {
+	return &ReceivableControllerImpl{
+		ReceivableService: receivableService,
+	}
 }
 
-func (controller *ReceivableControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *ReceivableControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	receivableResponse, _ := dc.ReceivableService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(receivableResponse.Code, receivableResponse)
 }
 
-func (controller *ReceivableControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *ReceivableControllerImpl) FindAll(ctx echo.Context) error {
+	receivableResponse, _ := dc.ReceivableService.FindAll(ctx)
+
+	return ctx.JSON(receivableResponse.Code, receivableResponse)
 }
 
-func (controller *ReceivableControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *ReceivableControllerImpl) Create(ctx echo.Context) error {
+	receivableResponse, _ := dc.ReceivableService.Create(ctx)
+
+	return ctx.JSON(receivableResponse.Code, receivableResponse)
 }
 
-func (controller *ReceivableControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *ReceivableControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	receivableResponse, _ := dc.ReceivableService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(receivableResponse.Code, receivableResponse)
 }
 
-func (controller *ReceivableControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *ReceivableControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	receivableResponse, _ := dc.ReceivableService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(receivableResponse.Code, receivableResponse)
 }

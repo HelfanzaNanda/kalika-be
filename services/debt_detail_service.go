@@ -26,9 +26,9 @@ type (
 	}
 )
 
-func NewDebtDetailService(DebtDetailRepository repository.DebtDetailRepository, db *gorm.DB) DebtDetailService {
+func NewDebtDetailService(debtDetailRepository repository.DebtDetailRepository, db *gorm.DB) DebtDetailService {
 	return &DebtDetailServiceImpl{
-		DebtDetailRepository: DebtDetailRepository,
+		DebtDetailRepository: debtDetailRepository,
 		db: db,
 	}
 }

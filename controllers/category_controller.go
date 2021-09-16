@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type CategoryController interface {
@@ -12,33 +15,45 @@ type CategoryController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type CategoryControllerImpl struct {
-
+		CategoryService services.CategoryService
 }
 
-func NewCategoryController() CategoryController {
-	return &CategoryControllerImpl{}
+func NewCategoryController(categoryService services.CategoryService) CategoryController {
+	return &CategoryControllerImpl{
+		CategoryService: categoryService,
+	}
 }
 
-func (controller *CategoryControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *CategoryControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	categoryResponse, _ := dc.CategoryService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(categoryResponse.Code, categoryResponse)
 }
 
-func (controller *CategoryControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *CategoryControllerImpl) FindAll(ctx echo.Context) error {
+	categoryResponse, _ := dc.CategoryService.FindAll(ctx)
+
+	return ctx.JSON(categoryResponse.Code, categoryResponse)
 }
 
-func (controller *CategoryControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *CategoryControllerImpl) Create(ctx echo.Context) error {
+	categoryResponse, _ := dc.CategoryService.Create(ctx)
+
+	return ctx.JSON(categoryResponse.Code, categoryResponse)
 }
 
-func (controller *CategoryControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *CategoryControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	categoryResponse, _ := dc.CategoryService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(categoryResponse.Code, categoryResponse)
 }
 
-func (controller *CategoryControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *CategoryControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	categoryResponse, _ := dc.CategoryService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(categoryResponse.Code, categoryResponse)
 }

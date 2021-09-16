@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type PurchaseReturnController interface {
@@ -12,33 +15,45 @@ type PurchaseReturnController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type PurchaseReturnControllerImpl struct {
-
+		PurchaseReturnService services.PurchaseReturnService
 }
 
-func NewPurchaseReturnController() PurchaseReturnController {
-	return &PurchaseReturnControllerImpl{}
+func NewPurchaseReturnController(purchaseReturnService services.PurchaseReturnService) PurchaseReturnController {
+	return &PurchaseReturnControllerImpl{
+		PurchaseReturnService: purchaseReturnService,
+	}
 }
 
-func (controller *PurchaseReturnControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseReturnControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseReturnResponse, _ := dc.PurchaseReturnService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseReturnResponse.Code, purchaseReturnResponse)
 }
 
-func (controller *PurchaseReturnControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *PurchaseReturnControllerImpl) FindAll(ctx echo.Context) error {
+	purchaseReturnResponse, _ := dc.PurchaseReturnService.FindAll(ctx)
+
+	return ctx.JSON(purchaseReturnResponse.Code, purchaseReturnResponse)
 }
 
-func (controller *PurchaseReturnControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseReturnControllerImpl) Create(ctx echo.Context) error {
+	purchaseReturnResponse, _ := dc.PurchaseReturnService.Create(ctx)
+
+	return ctx.JSON(purchaseReturnResponse.Code, purchaseReturnResponse)
 }
 
-func (controller *PurchaseReturnControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseReturnControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	purchaseReturnResponse, _ := dc.PurchaseReturnService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseReturnResponse.Code, purchaseReturnResponse)
 }
 
-func (controller *PurchaseReturnControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseReturnControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseReturnResponse, _ := dc.PurchaseReturnService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(purchaseReturnResponse.Code, purchaseReturnResponse)
 }

@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type PurchaseOrderDeliveryDetailController interface {
@@ -12,33 +15,45 @@ type PurchaseOrderDeliveryDetailController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type PurchaseOrderDeliveryDetailControllerImpl struct {
-
+		PurchaseOrderDeliveryDetailService services.PurchaseOrderDeliveryDetailService
 }
 
-func NewPurchaseOrderDeliveryDetailController() PurchaseOrderDeliveryDetailController {
-	return &PurchaseOrderDeliveryDetailControllerImpl{}
+func NewPurchaseOrderDeliveryDetailController(purchaseOrderDeliveryDetailService services.PurchaseOrderDeliveryDetailService) PurchaseOrderDeliveryDetailController {
+	return &PurchaseOrderDeliveryDetailControllerImpl{
+		PurchaseOrderDeliveryDetailService: purchaseOrderDeliveryDetailService,
+	}
 }
 
-func (controller *PurchaseOrderDeliveryDetailControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDeliveryDetailControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseOrderDeliveryDetailResponse, _ := dc.PurchaseOrderDeliveryDetailService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseOrderDeliveryDetailResponse.Code, purchaseOrderDeliveryDetailResponse)
 }
 
-func (controller *PurchaseOrderDeliveryDetailControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *PurchaseOrderDeliveryDetailControllerImpl) FindAll(ctx echo.Context) error {
+	purchaseOrderDeliveryDetailResponse, _ := dc.PurchaseOrderDeliveryDetailService.FindAll(ctx)
+
+	return ctx.JSON(purchaseOrderDeliveryDetailResponse.Code, purchaseOrderDeliveryDetailResponse)
 }
 
-func (controller *PurchaseOrderDeliveryDetailControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDeliveryDetailControllerImpl) Create(ctx echo.Context) error {
+	purchaseOrderDeliveryDetailResponse, _ := dc.PurchaseOrderDeliveryDetailService.Create(ctx)
+
+	return ctx.JSON(purchaseOrderDeliveryDetailResponse.Code, purchaseOrderDeliveryDetailResponse)
 }
 
-func (controller *PurchaseOrderDeliveryDetailControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDeliveryDetailControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	purchaseOrderDeliveryDetailResponse, _ := dc.PurchaseOrderDeliveryDetailService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseOrderDeliveryDetailResponse.Code, purchaseOrderDeliveryDetailResponse)
 }
 
-func (controller *PurchaseOrderDeliveryDetailControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDeliveryDetailControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseOrderDeliveryDetailResponse, _ := dc.PurchaseOrderDeliveryDetailService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(purchaseOrderDeliveryDetailResponse.Code, purchaseOrderDeliveryDetailResponse)
 }

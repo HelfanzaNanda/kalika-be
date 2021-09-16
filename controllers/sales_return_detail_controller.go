@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type SalesReturnDetailController interface {
@@ -12,33 +15,45 @@ type SalesReturnDetailController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type SalesReturnDetailControllerImpl struct {
-
+		SalesReturnDetailService services.SalesReturnDetailService
 }
 
-func NewSalesReturnDetailController() SalesReturnDetailController {
-	return &SalesReturnDetailControllerImpl{}
+func NewSalesReturnDetailController(salesReturnDetailService services.SalesReturnDetailService) SalesReturnDetailController {
+	return &SalesReturnDetailControllerImpl{
+		SalesReturnDetailService: salesReturnDetailService,
+	}
 }
 
-func (controller *SalesReturnDetailControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnDetailControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesReturnDetailResponse, _ := dc.SalesReturnDetailService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesReturnDetailResponse.Code, salesReturnDetailResponse)
 }
 
-func (controller *SalesReturnDetailControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *SalesReturnDetailControllerImpl) FindAll(ctx echo.Context) error {
+	salesReturnDetailResponse, _ := dc.SalesReturnDetailService.FindAll(ctx)
+
+	return ctx.JSON(salesReturnDetailResponse.Code, salesReturnDetailResponse)
 }
 
-func (controller *SalesReturnDetailControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnDetailControllerImpl) Create(ctx echo.Context) error {
+	salesReturnDetailResponse, _ := dc.SalesReturnDetailService.Create(ctx)
+
+	return ctx.JSON(salesReturnDetailResponse.Code, salesReturnDetailResponse)
 }
 
-func (controller *SalesReturnDetailControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnDetailControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	salesReturnDetailResponse, _ := dc.SalesReturnDetailService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesReturnDetailResponse.Code, salesReturnDetailResponse)
 }
 
-func (controller *SalesReturnDetailControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnDetailControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesReturnDetailResponse, _ := dc.SalesReturnDetailService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(salesReturnDetailResponse.Code, salesReturnDetailResponse)
 }

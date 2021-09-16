@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type CustomerController interface {
@@ -12,33 +15,45 @@ type CustomerController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type CustomerControllerImpl struct {
-
+		CustomerService services.CustomerService
 }
 
-func NewCustomerController() CustomerController {
-	return &CustomerControllerImpl{}
+func NewCustomerController(customerService services.CustomerService) CustomerController {
+	return &CustomerControllerImpl{
+		CustomerService: customerService,
+	}
 }
 
-func (controller *CustomerControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *CustomerControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	customerResponse, _ := dc.CustomerService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(customerResponse.Code, customerResponse)
 }
 
-func (controller *CustomerControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *CustomerControllerImpl) FindAll(ctx echo.Context) error {
+	customerResponse, _ := dc.CustomerService.FindAll(ctx)
+
+	return ctx.JSON(customerResponse.Code, customerResponse)
 }
 
-func (controller *CustomerControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *CustomerControllerImpl) Create(ctx echo.Context) error {
+	customerResponse, _ := dc.CustomerService.Create(ctx)
+
+	return ctx.JSON(customerResponse.Code, customerResponse)
 }
 
-func (controller *CustomerControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *CustomerControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	customerResponse, _ := dc.CustomerService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(customerResponse.Code, customerResponse)
 }
 
-func (controller *CustomerControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *CustomerControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	customerResponse, _ := dc.CustomerService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(customerResponse.Code, customerResponse)
 }

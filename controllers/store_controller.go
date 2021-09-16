@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type StoreController interface {
@@ -12,33 +15,45 @@ type StoreController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type StoreControllerImpl struct {
-
+		StoreService services.StoreService
 }
 
-func NewStoreController() StoreController {
-	return &StoreControllerImpl{}
+func NewStoreController(storeService services.StoreService) StoreController {
+	return &StoreControllerImpl{
+		StoreService: storeService,
+	}
 }
 
-func (controller *StoreControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *StoreControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	storeResponse, _ := dc.StoreService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(storeResponse.Code, storeResponse)
 }
 
-func (controller *StoreControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *StoreControllerImpl) FindAll(ctx echo.Context) error {
+	storeResponse, _ := dc.StoreService.FindAll(ctx)
+
+	return ctx.JSON(storeResponse.Code, storeResponse)
 }
 
-func (controller *StoreControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *StoreControllerImpl) Create(ctx echo.Context) error {
+	storeResponse, _ := dc.StoreService.Create(ctx)
+
+	return ctx.JSON(storeResponse.Code, storeResponse)
 }
 
-func (controller *StoreControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *StoreControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	storeResponse, _ := dc.StoreService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(storeResponse.Code, storeResponse)
 }
 
-func (controller *StoreControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *StoreControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	storeResponse, _ := dc.StoreService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(storeResponse.Code, storeResponse)
 }

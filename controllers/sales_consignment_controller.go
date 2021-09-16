@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type SalesConsignmentController interface {
@@ -12,33 +15,45 @@ type SalesConsignmentController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type SalesConsignmentControllerImpl struct {
-
+		SalesConsignmentService services.SalesConsignmentService
 }
 
-func NewSalesConsignmentController() SalesConsignmentController {
-	return &SalesConsignmentControllerImpl{}
+func NewSalesConsignmentController(salesConsignmentService services.SalesConsignmentService) SalesConsignmentController {
+	return &SalesConsignmentControllerImpl{
+		SalesConsignmentService: salesConsignmentService,
+	}
 }
 
-func (controller *SalesConsignmentControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *SalesConsignmentControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesConsignmentResponse, _ := dc.SalesConsignmentService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesConsignmentResponse.Code, salesConsignmentResponse)
 }
 
-func (controller *SalesConsignmentControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *SalesConsignmentControllerImpl) FindAll(ctx echo.Context) error {
+	salesConsignmentResponse, _ := dc.SalesConsignmentService.FindAll(ctx)
+
+	return ctx.JSON(salesConsignmentResponse.Code, salesConsignmentResponse)
 }
 
-func (controller *SalesConsignmentControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *SalesConsignmentControllerImpl) Create(ctx echo.Context) error {
+	salesConsignmentResponse, _ := dc.SalesConsignmentService.Create(ctx)
+
+	return ctx.JSON(salesConsignmentResponse.Code, salesConsignmentResponse)
 }
 
-func (controller *SalesConsignmentControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *SalesConsignmentControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	salesConsignmentResponse, _ := dc.SalesConsignmentService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesConsignmentResponse.Code, salesConsignmentResponse)
 }
 
-func (controller *SalesConsignmentControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *SalesConsignmentControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesConsignmentResponse, _ := dc.SalesConsignmentService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(salesConsignmentResponse.Code, salesConsignmentResponse)
 }

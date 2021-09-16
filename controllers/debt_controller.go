@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type DebtController interface {
@@ -12,33 +15,45 @@ type DebtController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type DebtControllerImpl struct {
-
+		DebtService services.DebtService
 }
 
-func NewDebtController() DebtController {
-	return &DebtControllerImpl{}
+func NewDebtController(debtService services.DebtService) DebtController {
+	return &DebtControllerImpl{
+		DebtService: debtService,
+	}
 }
 
-func (controller *DebtControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *DebtControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	debtResponse, _ := dc.DebtService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(debtResponse.Code, debtResponse)
 }
 
-func (controller *DebtControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *DebtControllerImpl) FindAll(ctx echo.Context) error {
+	debtResponse, _ := dc.DebtService.FindAll(ctx)
+
+	return ctx.JSON(debtResponse.Code, debtResponse)
 }
 
-func (controller *DebtControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *DebtControllerImpl) Create(ctx echo.Context) error {
+	debtResponse, _ := dc.DebtService.Create(ctx)
+
+	return ctx.JSON(debtResponse.Code, debtResponse)
 }
 
-func (controller *DebtControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *DebtControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	debtResponse, _ := dc.DebtService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(debtResponse.Code, debtResponse)
 }
 
-func (controller *DebtControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *DebtControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	debtResponse, _ := dc.DebtService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(debtResponse.Code, debtResponse)
 }

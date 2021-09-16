@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type CustomOrderController interface {
@@ -12,33 +15,45 @@ type CustomOrderController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type CustomOrderControllerImpl struct {
-
+		CustomOrderService services.CustomOrderService
 }
 
-func NewCustomOrderController() CustomOrderController {
-	return &CustomOrderControllerImpl{}
+func NewCustomOrderController(customOrderService services.CustomOrderService) CustomOrderController {
+	return &CustomOrderControllerImpl{
+		CustomOrderService: customOrderService,
+	}
 }
 
-func (controller *CustomOrderControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *CustomOrderControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	customOrderResponse, _ := dc.CustomOrderService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(customOrderResponse.Code, customOrderResponse)
 }
 
-func (controller *CustomOrderControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *CustomOrderControllerImpl) FindAll(ctx echo.Context) error {
+	customOrderResponse, _ := dc.CustomOrderService.FindAll(ctx)
+
+	return ctx.JSON(customOrderResponse.Code, customOrderResponse)
 }
 
-func (controller *CustomOrderControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *CustomOrderControllerImpl) Create(ctx echo.Context) error {
+	customOrderResponse, _ := dc.CustomOrderService.Create(ctx)
+
+	return ctx.JSON(customOrderResponse.Code, customOrderResponse)
 }
 
-func (controller *CustomOrderControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *CustomOrderControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	customOrderResponse, _ := dc.CustomOrderService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(customOrderResponse.Code, customOrderResponse)
 }
 
-func (controller *CustomOrderControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *CustomOrderControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	customOrderResponse, _ := dc.CustomOrderService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(customOrderResponse.Code, customOrderResponse)
 }

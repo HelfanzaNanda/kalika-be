@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type RawMaterialController interface {
@@ -12,33 +15,45 @@ type RawMaterialController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type RawMaterialControllerImpl struct {
-
+		RawMaterialService services.RawMaterialService
 }
 
-func NewRawMaterialController() RawMaterialController {
-	return &RawMaterialControllerImpl{}
+func NewRawMaterialController(rawMaterialService services.RawMaterialService) RawMaterialController {
+	return &RawMaterialControllerImpl{
+		RawMaterialService: rawMaterialService,
+	}
 }
 
-func (controller *RawMaterialControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *RawMaterialControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	rawMaterialResponse, _ := dc.RawMaterialService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(rawMaterialResponse.Code, rawMaterialResponse)
 }
 
-func (controller *RawMaterialControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *RawMaterialControllerImpl) FindAll(ctx echo.Context) error {
+	rawMaterialResponse, _ := dc.RawMaterialService.FindAll(ctx)
+
+	return ctx.JSON(rawMaterialResponse.Code, rawMaterialResponse)
 }
 
-func (controller *RawMaterialControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *RawMaterialControllerImpl) Create(ctx echo.Context) error {
+	rawMaterialResponse, _ := dc.RawMaterialService.Create(ctx)
+
+	return ctx.JSON(rawMaterialResponse.Code, rawMaterialResponse)
 }
 
-func (controller *RawMaterialControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *RawMaterialControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	rawMaterialResponse, _ := dc.RawMaterialService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(rawMaterialResponse.Code, rawMaterialResponse)
 }
 
-func (controller *RawMaterialControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *RawMaterialControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	rawMaterialResponse, _ := dc.RawMaterialService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(rawMaterialResponse.Code, rawMaterialResponse)
 }

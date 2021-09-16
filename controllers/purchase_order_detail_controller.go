@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type PurchaseOrderDetailController interface {
@@ -12,33 +15,45 @@ type PurchaseOrderDetailController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type PurchaseOrderDetailControllerImpl struct {
-
+		PurchaseOrderDetailService services.PurchaseOrderDetailService
 }
 
-func NewPurchaseOrderDetailController() PurchaseOrderDetailController {
-	return &PurchaseOrderDetailControllerImpl{}
+func NewPurchaseOrderDetailController(purchaseOrderDetailService services.PurchaseOrderDetailService) PurchaseOrderDetailController {
+	return &PurchaseOrderDetailControllerImpl{
+		PurchaseOrderDetailService: purchaseOrderDetailService,
+	}
 }
 
-func (controller *PurchaseOrderDetailControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDetailControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
 }
 
-func (controller *PurchaseOrderDetailControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *PurchaseOrderDetailControllerImpl) FindAll(ctx echo.Context) error {
+	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.FindAll(ctx)
+
+	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
 }
 
-func (controller *PurchaseOrderDetailControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDetailControllerImpl) Create(ctx echo.Context) error {
+	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.Create(ctx)
+
+	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
 }
 
-func (controller *PurchaseOrderDetailControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDetailControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
 }
 
-func (controller *PurchaseOrderDetailControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseOrderDetailControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
 }

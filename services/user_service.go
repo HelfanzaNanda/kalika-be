@@ -85,8 +85,6 @@ func (u UserServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err
 	}
 
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
-
-	return res, nil
 }
 
 func (u UserServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
@@ -109,8 +107,6 @@ func (u UserServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error)
 	userRepo, err := u.UserRepository.FindAll(ctx, tx)
 
 	return helpers.Response("OK", "Sukses Mengambil Data", userRepo), err
-
-	return res, nil
 }
 
 func (u UserServiceImpl) Login(ctx echo.Context) (map[string]interface{}, error) {

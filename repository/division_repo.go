@@ -26,19 +26,19 @@ func NewDivisionRepository() DivisionRepository {
 	return &DivisionRepositoryImpl{}
 }
 
-func (d DivisionRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, division *domain.Division) (domain.Division, error) {
+func (repository DivisionRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, division *domain.Division) (domain.Division, error) {
 	db.Create(&division)
-	DivisionRes,_ := d.FindById(ctx, db, "id", helpers.IntToString(division.Id))
-	return DivisionRes, nil
+	divisionRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(division.Id))
+	return divisionRes, nil
 }
 
-func (d DivisionRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, division *domain.Division) (domain.Division, error) {
+func (repository DivisionRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, division *domain.Division) (domain.Division, error) {
 	db.Where("id = ?", division.Id).Updates(&division)
-	DivisionRes,_ := d.FindById(ctx, db, "id", helpers.IntToString(division.Id))
-	return DivisionRes, nil
+	divisionRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(division.Id))
+	return divisionRes, nil
 }
 
-func (d DivisionRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, division *domain.Division) (bool, error) {
+func (repository DivisionRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, division *domain.Division) (bool, error) {
 	results := db.Where("id = ?", division.Id).Delete(&division)
 	if results.RowsAffected < 1 {
 		return false, errors.New("NOT_FOUND|division tidak ditemukan")
@@ -46,16 +46,16 @@ func (d DivisionRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, division *
 	return true, nil
 }
 
-func (d DivisionRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (DivisionRes domain.Division, err error) {
-	results := db.Where(key+" = ?", value).First(&DivisionRes)
+func (repository DivisionRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (divisionRes domain.Division, err error) {
+	results := db.Where(key+" = ?", value).First(&divisionRes)
 	if results.RowsAffected < 1 {
-		return DivisionRes, errors.New("NOT_FOUND|division tidak ditemukan")
+		return divisionRes, errors.New("NOT_FOUND|division tidak ditemukan")
 	}
-	return DivisionRes, nil
+	return divisionRes, nil
 }
 
-func (d DivisionRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (res []domain.Division, err error) {
-	db.Find(&res)
-	return res, nil
+func (repository DivisionRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (divisionRes []domain.Division, err error) {
+	db.Find(&divisionRes)
+	return divisionRes, nil
 }
 

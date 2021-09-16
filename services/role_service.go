@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	DivisionService interface {
+	RoleService interface {
 		Create(ctx echo.Context) (res web.Response, err error)
 		Update(ctx echo.Context, id int) (res web.Response, err error)
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
@@ -20,21 +20,21 @@ type (
 		FindAll(ctx echo.Context) (web.Response, error)
 	}
 
-	DivisionServiceImpl struct {
-		DivisionRepository repository.DivisionRepository
+	RoleServiceImpl struct {
+		RoleRepository repository.RoleRepository
 		db *gorm.DB
 	}
 )
 
-func NewDivisionService(DivisionRepository repository.DivisionRepository, db *gorm.DB) DivisionService {
-	return &DivisionServiceImpl{
-		DivisionRepository: DivisionRepository,
+func NewRoleService(RoleRepository repository.RoleRepository, db *gorm.DB) RoleService {
+	return &RoleServiceImpl{
+		RoleRepository: RoleRepository,
 		db: db,
 	}
 }
 
-func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.Division)
+func (service *RoleServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	o := new(domain.Role)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -42,16 +42,16 @@ func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.Create(ctx, tx, o)
+	roleRepo, err := service.RoleRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", divisionRepo), err
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", roleRepo), err
 }
 
-func (service DivisionServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Division)
+func (service RoleServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
+	o := new(domain.Role)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -60,16 +60,16 @@ func (service DivisionServiceImpl) Update(ctx echo.Context, id int) (res web.Res
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.Update(ctx, tx, o)
+	roleRepo, err := service.RoleRepository.Update(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengubah Data", divisionRepo), err
+	return helpers.Response("OK", "Sukses Mengubah Data", roleRepo), err
 }
 
-func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Division)
+func (service RoleServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
+	o := new(domain.Role)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Bnding", nil), err
 	}
@@ -78,7 +78,7 @@ func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Res
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	_, err = service.DivisionRepository.Delete(ctx, tx, o)
+	_, err = service.RoleRepository.Delete(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
@@ -86,25 +86,25 @@ func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Res
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
 }
 
-func (service DivisionServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+func (service RoleServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	roleRepo, err := service.RoleRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", roleRepo), err
 }
 
-func (service DivisionServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
+func (service RoleServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.FindAll(ctx, tx)
+	roleRepo, err := service.RoleRepository.FindAll(ctx, tx)
 
-	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", roleRepo), err
 }
 

@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	DivisionService interface {
+	CakeTypeService interface {
 		Create(ctx echo.Context) (res web.Response, err error)
 		Update(ctx echo.Context, id int) (res web.Response, err error)
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
@@ -20,21 +20,21 @@ type (
 		FindAll(ctx echo.Context) (web.Response, error)
 	}
 
-	DivisionServiceImpl struct {
-		DivisionRepository repository.DivisionRepository
+	CakeTypeServiceImpl struct {
+		CakeTypeRepository repository.CakeTypeRepository
 		db *gorm.DB
 	}
 )
 
-func NewDivisionService(DivisionRepository repository.DivisionRepository, db *gorm.DB) DivisionService {
-	return &DivisionServiceImpl{
-		DivisionRepository: DivisionRepository,
+func NewCakeTypeService(CakeTypeRepository repository.CakeTypeRepository, db *gorm.DB) CakeTypeService {
+	return &CakeTypeServiceImpl{
+		CakeTypeRepository: CakeTypeRepository,
 		db: db,
 	}
 }
 
-func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.Division)
+func (service *CakeTypeServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	o := new(domain.CakeType)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -42,16 +42,16 @@ func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.Create(ctx, tx, o)
+	cakeTypeRepo, err := service.CakeTypeRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", divisionRepo), err
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", cakeTypeRepo), err
 }
 
-func (service DivisionServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Division)
+func (service CakeTypeServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
+	o := new(domain.CakeType)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -60,16 +60,16 @@ func (service DivisionServiceImpl) Update(ctx echo.Context, id int) (res web.Res
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.Update(ctx, tx, o)
+	cakeTypeRepo, err := service.CakeTypeRepository.Update(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengubah Data", divisionRepo), err
+	return helpers.Response("OK", "Sukses Mengubah Data", cakeTypeRepo), err
 }
 
-func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Division)
+func (service CakeTypeServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
+	o := new(domain.CakeType)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Bnding", nil), err
 	}
@@ -78,7 +78,7 @@ func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Res
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	_, err = service.DivisionRepository.Delete(ctx, tx, o)
+	_, err = service.CakeTypeRepository.Delete(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
@@ -86,25 +86,25 @@ func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Res
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
 }
 
-func (service DivisionServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+func (service CakeTypeServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	cakeTypeRepo, err := service.CakeTypeRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", cakeTypeRepo), err
 }
 
-func (service DivisionServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
+func (service CakeTypeServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.FindAll(ctx, tx)
+	cakeTypeRepo, err := service.CakeTypeRepository.FindAll(ctx, tx)
 
-	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", cakeTypeRepo), err
 }
 

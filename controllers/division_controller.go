@@ -15,9 +15,8 @@ type DivisionController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type DivisionControllerImpl struct {
-	DivisionService services.DivisionService
+		DivisionService services.DivisionService
 }
 
 func NewDivisionController(divisionService services.DivisionService) DivisionController {

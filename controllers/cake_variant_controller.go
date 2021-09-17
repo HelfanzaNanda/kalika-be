@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type CakeVariantController interface {
@@ -12,33 +15,45 @@ type CakeVariantController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type CakeVariantControllerImpl struct {
-
+		CakeVariantService services.CakeVariantService
 }
 
-func NewCakeVariantController() CakeVariantController {
-	return &CakeVariantControllerImpl{}
+func NewCakeVariantController(cakeVariantService services.CakeVariantService) CakeVariantController {
+	return &CakeVariantControllerImpl{
+		CakeVariantService: cakeVariantService,
+	}
 }
 
-func (controller *CakeVariantControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *CakeVariantControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	cakeVariantResponse, _ := dc.CakeVariantService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(cakeVariantResponse.Code, cakeVariantResponse)
 }
 
-func (controller *CakeVariantControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *CakeVariantControllerImpl) FindAll(ctx echo.Context) error {
+	cakeVariantResponse, _ := dc.CakeVariantService.FindAll(ctx)
+
+	return ctx.JSON(cakeVariantResponse.Code, cakeVariantResponse)
 }
 
-func (controller *CakeVariantControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *CakeVariantControllerImpl) Create(ctx echo.Context) error {
+	cakeVariantResponse, _ := dc.CakeVariantService.Create(ctx)
+
+	return ctx.JSON(cakeVariantResponse.Code, cakeVariantResponse)
 }
 
-func (controller *CakeVariantControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *CakeVariantControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	cakeVariantResponse, _ := dc.CakeVariantService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(cakeVariantResponse.Code, cakeVariantResponse)
 }
 
-func (controller *CakeVariantControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *CakeVariantControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	cakeVariantResponse, _ := dc.CakeVariantService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(cakeVariantResponse.Code, cakeVariantResponse)
 }

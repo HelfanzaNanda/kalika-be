@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type PurchaseInvoiceDetailController interface {
@@ -12,33 +15,45 @@ type PurchaseInvoiceDetailController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type PurchaseInvoiceDetailControllerImpl struct {
-
+		PurchaseInvoiceDetailService services.PurchaseInvoiceDetailService
 }
 
-func NewPurchaseInvoiceDetailController() PurchaseInvoiceDetailController {
-	return &PurchaseInvoiceDetailControllerImpl{}
+func NewPurchaseInvoiceDetailController(purchaseInvoiceDetailService services.PurchaseInvoiceDetailService) PurchaseInvoiceDetailController {
+	return &PurchaseInvoiceDetailControllerImpl{
+		PurchaseInvoiceDetailService: purchaseInvoiceDetailService,
+	}
 }
 
-func (controller *PurchaseInvoiceDetailControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseInvoiceDetailControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseInvoiceDetailResponse, _ := dc.PurchaseInvoiceDetailService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseInvoiceDetailResponse.Code, purchaseInvoiceDetailResponse)
 }
 
-func (controller *PurchaseInvoiceDetailControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *PurchaseInvoiceDetailControllerImpl) FindAll(ctx echo.Context) error {
+	purchaseInvoiceDetailResponse, _ := dc.PurchaseInvoiceDetailService.FindAll(ctx)
+
+	return ctx.JSON(purchaseInvoiceDetailResponse.Code, purchaseInvoiceDetailResponse)
 }
 
-func (controller *PurchaseInvoiceDetailControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseInvoiceDetailControllerImpl) Create(ctx echo.Context) error {
+	purchaseInvoiceDetailResponse, _ := dc.PurchaseInvoiceDetailService.Create(ctx)
+
+	return ctx.JSON(purchaseInvoiceDetailResponse.Code, purchaseInvoiceDetailResponse)
 }
 
-func (controller *PurchaseInvoiceDetailControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseInvoiceDetailControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	purchaseInvoiceDetailResponse, _ := dc.PurchaseInvoiceDetailService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(purchaseInvoiceDetailResponse.Code, purchaseInvoiceDetailResponse)
 }
 
-func (controller *PurchaseInvoiceDetailControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *PurchaseInvoiceDetailControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	purchaseInvoiceDetailResponse, _ := dc.PurchaseInvoiceDetailService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(purchaseInvoiceDetailResponse.Code, purchaseInvoiceDetailResponse)
 }

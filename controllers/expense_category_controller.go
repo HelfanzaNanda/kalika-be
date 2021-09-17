@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type ExpenseCategoryController interface {
@@ -12,33 +15,45 @@ type ExpenseCategoryController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type ExpenseCategoryControllerImpl struct {
-
+		ExpenseCategoryService services.ExpenseCategoryService
 }
 
-func NewExpenseCategoryController() ExpenseCategoryController {
-	return &ExpenseCategoryControllerImpl{}
+func NewExpenseCategoryController(expenseCategoryService services.ExpenseCategoryService) ExpenseCategoryController {
+	return &ExpenseCategoryControllerImpl{
+		ExpenseCategoryService: expenseCategoryService,
+	}
 }
 
-func (controller *ExpenseCategoryControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseCategoryControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	expenseCategoryResponse, _ := dc.ExpenseCategoryService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(expenseCategoryResponse.Code, expenseCategoryResponse)
 }
 
-func (controller *ExpenseCategoryControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *ExpenseCategoryControllerImpl) FindAll(ctx echo.Context) error {
+	expenseCategoryResponse, _ := dc.ExpenseCategoryService.FindAll(ctx)
+
+	return ctx.JSON(expenseCategoryResponse.Code, expenseCategoryResponse)
 }
 
-func (controller *ExpenseCategoryControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseCategoryControllerImpl) Create(ctx echo.Context) error {
+	expenseCategoryResponse, _ := dc.ExpenseCategoryService.Create(ctx)
+
+	return ctx.JSON(expenseCategoryResponse.Code, expenseCategoryResponse)
 }
 
-func (controller *ExpenseCategoryControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseCategoryControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	expenseCategoryResponse, _ := dc.ExpenseCategoryService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(expenseCategoryResponse.Code, expenseCategoryResponse)
 }
 
-func (controller *ExpenseCategoryControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseCategoryControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	expenseCategoryResponse, _ := dc.ExpenseCategoryService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(expenseCategoryResponse.Code, expenseCategoryResponse)
 }

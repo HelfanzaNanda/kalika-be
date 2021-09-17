@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type SaleController interface {
@@ -12,33 +15,45 @@ type SaleController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type SaleControllerImpl struct {
-
+		SalesService services.SalesService
 }
 
-func NewSaleController() SaleController {
-	return &SaleControllerImpl{}
+func NewSaleController(salesService services.SalesService) SaleController {
+	return &SaleControllerImpl{
+		SalesService: salesService,
+	}
 }
 
-func (controller *SaleControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *SaleControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesResponse, _ := dc.SalesService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesResponse.Code, salesResponse)
 }
 
-func (controller *SaleControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *SaleControllerImpl) FindAll(ctx echo.Context) error {
+	salesResponse, _ := dc.SalesService.FindAll(ctx)
+
+	return ctx.JSON(salesResponse.Code, salesResponse)
 }
 
-func (controller *SaleControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *SaleControllerImpl) Create(ctx echo.Context) error {
+	salesResponse, _ := dc.SalesService.Create(ctx)
+
+	return ctx.JSON(salesResponse.Code, salesResponse)
 }
 
-func (controller *SaleControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *SaleControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	salesResponse, _ := dc.SalesService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesResponse.Code, salesResponse)
 }
 
-func (controller *SaleControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *SaleControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesResponse, _ := dc.SalesService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(salesResponse.Code, salesResponse)
 }

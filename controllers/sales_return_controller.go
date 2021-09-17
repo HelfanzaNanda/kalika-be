@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type SalesReturnController interface {
@@ -12,33 +15,45 @@ type SalesReturnController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type SalesReturnControllerImpl struct {
-
+		SalesReturnService services.SalesReturnService
 }
 
-func NewSalesReturnController() SalesReturnController {
-	return &SalesReturnControllerImpl{}
+func NewSalesReturnController(salesReturnService services.SalesReturnService) SalesReturnController {
+	return &SalesReturnControllerImpl{
+		SalesReturnService: salesReturnService,
+	}
 }
 
-func (controller *SalesReturnControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesReturnResponse, _ := dc.SalesReturnService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesReturnResponse.Code, salesReturnResponse)
 }
 
-func (controller *SalesReturnControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *SalesReturnControllerImpl) FindAll(ctx echo.Context) error {
+	salesReturnResponse, _ := dc.SalesReturnService.FindAll(ctx)
+
+	return ctx.JSON(salesReturnResponse.Code, salesReturnResponse)
 }
 
-func (controller *SalesReturnControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnControllerImpl) Create(ctx echo.Context) error {
+	salesReturnResponse, _ := dc.SalesReturnService.Create(ctx)
+
+	return ctx.JSON(salesReturnResponse.Code, salesReturnResponse)
 }
 
-func (controller *SalesReturnControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	salesReturnResponse, _ := dc.SalesReturnService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(salesReturnResponse.Code, salesReturnResponse)
 }
 
-func (controller *SalesReturnControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *SalesReturnControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	salesReturnResponse, _ := dc.SalesReturnService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(salesReturnResponse.Code, salesReturnResponse)
 }

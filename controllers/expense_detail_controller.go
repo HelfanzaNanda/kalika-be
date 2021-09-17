@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type ExpenseDetailController interface {
@@ -12,33 +15,45 @@ type ExpenseDetailController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type ExpenseDetailControllerImpl struct {
-
+		ExpenseDetailService services.ExpenseDetailService
 }
 
-func NewExpenseDetailController() ExpenseDetailController {
-	return &ExpenseDetailControllerImpl{}
+func NewExpenseDetailController(expenseDetailService services.ExpenseDetailService) ExpenseDetailController {
+	return &ExpenseDetailControllerImpl{
+		ExpenseDetailService: expenseDetailService,
+	}
 }
 
-func (controller *ExpenseDetailControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseDetailControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	expenseDetailResponse, _ := dc.ExpenseDetailService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(expenseDetailResponse.Code, expenseDetailResponse)
 }
 
-func (controller *ExpenseDetailControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *ExpenseDetailControllerImpl) FindAll(ctx echo.Context) error {
+	expenseDetailResponse, _ := dc.ExpenseDetailService.FindAll(ctx)
+
+	return ctx.JSON(expenseDetailResponse.Code, expenseDetailResponse)
 }
 
-func (controller *ExpenseDetailControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseDetailControllerImpl) Create(ctx echo.Context) error {
+	expenseDetailResponse, _ := dc.ExpenseDetailService.Create(ctx)
+
+	return ctx.JSON(expenseDetailResponse.Code, expenseDetailResponse)
 }
 
-func (controller *ExpenseDetailControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseDetailControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	expenseDetailResponse, _ := dc.ExpenseDetailService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(expenseDetailResponse.Code, expenseDetailResponse)
 }
 
-func (controller *ExpenseDetailControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseDetailControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	expenseDetailResponse, _ := dc.ExpenseDetailService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(expenseDetailResponse.Code, expenseDetailResponse)
 }

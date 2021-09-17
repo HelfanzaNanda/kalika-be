@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type ExpenseController interface {
@@ -12,33 +15,45 @@ type ExpenseController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type ExpenseControllerImpl struct {
-
+		ExpenseService services.ExpenseService
 }
 
-func NewExpenseController() ExpenseController {
-	return &ExpenseControllerImpl{}
+func NewExpenseController(expenseService services.ExpenseService) ExpenseController {
+	return &ExpenseControllerImpl{
+		ExpenseService: expenseService,
+	}
 }
 
-func (controller *ExpenseControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	expenseResponse, _ := dc.ExpenseService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(expenseResponse.Code, expenseResponse)
 }
 
-func (controller *ExpenseControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *ExpenseControllerImpl) FindAll(ctx echo.Context) error {
+	expenseResponse, _ := dc.ExpenseService.FindAll(ctx)
+
+	return ctx.JSON(expenseResponse.Code, expenseResponse)
 }
 
-func (controller *ExpenseControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseControllerImpl) Create(ctx echo.Context) error {
+	expenseResponse, _ := dc.ExpenseService.Create(ctx)
+
+	return ctx.JSON(expenseResponse.Code, expenseResponse)
 }
 
-func (controller *ExpenseControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	expenseResponse, _ := dc.ExpenseService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(expenseResponse.Code, expenseResponse)
 }
 
-func (controller *ExpenseControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *ExpenseControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	expenseResponse, _ := dc.ExpenseService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(expenseResponse.Code, expenseResponse)
 }

@@ -33,82 +33,78 @@ func NewDivisionService(DivisionRepository repository.DivisionRepository, db *go
 	}
 }
 
-func (u *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
 	o := new(domain.Division)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
 
-	tx := u.db.Begin()
+	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	DivisionRepo, err := u.DivisionRepository.Create(ctx, tx, o)
+	divisionRepo, err := service.DivisionRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", DivisionRepo), err
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", divisionRepo), err
 }
 
-func (u DivisionServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
+func (service DivisionServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
 	o := new(domain.Division)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
 	o.Id = id
 
-	tx := u.db.Begin()
+	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	DivisionRepo, err := u.DivisionRepository.Update(ctx, tx, o)
+	divisionRepo, err := service.DivisionRepository.Update(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengubah Data", DivisionRepo), err
+	return helpers.Response("OK", "Sukses Mengubah Data", divisionRepo), err
 }
 
-func (u DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
+func (service DivisionServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
 	o := new(domain.Division)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Bnding", nil), err
 	}
 	o.Id = id
 
-	tx := u.db.Begin()
+	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	_, err = u.DivisionRepository.Delete(ctx, tx, o)
+	_, err = service.DivisionRepository.Delete(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
-
-	return res, nil
 }
 
-func (u DivisionServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
-	tx := u.db.Begin()
+func (service DivisionServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	DivisionRepo, err := u.DivisionRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	divisionRepo, err := service.DivisionRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", DivisionRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
 }
 
-func (u DivisionServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
-	tx := u.db.Begin()
+func (service DivisionServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
+	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	DivisionRepo, err := u.DivisionRepository.FindAll(ctx, tx)
+	divisionRepo, err := service.DivisionRepository.FindAll(ctx, tx)
 
-	return helpers.Response("OK", "Sukses Mengambil Data", DivisionRepo), err
-
-	return res, nil
+	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
 }
 

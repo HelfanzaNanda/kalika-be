@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type SellerController interface {
@@ -12,33 +15,45 @@ type SellerController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type SellerControllerImpl struct {
-
+		SellerService services.SellerService
 }
 
-func NewSellerController() SellerController {
-	return &SellerControllerImpl{}
+func NewSellerController(sellerService services.SellerService) SellerController {
+	return &SellerControllerImpl{
+		SellerService: sellerService,
+	}
 }
 
-func (controller *SellerControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *SellerControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	sellerResponse, _ := dc.SellerService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(sellerResponse.Code, sellerResponse)
 }
 
-func (controller *SellerControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *SellerControllerImpl) FindAll(ctx echo.Context) error {
+	sellerResponse, _ := dc.SellerService.FindAll(ctx)
+
+	return ctx.JSON(sellerResponse.Code, sellerResponse)
 }
 
-func (controller *SellerControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *SellerControllerImpl) Create(ctx echo.Context) error {
+	sellerResponse, _ := dc.SellerService.Create(ctx)
+
+	return ctx.JSON(sellerResponse.Code, sellerResponse)
 }
 
-func (controller *SellerControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *SellerControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	sellerResponse, _ := dc.SellerService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(sellerResponse.Code, sellerResponse)
 }
 
-func (controller *SellerControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *SellerControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	sellerResponse, _ := dc.SellerService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(sellerResponse.Code, sellerResponse)
 }

@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type PaymentMethodController interface {
@@ -12,33 +15,45 @@ type PaymentMethodController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type PaymentMethodControllerImpl struct {
-
+		PaymentMethodService services.PaymentMethodService
 }
 
-func NewPaymentMethodController() PaymentMethodController {
-	return &PaymentMethodControllerImpl{}
+func NewPaymentMethodController(paymentMethodService services.PaymentMethodService) PaymentMethodController {
+	return &PaymentMethodControllerImpl{
+		PaymentMethodService: paymentMethodService,
+	}
 }
 
-func (controller *PaymentMethodControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *PaymentMethodControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	paymentMethodResponse, _ := dc.PaymentMethodService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(paymentMethodResponse.Code, paymentMethodResponse)
 }
 
-func (controller *PaymentMethodControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *PaymentMethodControllerImpl) FindAll(ctx echo.Context) error {
+	paymentMethodResponse, _ := dc.PaymentMethodService.FindAll(ctx)
+
+	return ctx.JSON(paymentMethodResponse.Code, paymentMethodResponse)
 }
 
-func (controller *PaymentMethodControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *PaymentMethodControllerImpl) Create(ctx echo.Context) error {
+	paymentMethodResponse, _ := dc.PaymentMethodService.Create(ctx)
+
+	return ctx.JSON(paymentMethodResponse.Code, paymentMethodResponse)
 }
 
-func (controller *PaymentMethodControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *PaymentMethodControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	paymentMethodResponse, _ := dc.PaymentMethodService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(paymentMethodResponse.Code, paymentMethodResponse)
 }
 
-func (controller *PaymentMethodControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *PaymentMethodControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	paymentMethodResponse, _ := dc.PaymentMethodService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(paymentMethodResponse.Code, paymentMethodResponse)
 }

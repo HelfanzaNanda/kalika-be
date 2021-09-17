@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type SupplierController interface {
@@ -12,33 +15,45 @@ type SupplierController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type SupplierControllerImpl struct {
-
+		SupplierService services.SupplierService
 }
 
-func NewSupplierController() SupplierController {
-	return &SupplierControllerImpl{}
+func NewSupplierController(supplierService services.SupplierService) SupplierController {
+	return &SupplierControllerImpl{
+		SupplierService: supplierService,
+	}
 }
 
-func (controller *SupplierControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *SupplierControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	supplierResponse, _ := dc.SupplierService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(supplierResponse.Code, supplierResponse)
 }
 
-func (controller *SupplierControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *SupplierControllerImpl) FindAll(ctx echo.Context) error {
+	supplierResponse, _ := dc.SupplierService.FindAll(ctx)
+
+	return ctx.JSON(supplierResponse.Code, supplierResponse)
 }
 
-func (controller *SupplierControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *SupplierControllerImpl) Create(ctx echo.Context) error {
+	supplierResponse, _ := dc.SupplierService.Create(ctx)
+
+	return ctx.JSON(supplierResponse.Code, supplierResponse)
 }
 
-func (controller *SupplierControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *SupplierControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	supplierResponse, _ := dc.SupplierService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(supplierResponse.Code, supplierResponse)
 }
 
-func (controller *SupplierControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *SupplierControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	supplierResponse, _ := dc.SupplierService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(supplierResponse.Code, supplierResponse)
 }

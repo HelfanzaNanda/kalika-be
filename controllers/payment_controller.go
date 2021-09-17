@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type PaymentController interface {
@@ -12,33 +15,45 @@ type PaymentController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type PaymentControllerImpl struct {
-
+		PaymentService services.PaymentService
 }
 
-func NewPaymentController() PaymentController {
-	return &PaymentControllerImpl{}
+func NewPaymentController(paymentService services.PaymentService) PaymentController {
+	return &PaymentControllerImpl{
+		PaymentService: paymentService,
+	}
 }
 
-func (controller *PaymentControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *PaymentControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	paymentResponse, _ := dc.PaymentService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(paymentResponse.Code, paymentResponse)
 }
 
-func (controller *PaymentControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *PaymentControllerImpl) FindAll(ctx echo.Context) error {
+	paymentResponse, _ := dc.PaymentService.FindAll(ctx)
+
+	return ctx.JSON(paymentResponse.Code, paymentResponse)
 }
 
-func (controller *PaymentControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *PaymentControllerImpl) Create(ctx echo.Context) error {
+	paymentResponse, _ := dc.PaymentService.Create(ctx)
+
+	return ctx.JSON(paymentResponse.Code, paymentResponse)
 }
 
-func (controller *PaymentControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *PaymentControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	paymentResponse, _ := dc.PaymentService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(paymentResponse.Code, paymentResponse)
 }
 
-func (controller *PaymentControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *PaymentControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	paymentResponse, _ := dc.PaymentService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(paymentResponse.Code, paymentResponse)
 }

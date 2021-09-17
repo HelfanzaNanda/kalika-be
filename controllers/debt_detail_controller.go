@@ -1,8 +1,11 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/labstack/echo"
+	"kalika-be/helpers"
+	"kalika-be/services"
+	//"net/http"
 )
 
 type DebtDetailController interface {
@@ -12,33 +15,45 @@ type DebtDetailController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
-
 type DebtDetailControllerImpl struct {
-
+		DebtDetailService services.DebtDetailService
 }
 
-func NewDebtDetailController() DebtDetailController {
-	return &DebtDetailControllerImpl{}
+func NewDebtDetailController(debtDetailService services.DebtDetailService) DebtDetailController {
+	return &DebtDetailControllerImpl{
+		DebtDetailService: debtDetailService,
+	}
 }
 
-func (controller *DebtDetailControllerImpl) FindById(ctx echo.Context) error {
-	return nil
+func (dc *DebtDetailControllerImpl) FindById(ctx echo.Context) error {
+	id := ctx.Param("id")
+	debtDetailResponse, _ := dc.DebtDetailService.FindById(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(debtDetailResponse.Code, debtDetailResponse)
 }
 
-func (controller *DebtDetailControllerImpl) FindAll(ctx echo.Context) error {
-	fmt.Println("HALO GUYS")
-	fmt.Println(ctx.QueryParams())
-	return nil
+func (dc *DebtDetailControllerImpl) FindAll(ctx echo.Context) error {
+	debtDetailResponse, _ := dc.DebtDetailService.FindAll(ctx)
+
+	return ctx.JSON(debtDetailResponse.Code, debtDetailResponse)
 }
 
-func (controller *DebtDetailControllerImpl) Create(ctx echo.Context) error {
-	return nil
+func (dc *DebtDetailControllerImpl) Create(ctx echo.Context) error {
+	debtDetailResponse, _ := dc.DebtDetailService.Create(ctx)
+
+	return ctx.JSON(debtDetailResponse.Code, debtDetailResponse)
 }
 
-func (controller *DebtDetailControllerImpl) Update(ctx echo.Context) error {
-	return nil
+func (dc *DebtDetailControllerImpl) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	debtDetailResponse, _ := dc.DebtDetailService.Update(ctx, helpers.StringToInt(id))
+
+	return ctx.JSON(debtDetailResponse.Code, debtDetailResponse)
 }
 
-func (controller *DebtDetailControllerImpl) Delete(ctx echo.Context) error {
-	return nil
+func (dc *DebtDetailControllerImpl) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	debtDetailResponse, _ := dc.DebtDetailService.Delete(ctx, helpers.StringToInt(id))
+	return ctx.JSON(debtDetailResponse.Code, debtDetailResponse)
 }

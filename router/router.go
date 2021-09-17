@@ -37,42 +37,162 @@ func Routes(db *gorm.DB) *echo.Echo {
 	divisionService := services.NewDivisionService(divisionRepository, db)
 	divisionController := controllers.NewDivisionController(divisionService)
 	
-	categoryController := controllers.NewCategoryController()
-	cakeVariantController := controllers.NewCakeVariantController()
-	cakeTypeController := controllers.NewCakeTypeController()
-	storeController := controllers.NewStoreController()
-	supplierController := controllers.NewSupplierController()
-	customerController := controllers.NewCustomerController()
-	storeConsignmentController := controllers.NewStoreConsignmentController()
-	paymentMethodController := controllers.NewPaymentMethodController()
-	sellerController := controllers.NewSellerController()
-	expenseCategoryController := controllers.NewExpenseCategoryController()
-	rawMaterialController := controllers.NewRawMaterialController()
-	customOrderController := controllers.NewCustomOrderController()
-	unitController := controllers.NewUnitController()
-	unitConversionController := controllers.NewUnitConversionController()
-	debtController := controllers.NewDebtController()
-	debtDetailController := controllers.NewDebtDetailController()
-	receivableController := controllers.NewReceivableController()
-	receivableDetailController := controllers.NewReceivableDetailController()
-	expenseController := controllers.NewExpenseController()
-	expenseDetailController := controllers.NewExpenseDetailController()
-	purchaseReturnController := controllers.NewPurchaseReturnController()
-	purchaseReturnDetailController := controllers.NewPurchaseReturnDetailController()
-	purchaseOrderController := controllers.NewPurchaseOrderController()
-	purchaseOrderDetailController := controllers.NewPurchaseOrderDetailController()
-	purchaseInvoiceController := controllers.NewPurchaseInvoiceController()
-	purchaseInvoiceDetailController := controllers.NewPurchaseInvoiceDetailController()
-	purchaseOrderDeliveryController := controllers.NewPurchaseOrderDeliveryController()
-	purchaseOrderDeliveryDetailController := controllers.NewPurchaseOrderDeliveryDetailController()
-	saleController := controllers.NewSaleController()
-	salesDetailController := controllers.NewSalesDetailController()
-	salesReturnController := controllers.NewSalesReturnController()
-	salesReturnDetailController := controllers.NewSalesReturnDetailController()
-	salesConsignmentController := controllers.NewSalesConsignmentController()
-	salesConsignmentDetailController := controllers.NewSalesConsignmentDetailController()
-	cashRegisterController := controllers.NewCashRegisterController()
-	paymentController := controllers.NewPaymentController()
+	categoryRepository := repository.NewCategoryRepository()
+	categoryService := services.NewCategoryService(categoryRepository, db)
+	categoryController := controllers.NewCategoryController(categoryService)
+	
+	cakeVariantRepository := repository.NewCakeVariantRepository()
+	cakeVariantService := services.NewCakeVariantService(cakeVariantRepository, db)
+	cakeVariantController := controllers.NewCakeVariantController(cakeVariantService)
+	
+	cakeTypeRepository := repository.NewCakeTypeRepository()
+	cakeTypeService := services.NewCakeTypeService(cakeTypeRepository, db)
+	cakeTypeController := controllers.NewCakeTypeController(cakeTypeService)
+	
+	storeRepository := repository.NewStoreRepository()
+	storeService := services.NewStoreService(storeRepository, db)
+	storeController := controllers.NewStoreController(storeService)
+	
+	supplierRepository := repository.NewSupplierRepository()
+	supplierService := services.NewSupplierService(supplierRepository, db)
+	supplierController := controllers.NewSupplierController(supplierService)
+	
+	customerRepository := repository.NewCustomerRepository()
+	customerService := services.NewCustomerService(customerRepository, db)
+	customerController := controllers.NewCustomerController(customerService)
+	
+	storeConsignmentRepository := repository.NewStoreConsignmentRepository()
+	storeConsignmentService := services.NewStoreConsignmentService(storeConsignmentRepository, db)
+	storeConsignmentController := controllers.NewStoreConsignmentController(storeConsignmentService)
+	
+	paymentMethodRepository := repository.NewPaymentMethodRepository()
+	paymentMethodService := services.NewPaymentMethodService(paymentMethodRepository, db)
+	paymentMethodController := controllers.NewPaymentMethodController(paymentMethodService)
+	
+	sellerRepository := repository.NewSellerRepository()
+	sellerService := services.NewSellerService(sellerRepository, db)
+	sellerController := controllers.NewSellerController(sellerService)
+	
+	expenseCategoryRepository := repository.NewExpenseCategoryRepository()
+	expenseCategoryService := services.NewExpenseCategoryService(expenseCategoryRepository, db)
+	expenseCategoryController := controllers.NewExpenseCategoryController(expenseCategoryService)
+	
+	rawMaterialRepository := repository.NewRawMaterialRepository()
+	rawMaterialService := services.NewRawMaterialService(rawMaterialRepository, db)
+	rawMaterialController := controllers.NewRawMaterialController(rawMaterialService)
+	
+	customOrderRepository := repository.NewCustomOrderRepository()
+	customOrderService := services.NewCustomOrderService(customOrderRepository, db)
+	customOrderController := controllers.NewCustomOrderController(customOrderService)
+
+	unitRepository := repository.NewUnitRepository()
+	unitService := services.NewUnitService(unitRepository, db)
+	unitController := controllers.NewUnitController(unitService)
+	
+	unitConversionRepository := repository.NewUnitConversionRepository()
+	unitConversionService := services.NewUnitConversionService(unitConversionRepository, db)
+	unitConversionController := controllers.NewUnitConversionController(unitConversionService)
+	
+	debtRepository := repository.NewDebtRepository()
+	debtService := services.NewDebtService(debtRepository, db)
+	debtController := controllers.NewDebtController(debtService)
+	
+	debtDetailRepository := repository.NewDebtDetailRepository()
+	debtDetailService := services.NewDebtDetailService(debtDetailRepository, db)
+	debtDetailController := controllers.NewDebtDetailController(debtDetailService)
+	
+	receivableRepository := repository.NewReceivableRepository()
+	receivableService := services.NewReceivableService(receivableRepository, db)
+	receivableController := controllers.NewReceivableController(receivableService)
+	
+	receivableDetailRepository := repository.NewReceivableRepository()
+	receivableDetailService := services.NewReceivableService(receivableDetailRepository, db)
+	receivableDetailController := controllers.NewReceivableController(receivableDetailService)
+	
+	expenseRepository := repository.NewExpenseRepository()
+	expenseService := services.NewExpenseService(expenseRepository, db)
+	expenseController := controllers.NewExpenseController(expenseService)
+	
+	expenseDetailRepository := repository.NewExpenseDetailRepository()
+	expenseDetailService := services.NewExpenseDetailService(expenseDetailRepository, db)
+	expenseDetailController := controllers.NewExpenseDetailController(expenseDetailService)
+	
+	purchaseReturnRepository := repository.NewPurchaseReturnRepository()
+	purchaseReturnService := services.NewPurchaseReturnService(purchaseReturnRepository, db)
+	purchaseReturnController := controllers.NewPurchaseReturnController(purchaseReturnService)
+	
+	purchaseReturnDetailRepository := repository.NewPurchaseReturnDetailRepository()
+	purchaseReturnDetailService := services.NewPurchaseReturnDetailService(purchaseReturnDetailRepository, db)
+	purchaseReturnDetailController := controllers.NewPurchaseReturnDetailController(purchaseReturnDetailService)
+	
+	purchaseOrderRepository := repository.NewPurchaseOrderRepository()
+	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, db)
+	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
+	
+	purchaseOrderDetailRepository := repository.NewPurchaseOrderDetailRepository()
+	purchaseOrderDetailService := services.NewPurchaseOrderDetailService(purchaseOrderDetailRepository, db)
+	purchaseOrderDetailController := controllers.NewPurchaseOrderDetailController(purchaseOrderDetailService)
+	
+	purchaseInvoiceRepository := repository.NewPurchaseInvoiceRepository()
+	purchaseInvoiceService := services.NewPurchaseInvoiceService(purchaseInvoiceRepository, db)
+	purchaseInvoiceController := controllers.NewPurchaseInvoiceController(purchaseInvoiceService)
+	
+	purchaseInvoiceDetailRepository := repository.NewPurchaseInvoiceDetailRepository()
+	purchaseInvoiceDetailService := services.NewPurchaseInvoiceDetailService(purchaseInvoiceDetailRepository, db)
+	purchaseInvoiceDetailController := controllers.NewPurchaseInvoiceDetailController(purchaseInvoiceDetailService)
+	
+	purchaseOrderDeliveryRepository := repository.NewPurchaseOrderDeliveryRepository()
+	purchaseOrderDeliveryService := services.NewPurchaseOrderDeliveryService(purchaseOrderDeliveryRepository, db)
+	purchaseOrderDeliveryController := controllers.NewPurchaseOrderDeliveryController(purchaseOrderDeliveryService)
+	
+	purchaseOrderDeliveryDetailRepository := repository.NewPurchaseOrderDeliveryDetailRepository()
+	purchaseOrderDeliveryDetailService := services.NewPurchaseOrderDeliveryDetailService(purchaseOrderDeliveryDetailRepository, db)
+	purchaseOrderDeliveryDetailController := controllers.NewPurchaseOrderDeliveryDetailController(purchaseOrderDeliveryDetailService)
+	
+	saleRepository := repository.NewSalesRepository()
+	saleService := services.NewSalesService(saleRepository, db)
+	saleController := controllers.NewSaleController(saleService)
+
+	salesDetailRepository := repository.NewSalesDetailRepository()
+	salesDetailService := services.NewSalesDetailService(salesDetailRepository, db)
+	salesDetailController := controllers.NewSalesDetailController(salesDetailService)
+	
+	salesReturnRepository := repository.NewSalesReturnRepository()
+	salesReturnService := services.NewSalesReturnService(salesReturnRepository, db)
+	salesReturnController := controllers.NewSalesReturnController(salesReturnService)
+	
+	salesReturnDetailRepository := repository.NewSalesReturnDetailRepository()
+	salesReturnDetailService := services.NewSalesReturnDetailService(salesReturnDetailRepository, db)
+	salesReturnDetailController := controllers.NewSalesReturnDetailController(salesReturnDetailService)
+	
+	salesConsignmentRepository := repository.NewSalesConsignmentRepository()
+	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, db)
+	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
+	
+	salesConsignmentDetailRepository := repository.NewSalesConsignmentDetailRepository()
+	salesConsignmentDetailService := services.NewSalesConsignmentDetailService(salesConsignmentDetailRepository, db)
+	salesConsignmentDetailController := controllers.NewSalesConsignmentDetailController(salesConsignmentDetailService)
+	
+	cashRegisterRepository := repository.NewCashRegisterRepository()
+	cashRegisterService := services.NewCashRegisterService(cashRegisterRepository, db)
+	cashRegisterController := controllers.NewCashRegisterController(cashRegisterService)
+	
+	paymentRepository := repository.NewPaymentRepository()
+	paymentService := services.NewPaymentService(paymentRepository, db)
+	paymentController := controllers.NewPaymentController(paymentService)
+	
+	productRepository := repository.NewProductRepository()
+	productService := services.NewProductService(productRepository, db)
+	productController := controllers.NewProductController(productService)
+	
+	roleRepository := repository.NewRoleRepository()
+	roleService := services.NewRoleService(roleRepository, db)
+	roleController := controllers.NewRoleController(roleService)
+	
+	rolehasPermissionRepository := repository.NewRoleHasPermissionRepository()
+	rolehasPermissionService := services.NewRoleHasPermissionService(rolehasPermissionRepository, db)
+	rolehasPermissionController := controllers.NewRoleHasPermissionController(rolehasPermissionService)
+	
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)
@@ -301,6 +421,24 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/payments", paymentController.Create)
 	api.PUT("/payments/:id", paymentController.Update)
 	api.DELETE("/payments/:id", paymentController.Delete)
+	
+	api.GET("/products", productController.FindAll)
+	api.GET("/products/:id", productController.FindById)
+	api.POST("/products", productController.Create)
+	api.PUT("/products/:id", productController.Update)
+	api.DELETE("/products/:id", productController.Delete)
+	
+	api.GET("/roles", roleController.FindAll)
+	api.GET("/roles/:id", roleController.FindById)
+	api.POST("/roles", roleController.Create)
+	api.PUT("/roles/:id", roleController.Update)
+	api.DELETE("/roles/:id", roleController.Delete)
+	
+	api.GET("/role_has_permissions", rolehasPermissionController.FindAll)
+	api.GET("/role_has_permissions/:id", rolehasPermissionController.FindById)
+	api.POST("/role_has_permissions", rolehasPermissionController.Create)
+	api.PUT("/role_has_permissions/:id", rolehasPermissionController.Update)
+	api.DELETE("/role_has_permissions/:id", rolehasPermissionController.Delete)
 
 	return e
 }

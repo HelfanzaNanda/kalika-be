@@ -1,6 +1,8 @@
 package services
 
 import (
+	"strings"
+
 	//"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -18,6 +20,7 @@ type (
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
+		Datatable(ctx echo.Context) (res web.Datatable, err error)
 	}
 
 	DivisionServiceImpl struct {
@@ -108,3 +111,57 @@ func (service DivisionServiceImpl) FindAll(ctx echo.Context) (res web.Response, 
 	return helpers.Response("OK", "Sukses Mengambil Data", divisionRepo), err
 }
 
+func (service *DivisionServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
+	params,_ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+
+	divisionRepo, totalData, totalFiltered, err := service.DivisionRepository.Datatable(ctx, tx, draw, limit, start, search)
+	if err != nil {
+		//return helpers.Response(err.Error(), "", nil), err
+	}
+
+	var data []interface{}
+	for _, v := range divisionRepo {
+		v.Action = `<div class="flex">`
+		v.Action += `<button type="button" class="flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `</div>`
+
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
+}
+
+//columns := map[int]string{
+//	0: "divisions.id",
+//	1: "divisions.name",
+//}
+//var dataOrder []map[string]string
+//order := map[string]string{}
+//if helpers.ParseFormCollection(ctx.Request(), "order") != nil {
+//	order = helpers.ParseFormCollection(ctx.Request(), "order")[0]
+//	for k, v := range order {
+//		subDataOrder := map[string]string{}
+//		if string(k) == "column" {
+//			subDataOrder["column"] = columns[helpers.StringToInt(v)]
+//			dataOrder = append(dataOrder, subDataOrder)
+//		}
+//		if string(k) == "dir" {
+//			subDataOrder["dir"] = v
+//			dataOrder = append(dataOrder, subDataOrder)
+//		}
+//	}
+//}

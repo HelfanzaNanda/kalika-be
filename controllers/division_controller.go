@@ -14,6 +14,7 @@ type DivisionController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type DivisionControllerImpl struct {
 		DivisionService services.DivisionService
@@ -56,4 +57,12 @@ func (dc *DivisionControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	divisionResponse, _ := dc.DivisionService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(divisionResponse.Code, divisionResponse)
+}
+
+func (dc *DivisionControllerImpl) Datatable(ctx echo.Context) error {
+	divisionResponse, _ := dc.DivisionService.Datatable(ctx)
+
+	//return ctx.JSON(divisionResponse.Code, divisionResponse)
+
+	return ctx.JSON(202, divisionResponse)
 }

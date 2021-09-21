@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
+	//"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
 )
 
 type (
@@ -14,7 +16,7 @@ type (
 		Update(ctx echo.Context, db *gorm.DB, roleHasPermission *domain.RoleHasPermission) (domain.RoleHasPermission, error)
 		Delete(ctx echo.Context, db *gorm.DB, roleHasPermission *domain.RoleHasPermission) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.RoleHasPermission, error)
-		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.RoleHasPermission, error)
+		FindAll(ctx echo.Context, db *gorm.DB) ([]web.RoleHasPermissionGet, error)
 	}
 
 	RoleHasPermissionRepositoryImpl struct {
@@ -54,8 +56,14 @@ func (repository RoleHasPermissionRepositoryImpl) FindById(ctx echo.Context, db 
 	return roleHasPermissionRes, nil
 }
 
-func (repository RoleHasPermissionRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (roleHasPermissionRes []domain.RoleHasPermission, err error) {
-	db.Find(&roleHasPermissionRes)
+func (repository RoleHasPermissionRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (roleHasPermissionRes []web.RoleHasPermissionGet, err error) {
+	qry := db.Table("role_has_permissions").Select("role_has_permissions.*", "permissions.name as permission_name")
+	for k, v := range ctx.QueryParams() {
+		if v[0] != "" {
+			qry = qry.Where(k+" = ?", v[0])
+		}
+	}
+	qry.Joins("JOIN permissions on permissions.id = role_has_permissions.permission_id").Scan(&roleHasPermissionRes)
 	return roleHasPermissionRes, nil
 }
 

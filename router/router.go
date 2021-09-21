@@ -203,6 +203,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/divisions", divisionController.FindAll)
 	api.GET("/divisions/:id", divisionController.FindById)
 	api.POST("/divisions", divisionController.Create)
+	api.POST("/division_datatables", divisionController.Datatable)
 	api.PUT("/divisions/:id", divisionController.Update)
 	api.DELETE("/divisions/:id", divisionController.Delete)
 	

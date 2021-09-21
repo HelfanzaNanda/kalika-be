@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
 )
 
 type (
@@ -15,6 +16,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, division *domain.Division) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Division, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Division, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.DivisionDatatable, int64, int64, error)
 	}
 
 	DivisionRepositoryImpl struct {
@@ -57,5 +59,19 @@ func (repository DivisionRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB,
 func (repository DivisionRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (divisionRes []domain.Division, err error) {
 	db.Find(&divisionRes)
 	return divisionRes, nil
+}
+
+func (repository DivisionRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (divisionRes []web.DivisionDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("divisions").Select("id, name, active, created_at, updated_at")
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(id = ? OR name LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Find(&divisionRes)
+	return divisionRes, totalData, totalFiltered, nil
 }
 

@@ -29,6 +29,7 @@ func NewDivisionRepository() DivisionRepository {
 }
 
 func (repository DivisionRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, division *domain.Division) (domain.Division, error) {
+	division.Active = true
 	db.Create(&division)
 	divisionRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(division.Id))
 	return divisionRes, nil
@@ -71,6 +72,7 @@ func (repository DivisionRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
 	}
+	qry.Order("id desc")
 	qry.Find(&divisionRes)
 	return divisionRes, totalData, totalFiltered, nil
 }

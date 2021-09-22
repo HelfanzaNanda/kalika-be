@@ -37,6 +37,7 @@ func NewDivisionService(DivisionRepository repository.DivisionRepository, db *go
 }
 
 func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	divisionRepo := domain.Division{}
 	o := new(domain.Division)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
@@ -45,7 +46,11 @@ func (service *DivisionServiceImpl) Create(ctx echo.Context) (res web.Response, 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	divisionRepo, err := service.DivisionRepository.Create(ctx, tx, o)
+	if o.Id > 0 {
+		divisionRepo, err = service.DivisionRepository.Update(ctx, tx, o)
+	} else {
+		divisionRepo, err = service.DivisionRepository.Create(ctx, tx, o)
+	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}

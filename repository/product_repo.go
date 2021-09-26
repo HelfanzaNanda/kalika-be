@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,6 +17,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, product *domain.Product) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Product, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Product, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ProductDatatable, int64, int64, error)
 	}
 
 	ProductRepositoryImpl struct {
@@ -59,3 +62,32 @@ func (repository ProductRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (
 	return productRes, nil
 }
 
+
+func (repository ProductRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.ProductDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("products").
+	Select(`
+		products.id, products.name, products.stock_minimum, products.production_minimum, 
+		products.active, products.is_custom_price, products.is_custom_product,
+		divisions.id division_id, divisions.name division_name,
+		categories.id category_id, categories.name category_name,
+		cake_variants.id cake_variant_id, cake_variants.name cake_variant_name,
+		cake_types.id cake_type_id, cake_types.name cake_type_name
+	`).
+	Joins(`
+		left join divisions on divisions.id = products.division_id
+		left join categories on categories.id = products.category_id
+		left join cake_variants on cake_variants.id = products.cake_variant_id
+		left join cake_types on cake_types.id = products.cake_type_id
+	`)
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(products.id = ? OR products.name LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("products.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}

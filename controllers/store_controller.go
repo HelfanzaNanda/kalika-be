@@ -14,6 +14,7 @@ type StoreController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type StoreControllerImpl struct {
 		StoreService services.StoreService
@@ -56,4 +57,9 @@ func (dc *StoreControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	storeResponse, _ := dc.StoreService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(storeResponse.Code, storeResponse)
+}
+
+func (dc *StoreControllerImpl) Datatable(ctx echo.Context) error {
+	storeResponse, _ := dc.StoreService.Datatable(ctx)
+	return ctx.JSON(202, storeResponse)
 }

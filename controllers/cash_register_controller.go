@@ -14,6 +14,7 @@ type CashRegisterController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type CashRegisterControllerImpl struct {
 		CashRegisterService services.CashRegisterService
@@ -56,4 +57,9 @@ func (dc *CashRegisterControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	cashRegisterResponse, _ := dc.CashRegisterService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(cashRegisterResponse.Code, cashRegisterResponse)
+}
+
+func (dc *CashRegisterControllerImpl) Datatable(ctx echo.Context) error {
+	cashRegisterResponse, _ := dc.CashRegisterService.Datatable(ctx)
+	return ctx.JSON(202, cashRegisterResponse)
 }

@@ -2,8 +2,11 @@ package services
 
 import (
 	//"fmt"
+	"strings"
+
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
+
 	//"kalika-be/config"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
@@ -18,6 +21,7 @@ type (
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
+		Datatable(ctx echo.Context) (res web.Datatable, err error)
 	}
 
 	PaymentMethodServiceImpl struct {
@@ -34,6 +38,7 @@ func NewPaymentMethodService(PaymentMethodRepository repository.PaymentMethodRep
 }
 
 func (service *PaymentMethodServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	paymentMethodRepo := domain.PaymentMethod{}
 	o := new(domain.PaymentMethod)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
@@ -42,7 +47,11 @@ func (service *PaymentMethodServiceImpl) Create(ctx echo.Context) (res web.Respo
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	paymentMethodRepo, err := service.PaymentMethodRepository.Create(ctx, tx, o)
+	if o.Id > 0 {
+		paymentMethodRepo, err = service.PaymentMethodRepository.Update(ctx, tx, o)
+	} else {
+		paymentMethodRepo, err = service.PaymentMethodRepository.Create(ctx, tx, o)
+	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
@@ -108,3 +117,36 @@ func (service PaymentMethodServiceImpl) FindAll(ctx echo.Context) (res web.Respo
 	return helpers.Response("OK", "Sukses Mengambil Data", paymentMethodRepo), err
 }
 
+func (service *PaymentMethodServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
+	params,_ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+
+	divisionRepo, totalData, totalFiltered, _ := service.PaymentMethodRepository.Datatable(ctx, tx, draw, limit, start, search)
+	// if err != nil {
+	// 	return helpers.Response(err.Error(), "", nil), err
+	// }
+
+	var data []interface{}
+	for _, v := range divisionRepo {
+		v.Action = `<div class="flex">`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `</div>`
+
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
+}

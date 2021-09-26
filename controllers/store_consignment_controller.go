@@ -1,11 +1,10 @@
 package controllers
 
 import (
-	//"fmt"
-	"github.com/labstack/echo"
 	"kalika-be/helpers"
 	"kalika-be/services"
-	//"net/http"
+	"github.com/labstack/echo"
+
 )
 
 type StoreConsignmentController interface {
@@ -14,6 +13,7 @@ type StoreConsignmentController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type StoreConsignmentControllerImpl struct {
 		StoreConsignmentService services.StoreConsignmentService
@@ -39,6 +39,7 @@ func (dc *StoreConsignmentControllerImpl) FindAll(ctx echo.Context) error {
 }
 
 func (dc *StoreConsignmentControllerImpl) Create(ctx echo.Context) error {
+
 	storeConsignmentResponse, _ := dc.StoreConsignmentService.Create(ctx)
 
 	return ctx.JSON(storeConsignmentResponse.Code, storeConsignmentResponse)
@@ -56,4 +57,9 @@ func (dc *StoreConsignmentControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	storeConsignmentResponse, _ := dc.StoreConsignmentService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(storeConsignmentResponse.Code, storeConsignmentResponse)
+}
+
+func (dc *StoreConsignmentControllerImpl) Datatable(ctx echo.Context) error {
+	storeConsignmentResponse, _ := dc.StoreConsignmentService.Datatable(ctx)
+	return ctx.JSON(202, storeConsignmentResponse)
 }

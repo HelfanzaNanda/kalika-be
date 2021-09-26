@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,6 +17,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, cashRegister *domain.CashRegister) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.CashRegister, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.CashRegister, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.CashRegisterDatatable, int64, int64, error)
 	}
 
 	CashRegisterRepositoryImpl struct {
@@ -59,3 +62,21 @@ func (repository CashRegisterRepositoryImpl) FindAll(ctx echo.Context, db *gorm.
 	return cashRegisterRes, nil
 }
 
+func (repository CashRegisterRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.CashRegisterDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("cash_registers").
+		Select(` stores.id store_id, stores.name store_name, 
+			cash_registers.id, cash_registers.cash_in_hand, cash_registers.status, cash_registers.created_by
+		`).
+		Joins("left join stores on stores.id = cash_registers.store_id")
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(cash_registers.id = ? OR stores.name LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("cash_registers.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}

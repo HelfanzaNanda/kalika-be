@@ -14,6 +14,7 @@ type SupplierController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type SupplierControllerImpl struct {
 		SupplierService services.SupplierService
@@ -56,4 +57,9 @@ func (dc *SupplierControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	supplierResponse, _ := dc.SupplierService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(supplierResponse.Code, supplierResponse)
+}
+
+func (dc *SupplierControllerImpl) Datatable(ctx echo.Context) error {
+	supploerResponse, _ := dc.SupplierService.Datatable(ctx)
+	return ctx.JSON(202, supploerResponse)
 }

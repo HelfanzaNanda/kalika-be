@@ -14,6 +14,7 @@ type ProductController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type ProductControllerImpl struct {
 		ProductService services.ProductService
@@ -56,4 +57,9 @@ func (dc *ProductControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	productResponse, _ := dc.ProductService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(productResponse.Code, productResponse)
+}
+
+func (dc *ProductControllerImpl) Datatable(ctx echo.Context) error {
+	productResponse, _ := dc.ProductService.Datatable(ctx)
+	return ctx.JSON(202, productResponse)
 }

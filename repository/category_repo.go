@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 	"kalika-be/helpers"
@@ -27,6 +28,7 @@ func NewCategoryRepository() CategoryRepository {
 }
 
 func (repository CategoryRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, category *domain.Category) (domain.Category, error) {
+	fmt.Println(category.DivisionId)
 	db.Create(&category)
 	categoryRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(category.Id))
 	return categoryRes, nil

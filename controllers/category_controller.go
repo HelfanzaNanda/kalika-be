@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	//"fmt"
 	"github.com/labstack/echo"
 	"kalika-be/helpers"
 	"kalika-be/services"

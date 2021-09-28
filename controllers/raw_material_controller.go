@@ -14,6 +14,7 @@ type RawMaterialController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type RawMaterialControllerImpl struct {
 		RawMaterialService services.RawMaterialService
@@ -56,4 +57,9 @@ func (dc *RawMaterialControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	rawMaterialResponse, _ := dc.RawMaterialService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(rawMaterialResponse.Code, rawMaterialResponse)
+}
+
+func (dc *RawMaterialControllerImpl) Datatable(ctx echo.Context) error {
+	rawMaterialResponse, _ := dc.RawMaterialService.Datatable(ctx)
+	return ctx.JSON(202, rawMaterialResponse)
 }

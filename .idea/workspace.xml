@@ -5,9 +5,69 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3dbea7a9-1d8a-4844-bae1-64bfcc57e984" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/models/web/cake_type_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/cake_variant_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/cash_register_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/category_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/customer_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/payment_method_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/product_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/raw_material_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/seller_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/store_consignment_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/store_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/supplier_datatable.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/web/unit_datatable.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/cake_type_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/cake_type_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/cake_variant_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/cake_variant_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/cash_register_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/cash_register_controller.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controllers/category_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/category_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/customer_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/customer_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/payment_method_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/payment_method_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/product_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/product_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/raw_material_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/raw_material_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/seller_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/seller_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/store_consignment_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/store_consignment_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/store_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/store_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/supplier_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/supplier_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/unit_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/unit_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/cash_register.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/cash_register.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/payment.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/payment.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/role_has_permission.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/role_has_permission.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/web/datatable.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/web/datatable.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/cake_type_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/cake_type_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/cake_variant_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/cake_variant_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/cash_register_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/cash_register_repo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repository/category_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/category_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/customer_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/customer_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/payment_method_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/payment_method_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/product_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/product_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/raw_material_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/raw_material_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/selller_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/selller_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/store_consignment_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/store_consignment_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/store_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/store_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/supplier_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/supplier_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/unit_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/unit_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/cake_type_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/cake_type_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/cake_variant_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/cake_variant_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/cash_register_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/cash_register_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/category_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/category_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/customer_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/customer_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/division_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/division_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/payment_method_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/payment_method_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/product_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/product_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/raw_material_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/raw_material_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/sales_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/seller_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/seller_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/store_consignment_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/store_consignment_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/store_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/store_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/supplier_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/supplier_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/unit_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/unit_service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

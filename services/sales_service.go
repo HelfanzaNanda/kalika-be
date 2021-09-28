@@ -2,8 +2,10 @@ package services
 
 import (
 	//"fmt"
+
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
+
 	//"kalika-be/config"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
@@ -107,4 +109,3 @@ func (service SalesServiceImpl) FindAll(ctx echo.Context) (res web.Response, err
 
 	return helpers.Response("OK", "Sukses Mengambil Data", salesRepo), err
 }
-

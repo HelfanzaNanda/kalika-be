@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo"
 	"kalika-be/helpers"
 	"kalika-be/services"
-	//"net/http"
 )
 
 type CategoryController interface {
@@ -13,6 +12,7 @@ type CategoryController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type CategoryControllerImpl struct {
 		CategoryService services.CategoryService
@@ -55,4 +55,9 @@ func (dc *CategoryControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	categoryResponse, _ := dc.CategoryService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(categoryResponse.Code, categoryResponse)
+}
+
+func (dc *CategoryControllerImpl) Datatable(ctx echo.Context) error {
+	categoryResponse, _ := dc.CategoryService.Datatable(ctx)
+	return ctx.JSON(202, categoryResponse)
 }

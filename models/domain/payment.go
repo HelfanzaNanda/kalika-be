@@ -6,7 +6,7 @@ import (
 type Payment struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
 	Number string `json:"number"`
-	StoreId string `json:"store_id"`
+	StoreId int `json:"store_id"`
 	Model string `json:"model"`
 	ModelId int `json:"model_id"`
 	CashRegisterId int `json:"cash_register_id"`

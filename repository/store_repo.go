@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,6 +17,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, store *domain.Store) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Store, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Store, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.StoreDatatable, int64, int64, error)
 	}
 
 	StoreRepositoryImpl struct {
@@ -59,3 +62,17 @@ func (repository StoreRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (st
 	return storeRes, nil
 }
 
+func (repository StoreRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.StoreDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("stores")
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(id = ? OR name LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}

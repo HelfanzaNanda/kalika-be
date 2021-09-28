@@ -14,6 +14,7 @@ type CakeTypeController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type CakeTypeControllerImpl struct {
 		CakeTypeService services.CakeTypeService
@@ -56,4 +57,9 @@ func (dc *CakeTypeControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	cakeTypeResponse, _ := dc.CakeTypeService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(cakeTypeResponse.Code, cakeTypeResponse)
+}
+
+func (dc *CakeTypeControllerImpl) Datatable(ctx echo.Context) error {
+	cakeTypeResponse, _ := dc.CakeTypeService.Datatable(ctx)
+	return ctx.JSON(202, cakeTypeResponse)
 }

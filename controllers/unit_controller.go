@@ -14,6 +14,7 @@ type UnitController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type UnitControllerImpl struct {
 		UnitService services.UnitService
@@ -56,4 +57,9 @@ func (dc *UnitControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	unitResponse, _ := dc.UnitService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(unitResponse.Code, unitResponse)
+}
+
+func (dc *UnitControllerImpl) Datatable(ctx echo.Context) error {
+	unitResponse, _ := dc.UnitService.Datatable(ctx)
+	return ctx.JSON(202, unitResponse)
 }

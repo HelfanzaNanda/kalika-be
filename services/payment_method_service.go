@@ -133,7 +133,7 @@ func (service *PaymentMethodServiceImpl) Datatable(ctx echo.Context) (res web.Da
 	// 	return helpers.Response(err.Error(), "", nil), err
 	// }
 
-	var data []interface{}
+	data := make([]interface{}, 0)
 	for _, v := range divisionRepo {
 		v.Action = `<div class="flex">`
 		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`

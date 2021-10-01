@@ -15,6 +15,7 @@ type (
 		Update(ctx echo.Context) error
 		Delete(ctx echo.Context) error
 		Login(ctx echo.Context) error
+		Datatable(ctx echo.Context) error
 	}
 
 	UserControllerImpl struct {
@@ -71,4 +72,10 @@ func (uc *UserControllerImpl) Login(ctx echo.Context) error {
 		}
 	}
 	return ctx.JSON(http.StatusOK, userResponse)
+}
+
+func (uc *UserControllerImpl) Datatable(ctx echo.Context) error {
+	divisionResponse, _ := uc.UserService.Datatable(ctx)
+
+	return ctx.JSON(202, divisionResponse)
 }

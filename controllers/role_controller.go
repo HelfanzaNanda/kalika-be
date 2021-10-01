@@ -14,6 +14,7 @@ type RoleController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type RoleControllerImpl struct {
 		RoleService services.RoleService
@@ -56,4 +57,10 @@ func (dc *RoleControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	roleResponse, _ := dc.RoleService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(roleResponse.Code, roleResponse)
+}
+
+func (dc *RoleControllerImpl) Datatable(ctx echo.Context) error {
+	roleResponse, _ := dc.RoleService.Datatable(ctx)
+
+	return ctx.JSON(202, roleResponse)
 }

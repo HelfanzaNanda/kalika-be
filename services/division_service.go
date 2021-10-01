@@ -128,11 +128,8 @@ func (service *DivisionServiceImpl) Datatable(ctx echo.Context) (res web.Datatab
 	search := strings.TrimSpace(params.Get("search[value]"))
 
 	divisionRepo, totalData, totalFiltered, _ := service.DivisionRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
-	var data []interface{}
+	data := make([]interface{}, 0)
 	for _, v := range divisionRepo {
 		v.Action = `<div class="flex">`
 		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`

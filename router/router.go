@@ -144,7 +144,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	purchaseOrderDeliveryRepository := repository.NewPurchaseOrderDeliveryRepository()
 	purchaseOrderDeliveryService := services.NewPurchaseOrderDeliveryService(purchaseOrderDeliveryRepository, db)
 	purchaseOrderDeliveryController := controllers.NewPurchaseOrderDeliveryController(purchaseOrderDeliveryService)
-	
+
 	purchaseOrderDeliveryDetailRepository := repository.NewPurchaseOrderDeliveryDetailRepository()
 	purchaseOrderDeliveryDetailService := services.NewPurchaseOrderDeliveryDetailService(purchaseOrderDeliveryDetailRepository, db)
 	purchaseOrderDeliveryDetailController := controllers.NewPurchaseOrderDeliveryDetailController(purchaseOrderDeliveryDetailService)
@@ -192,11 +192,15 @@ func Routes(db *gorm.DB) *echo.Echo {
 	rolehasPermissionRepository := repository.NewRoleHasPermissionRepository()
 	rolehasPermissionService := services.NewRoleHasPermissionService(rolehasPermissionRepository, db)
 	rolehasPermissionController := controllers.NewRoleHasPermissionController(rolehasPermissionService)
-	
+
+	permissionRepository := repository.NewPermissionRepository()
+	permissionService := services.NewPermissionService(permissionRepository, db)
+	permissionController := controllers.NewPermissionController(permissionService)
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)
 	api.POST("/users", userController.Create)
+	api.POST("/user_datatables", userController.Datatable)
 	api.PUT("/users/:id", userController.Update)
 	api.DELETE("/users/:id", userController.Delete)
 
@@ -445,14 +449,21 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/roles", roleController.FindAll)
 	api.GET("/roles/:id", roleController.FindById)
 	api.POST("/roles", roleController.Create)
+	api.POST("/role_datatables", roleController.Datatable)
 	api.PUT("/roles/:id", roleController.Update)
 	api.DELETE("/roles/:id", roleController.Delete)
-	
+
 	api.GET("/role_has_permissions", rolehasPermissionController.FindAll)
 	api.GET("/role_has_permissions/:id", rolehasPermissionController.FindById)
 	api.POST("/role_has_permissions", rolehasPermissionController.Create)
 	api.PUT("/role_has_permissions/:id", rolehasPermissionController.Update)
-	api.DELETE("/role_has_permissions/:id", rolehasPermissionController.Delete)
+	api.DELETE("/role_has_permissions", rolehasPermissionController.Delete)
+
+	api.GET("/permissions", permissionController.FindAll)
+	api.GET("/permissions/:id", permissionController.FindById)
+	api.POST("/permissions", permissionController.Create)
+	api.PUT("/permissions/:id", permissionController.Update)
+	api.DELETE("/permissions/:id", permissionController.Delete)
 
 	return e
 }

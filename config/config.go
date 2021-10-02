@@ -17,7 +17,7 @@ var Default = map[string]Config{
 	"DB_NAME": "kalika_pos",
 	"DB_PORT": "3306",
 	"DB_USER": "root",
-	"DB_PASSWORD": "",
+	"DB_PASSWORD": "root",
 	"DB_IS_DEBUG": "true",
 	"DB_MAX_OPEN_CONNS": "100",
 	"DB_MAX_IDLE_CONNS": "2",

@@ -303,6 +303,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/custom_orders", customOrderController.FindAll)
 	api.GET("/custom_orders/:id", customOrderController.FindById)
 	api.POST("/custom_orders", customOrderController.Create)
+	api.POST("/custom_order_datatables", customOrderController.Datatable)
 	api.PUT("/custom_orders/:id", customOrderController.Update)
 	api.DELETE("/custom_orders/:id", customOrderController.Delete)
 	
@@ -393,6 +394,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/sales", saleController.FindAll)
 	api.GET("/sales/:id", saleController.FindById)
 	api.POST("/sales", saleController.Create)
+	api.POST("/sale_datatables", saleController.Datatable)
 	api.PUT("/sales/:id", saleController.Update)
 	api.DELETE("/sales/:id", saleController.Delete)
 	

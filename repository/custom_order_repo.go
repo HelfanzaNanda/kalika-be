@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,6 +17,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.CustomOrder, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.CustomOrder, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.CustomOrderDatatable, int64, int64, error)
 	}
 
 	CustomOrderRepositoryImpl struct {
@@ -59,3 +62,27 @@ func (repository CustomOrderRepositoryImpl) FindAll(ctx echo.Context, db *gorm.D
 	return customOrderRes, nil
 }
 
+func (repository CustomOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.CustomOrderDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("custom_orders").
+		Select(`
+			custom_orders.*,
+			products.id product_id, products.name product_name, 
+			stores.id store_id, stores.name store_name
+		`).
+		Joins(`
+			left join stores on stores.id = custom_orders.store_id
+			left join products on products.id = custom_orders.product_id
+		`)
+
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(custom_orders.id = ? OR custom_orders.cake_character LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("custom_orders.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}

@@ -14,6 +14,7 @@ type CustomOrderController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type CustomOrderControllerImpl struct {
 		CustomOrderService services.CustomOrderService
@@ -56,4 +57,9 @@ func (dc *CustomOrderControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	customOrderResponse, _ := dc.CustomOrderService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(customOrderResponse.Code, customOrderResponse)
+}
+
+func (dc *CustomOrderControllerImpl) Datatable(ctx echo.Context) error {
+	customOrderResponse, _ := dc.CustomOrderService.Datatable(ctx)
+	return ctx.JSON(202, customOrderResponse)
 }

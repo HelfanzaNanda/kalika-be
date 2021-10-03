@@ -2,17 +2,17 @@ package repository
 
 import (
 	"errors"
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
-
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
+	"time"
 )
 
 type (
 	SalesRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, sales *domain.Sale) (domain.Sale, error)
+		Create(ctx echo.Context, db *gorm.DB, sales *web.SalesPosPost) (domain.Sale, error)
 		Update(ctx echo.Context, db *gorm.DB, sales *domain.Sale) (domain.Sale, error)
 		Delete(ctx echo.Context, db *gorm.DB, sales *domain.Sale) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Sale, error)
@@ -29,9 +29,33 @@ func NewSalesRepository() SalesRepository {
 	return &SalesRepositoryImpl{}
 }
 
-func (repository SalesRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, sales *domain.Sale) (domain.Sale, error) {
-	db.Create(&sales)
-	salesRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(sales.Id))
+func (repository SalesRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, sales *web.SalesPosPost) (domain.Sale, error) {
+	m := domain.Sale{}
+
+	m.Number = "INV"+helpers.IntToString(int(time.Now().Unix()))
+	m.StoreId = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["store_id"].(string))
+	m.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	m.CustomerPay = sales.CustomerPay
+	m.CustomerChange = sales.CustomerChange
+	m.Total = sales.Total
+	m.DiscountValue = sales.DiscountValue
+	m.DiscountPercentage = sales.DiscountPercentage
+	m.CustomerId = sales.Customer.Id
+
+	if sales.CustomerPay < 1 {
+		m.PaymentStatus = "pending"
+	} else if sales.CustomerPay < sales.Total {
+		m.PaymentStatus = "down_payment"
+	} else {
+		m.PaymentStatus = "complete"
+	}
+
+	if sales.SaleStatus == "" {
+		m.SaleStatus = "complete"
+	}
+
+	db.Create(&m)
+	salesRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(m.Id))
 	return salesRes, nil
 }
 

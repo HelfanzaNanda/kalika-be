@@ -148,15 +148,11 @@ func Routes(db *gorm.DB) *echo.Echo {
 	purchaseOrderDeliveryDetailRepository := repository.NewPurchaseOrderDeliveryDetailRepository()
 	purchaseOrderDeliveryDetailService := services.NewPurchaseOrderDeliveryDetailService(purchaseOrderDeliveryDetailRepository, db)
 	purchaseOrderDeliveryDetailController := controllers.NewPurchaseOrderDeliveryDetailController(purchaseOrderDeliveryDetailService)
-	
-	saleRepository := repository.NewSalesRepository()
-	saleService := services.NewSalesService(saleRepository, db)
-	saleController := controllers.NewSaleController(saleService)
 
 	salesDetailRepository := repository.NewSalesDetailRepository()
 	salesDetailService := services.NewSalesDetailService(salesDetailRepository, db)
 	salesDetailController := controllers.NewSalesDetailController(salesDetailService)
-	
+
 	salesReturnRepository := repository.NewSalesReturnRepository()
 	salesReturnService := services.NewSalesReturnService(salesReturnRepository, db)
 	salesReturnController := controllers.NewSalesReturnController(salesReturnService)
@@ -180,7 +176,11 @@ func Routes(db *gorm.DB) *echo.Echo {
 	paymentRepository := repository.NewPaymentRepository()
 	paymentService := services.NewPaymentService(paymentRepository, db)
 	paymentController := controllers.NewPaymentController(paymentService)
-	
+
+	saleRepository := repository.NewSalesRepository()
+	saleService := services.NewSalesService(saleRepository, salesDetailRepository, paymentRepository, customerRepository, db)
+	saleController := controllers.NewSaleController(saleService)
+
 	productRepository := repository.NewProductRepository()
 	productService := services.NewProductService(productRepository, db)
 	productController := controllers.NewProductController(productService)
@@ -400,7 +400,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	
 	api.GET("/sales_details", salesDetailController.FindAll)
 	api.GET("/sales_details/:id", salesDetailController.FindById)
-	api.POST("/sales_details", salesDetailController.Create)
+	//api.POST("/sales_details", salesDetailController.Create)
 	api.PUT("/sales_details/:id", salesDetailController.Update)
 	api.DELETE("/sales_details/:id", salesDetailController.Delete)
 	

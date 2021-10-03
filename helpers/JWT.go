@@ -6,11 +6,12 @@ import (
 	"kalika-be/config"
 )
 
-func JwtGenerator(name, username, roleId, storeId, key string) string {
+func JwtGenerator(id, name, username, roleId, storeId, key string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":  id,
 		"username":  username,
 		"name":  name,
-		"roleId": roleId,
+		"role_id": roleId,
 		"store_id": storeId,
 	})
 

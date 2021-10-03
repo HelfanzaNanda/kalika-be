@@ -12,7 +12,7 @@ type Payment struct {
 	CashRegisterId int `json:"cash_register_id"`
 	Total float64 `json:"total"`
 	Change int `json:"change"`
-	PaymentMethod string `json:"payment_method"`
+	PaymentMethodId int `json:"payment_method_id"`
 	PaymentNote string `json:"payment_note"`
 	Date time.Time `json:"date"`
 	CreatedBy int `json:"created_by"`

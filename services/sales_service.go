@@ -4,6 +4,7 @@ import (
 	//"fmt"
 
 	"strings"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -27,19 +28,25 @@ type (
 
 	SalesServiceImpl struct {
 		SalesRepository repository.SalesRepository
+		SalesDetailRepository repository.SalesDetailRepository
+		PaymentRepository repository.PaymentRepository
+		CustomerRepository repository.CustomerRepository
 		db *gorm.DB
 	}
 )
 
-func NewSalesService(SalesRepository repository.SalesRepository, db *gorm.DB) SalesService {
+func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepository repository.SalesDetailRepository, PaymentRepository repository.PaymentRepository, CustomerRepository repository.CustomerRepository, db *gorm.DB) SalesService {
 	return &SalesServiceImpl{
 		SalesRepository: SalesRepository,
+		SalesDetailRepository: SalesDetailRepository,
+		PaymentRepository: PaymentRepository,
+		CustomerRepository: CustomerRepository,
 		db: db,
 	}
 }
 
 func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.Sale)
+	o := new(web.SalesPosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -47,12 +54,38 @@ func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
+	if o.Customer.Name != "" || o.Customer.Phone != "" {
+		customerRepo, err := service.CustomerRepository.Create(ctx, tx, &o.Customer)
+		if err != nil {
+			return helpers.Response(err.Error(), "", nil), err
+		}
+		o.Customer = customerRepo
+	}
+
 	salesRepo, err := service.SalesRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
+	o.Sale = salesRepo
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", salesRepo), err
+	salesDetailRepo, err := service.SalesDetailRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+	o.SalesDetails = salesDetailRepo
+
+	o.Payment.Model = "Sales"
+	o.Payment.ModelId = o.Id
+	o.Payment.StoreId = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["store_id"].(string))
+	o.Payment.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	o.Payment.Date = time.Now()
+	paymentRepo, err := service.PaymentRepository.Create(ctx, tx, &o.Payment)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+	o.Payment = paymentRepo
+
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", o), err
 }
 
 func (service SalesServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {

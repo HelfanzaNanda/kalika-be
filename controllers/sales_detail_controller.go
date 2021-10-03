@@ -11,7 +11,7 @@ import (
 type SalesDetailController interface {
 	FindById(ctx echo.Context) error
 	FindAll(ctx echo.Context) error
-	Create(ctx echo.Context) error
+	//Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
@@ -38,11 +38,11 @@ func (dc *SalesDetailControllerImpl) FindAll(ctx echo.Context) error {
 	return ctx.JSON(salesDetailResponse.Code, salesDetailResponse)
 }
 
-func (dc *SalesDetailControllerImpl) Create(ctx echo.Context) error {
-	salesDetailResponse, _ := dc.SalesDetailService.Create(ctx)
-
-	return ctx.JSON(salesDetailResponse.Code, salesDetailResponse)
-}
+//func (dc *SalesDetailControllerImpl) Create(ctx echo.Context) error {
+//	salesDetailResponse, _ := dc.SalesDetailService.Create(ctx)
+//
+//	return ctx.JSON(salesDetailResponse.Code, salesDetailResponse)
+//}
 
 func (dc *SalesDetailControllerImpl) Update(ctx echo.Context) error {
 	id := ctx.Param("id")

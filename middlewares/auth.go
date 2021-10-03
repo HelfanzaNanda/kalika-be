@@ -9,7 +9,7 @@ import (
 func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// DISABLED ONPRODUCTION
-		return next(c)
+		//return next(c)
 
 		headerAuthorization := c.Request().Header.Get(echo.HeaderAuthorization)
 		if !strings.Contains(headerAuthorization, "Bearer") {

@@ -277,6 +277,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/expense_categories", expenseCategoryController.FindAll)
 	api.GET("/expense_categories/:id", expenseCategoryController.FindById)
 	api.POST("/expense_categories", expenseCategoryController.Create)
+	api.POST("/expense_category_datatables", expenseCategoryController.Datatable)
 	api.PUT("/expense_categories/:id", expenseCategoryController.Update)
 	api.DELETE("/expense_categories/:id", expenseCategoryController.Delete)
 	
@@ -334,6 +335,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/expenses", expenseController.FindAll)
 	api.GET("/expenses/:id", expenseController.FindById)
 	api.POST("/expenses", expenseController.Create)
+	api.POST("/expense_datatables", expenseCategoryController.Datatable)
 	api.PUT("/expenses/:id", expenseController.Update)
 	api.DELETE("/expenses/:id", expenseController.Delete)
 	

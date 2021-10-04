@@ -16,7 +16,7 @@ type (
 		Update(ctx echo.Context, db *gorm.DB, category *domain.Category) (domain.Category, error)
 		Delete(ctx echo.Context, db *gorm.DB, category *domain.Category) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Category, error)
-		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Category, error)
+		FindAll(ctx echo.Context, db *gorm.DB) ([]web.CategoryGetPos, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.CategoryDatatable, int64, int64, error)
 	}
 
@@ -57,8 +57,14 @@ func (repository CategoryRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB,
 	return categoryRes, nil
 }
 
-func (repository CategoryRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (categoryRes []domain.Category, err error) {
-	db.Find(&categoryRes)
+func (repository CategoryRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (categoryRes []web.CategoryGetPos, err error) {
+	qry := db.Table("categories").Select("categories.*, (SELECT COUNT(products.id) FROM products WHERE products.category_id = categories.id) AS total_product")
+	for k, v := range ctx.QueryParams() {
+		if v[0] != "" && k != "id" {
+			qry = qry.Where(k+" = ?", v[0])
+		}
+	}
+	qry.Scan(&categoryRes)
 	return categoryRes, nil
 }
 

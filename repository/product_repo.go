@@ -58,7 +58,13 @@ func (repository ProductRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, 
 }
 
 func (repository ProductRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (productRes []domain.Product, err error) {
-	db.Find(&productRes)
+	qry := db.Table("products").Select("products.*")
+	for k, v := range ctx.QueryParams() {
+		if v[0] != "" && k != "id" {
+			qry = qry.Where(k+" = ?", v[0])
+		}
+	}
+	qry.Scan(&productRes)
 	return productRes, nil
 }
 

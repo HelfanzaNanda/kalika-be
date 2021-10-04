@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"time"
 )
 
 type (
@@ -27,6 +28,7 @@ func NewPaymentRepository() PaymentRepository {
 }
 
 func (repository PaymentRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (domain.Payment, error) {
+	payment.Number = "PY"+helpers.IntToString(int(time.Now().Unix()))
 	db.Create(&payment)
 	paymentRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(payment.Id))
 	return paymentRes, nil

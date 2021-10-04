@@ -138,12 +138,13 @@ func (u *UserServiceImpl) Login(ctx echo.Context) (map[string]interface{}, error
 		return res, err
 	}
 
+	l.Id = userRepo.Id
 	l.Username = userRepo.Username
 	l.Name = userRepo.Name
 	l.RoleId = userRepo.RoleId
 	l.StoreId = userRepo.StoreId
 
-	l.Token = helpers.JwtGenerator(userRepo.Name, userRepo.Username, helpers.IntToString(userRepo.RoleId), helpers.IntToString(userRepo.StoreId), config.Get("JWT_KEY").String())
+	l.Token = helpers.JwtGenerator(helpers.IntToString(userRepo.Id), userRepo.Name, userRepo.Username, helpers.IntToString(userRepo.RoleId), helpers.IntToString(userRepo.StoreId), config.Get("JWT_KEY").String())
 
 	toMap, err := helpers.StructToMap(l)
 	if err != nil {

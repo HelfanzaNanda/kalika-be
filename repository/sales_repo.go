@@ -59,8 +59,13 @@ func (repository SalesRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, sale
 	return salesRes, nil
 }
 
-func (repository SalesRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, sales *domain.Sale) (domain.Sale, error) {
-	db.Where("id = ?", sales.Id).Updates(&sales)
+func (repository SalesRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, sales *domain.Sale) (res domain.Sale, err error) {
+	if err := db.Where("id = ?", sales.Id).First(&res).Error; err != nil {
+		return res, errors.New("NOT_FOUND|penjualan tidak ditemukan")
+	}
+
+	db.Model(&res).Updates(&sales)
+
 	salesRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(sales.Id))
 	return salesRes, nil
 }
@@ -82,7 +87,7 @@ func (repository SalesRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, ke
 }
 
 func (repository SalesRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (salesRes []domain.Sale, err error) {
-	db.Find(&salesRes)
+	db.Order("sales.id desc").Find(&salesRes)
 	return salesRes, nil
 }
 

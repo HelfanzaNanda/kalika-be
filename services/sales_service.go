@@ -46,6 +46,7 @@ func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepo
 }
 
 func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	message := "Sukses Menyimpan Data"
 	o := new(web.SalesPosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
@@ -54,38 +55,59 @@ func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	if o.Customer.Name != "" || o.Customer.Phone != "" {
-		customerRepo, err := service.CustomerRepository.Create(ctx, tx, &o.Customer)
-		if err != nil {
-			return helpers.Response(err.Error(), "", nil), err
-		}
-		o.Customer = customerRepo
-	}
+	customerRepo := domain.Customer{}
+	salesRepo := domain.Sale{}
+	salesDetailRepo := []web.SalesDetailPosGet{}
+	paymentRepo := domain.Payment{}
 
-	salesRepo, err := service.SalesRepository.Create(ctx, tx, o)
+	if o.Customer.Id > 0 {
+		customerRepo, err = service.CustomerRepository.Update(ctx, tx, &o.Customer)
+	} else if o.Customer.Name != "" || o.Customer.Phone != "" {
+		customerRepo, err = service.CustomerRepository.Create(ctx, tx, &o.Customer)
+	}
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+	o.Customer = customerRepo
+
+	if o.Id > 0 {
+		message = "Sukses Memperbarui Data"
+		salesRepo, err = service.SalesRepository.Update(ctx, tx, &o.Sale)
+	} else {
+		salesRepo, err = service.SalesRepository.Create(ctx, tx, o)
+	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.Sale = salesRepo
 
-	salesDetailRepo, err := service.SalesDetailRepository.Create(ctx, tx, o)
+	if o.Id > 0 {
+		service.SalesDetailRepository.DeleteBySales(ctx, tx, o.Id)
+		salesDetailRepo, err = service.SalesDetailRepository.Create(ctx, tx, o)
+	} else {
+		salesDetailRepo, err = service.SalesDetailRepository.Create(ctx, tx, o)
+	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.SalesDetails = salesDetailRepo
 
-	o.Payment.Model = "Sales"
-	o.Payment.ModelId = o.Id
-	o.Payment.StoreId = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["store_id"].(string))
-	o.Payment.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
-	o.Payment.Date = time.Now()
-	paymentRepo, err := service.PaymentRepository.Create(ctx, tx, &o.Payment)
+	if o.Payment.Id > 0 {
+		paymentRepo, err = service.PaymentRepository.Update(ctx, tx, &o.Payment)
+	} else {
+		o.Payment.Model = "Sales"
+		o.Payment.ModelId = o.Id
+		o.Payment.StoreId = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["store_id"].(string))
+		o.Payment.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+		o.Payment.Date = time.Now()
+		paymentRepo, err = service.PaymentRepository.Create(ctx, tx, &o.Payment)
+	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.Payment = paymentRepo
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", o), err
+	return helpers.Response("CREATED", message, o), err
 }
 
 func (service SalesServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
@@ -125,16 +147,29 @@ func (service SalesServiceImpl) Delete(ctx echo.Context, id int) (res web.Respon
 }
 
 func (service SalesServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+	salesPos := web.SalesPosPost{}
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
 	salesRepo, err := service.SalesRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	customerRepo, err := service.CustomerRepository.FindById(ctx, tx, "id", helpers.IntToString(salesRepo.CustomerId))
+	paymentSearch := make(map[string][]string)
+	paymentSearch["model_id"] = append(paymentSearch["model_id"], helpers.IntToString(salesRepo.Id))
+	paymentRepo, err := service.PaymentRepository.FindById(ctx, tx, "model", "Sales", paymentSearch)
+	salesDetailSearch := make(map[string][]string)
+	salesDetailSearch["sales_id"] = append(paymentSearch["model_id"], helpers.IntToString(salesRepo.Id))
+	salesDetailRepo, err := service.SalesDetailRepository.FindAll(ctx, tx, salesDetailSearch)
+
+	salesPos.Sale = salesRepo
+	salesPos.Payment = paymentRepo
+	salesPos.Customer = customerRepo
+	salesPos.SalesDetails = salesDetailRepo
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", salesRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", salesPos), err
 }
 
 func (service SalesServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {

@@ -103,7 +103,7 @@ func (service SalesDetailServiceImpl) FindAll(ctx echo.Context) (res web.Respons
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	salesDetailRepo, err := service.SalesDetailRepository.FindAll(ctx, tx)
+	salesDetailRepo, err := service.SalesDetailRepository.FindAll(ctx, tx, map[string][]string{})
 
 	return helpers.Response("OK", "Sukses Mengambil Data", salesDetailRepo), err
 }

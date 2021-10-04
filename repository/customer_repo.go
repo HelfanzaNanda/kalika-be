@@ -2,12 +2,11 @@ package repository
 
 import (
 	"errors"
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
-
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 )
 
 type (
@@ -35,8 +34,13 @@ func (repository CustomerRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, c
 	return customerRes, nil
 }
 
-func (repository CustomerRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, customer *domain.Customer) (domain.Customer, error) {
-	db.Where("id = ?", customer.Id).Updates(&customer)
+func (repository CustomerRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, customer *domain.Customer) (res domain.Customer, err error) {
+	if err := db.Where("id = ?", customer.Id).First(&res).Error; err != nil {
+		return res, errors.New("NOT_FOUND|customer tidak ditemukan")
+	}
+
+	db.Model(&res).Updates(&customer)
+
 	customerRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(customer.Id))
 	return customerRes, nil
 }

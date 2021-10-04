@@ -90,7 +90,7 @@ func (service PaymentServiceImpl) FindById(ctx echo.Context, id int) (res web.Re
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	paymentRepo, err := service.PaymentRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	paymentRepo, err := service.PaymentRepository.FindById(ctx, tx, "id", helpers.IntToString(id), map[string][]string{})
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
@@ -103,7 +103,7 @@ func (service PaymentServiceImpl) FindAll(ctx echo.Context) (res web.Response, e
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	paymentRepo, err := service.PaymentRepository.FindAll(ctx, tx)
+	paymentRepo, err := service.PaymentRepository.FindAll(ctx, tx, map[string][]string{})
 
 	return helpers.Response("OK", "Sukses Mengambil Data", paymentRepo), err
 }

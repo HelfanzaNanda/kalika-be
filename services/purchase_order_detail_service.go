@@ -13,7 +13,7 @@ import (
 
 type (
 	PurchaseOrderDetailService interface {
-		Create(ctx echo.Context) (res web.Response, err error)
+		//Create(ctx echo.Context) (res web.Response, err error)
 		Update(ctx echo.Context, id int) (res web.Response, err error)
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
@@ -33,22 +33,22 @@ func NewPurchaseOrderDetailService(PurchaseOrderDetailRepository repository.Purc
 	}
 }
 
-func (service *PurchaseOrderDetailServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.PurchaseOrderDetail)
-	if err := ctx.Bind(o); err != nil {
-		return helpers.Response(err.Error(), "Error Data Binding", nil), err
-	}
-
-	tx := service.db.Begin()
-	defer helpers.CommitOrRollback(tx)
-
-	purchaseOrderDetailRepo, err := service.PurchaseOrderDetailRepository.Create(ctx, tx, o)
-	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
-	}
-
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", purchaseOrderDetailRepo), err
-}
+//func (service *PurchaseOrderDetailServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+//	o := new(domain.PurchaseOrderDetail)
+//	if err := ctx.Bind(o); err != nil {
+//		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+//	}
+//
+//	tx := service.db.Begin()
+//	defer helpers.CommitOrRollback(tx)
+//
+//	purchaseOrderDetailRepo, err := service.PurchaseOrderDetailRepository.Create(ctx, tx, o)
+//	if err != nil {
+//		return helpers.Response(err.Error(), "", nil), err
+//	}
+//
+//	return helpers.Response("CREATED", "Sukses Menyimpan Data", purchaseOrderDetailRepo), err
+//}
 
 func (service PurchaseOrderDetailServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
 	o := new(domain.PurchaseOrderDetail)
@@ -103,7 +103,7 @@ func (service PurchaseOrderDetailServiceImpl) FindAll(ctx echo.Context) (res web
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	purchaseOrderDetailRepo, err := service.PurchaseOrderDetailRepository.FindAll(ctx, tx)
+	purchaseOrderDetailRepo, err := service.PurchaseOrderDetailRepository.FindAll(ctx, tx, map[string][]string{})
 
 	return helpers.Response("OK", "Sukses Mengambil Data", purchaseOrderDetailRepo), err
 }

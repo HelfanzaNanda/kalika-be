@@ -34,7 +34,7 @@ func NewExpenseDetailService(ExpenseDetailRepository repository.ExpenseDetailRep
 }
 
 func (service *ExpenseDetailServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.ExpenseDetail)
+	o := new(web.ExpensePosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}

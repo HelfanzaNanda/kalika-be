@@ -1,8 +1,6 @@
 package services
 
 import (
-	//"encoding/json"
-	//"fmt"
 	"strings"
 
 	"github.com/labstack/echo"
@@ -27,34 +25,46 @@ type (
 
 	ExpenseServiceImpl struct {
 		ExpenseRepository repository.ExpenseRepository
+		ExpenseDetailRepository repository.ExpenseDetailRepository
 		db *gorm.DB
 	}
 )
 
-func NewExpenseService(ExpenseRepository repository.ExpenseRepository, db *gorm.DB) ExpenseService {
+func NewExpenseService(ExpenseRepository repository.ExpenseRepository, ExpenseDetailRepository repository.ExpenseDetailRepository, db *gorm.DB) ExpenseService {
 	return &ExpenseServiceImpl{
 		ExpenseRepository: ExpenseRepository,
+		ExpenseDetailRepository: ExpenseDetailRepository,
 		db: db,
 	}
 }
 
 func (service *ExpenseServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-
-	o := new(domain.Expense)
+	o := new(web.ExpensePosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
 
-
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
 	expenseRepo, err := service.ExpenseRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
+	o.Expense = expenseRepo
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", expenseRepo), err
+	expenseDetailRepo, err := service.ExpenseDetailRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+	o.ExpenseDetails = expenseDetailRepo.ExpenseDetails
+
+	modelExpense := new(domain.Expense)
+	modelExpense.Id = expenseRepo.Id
+	modelExpense.Total = expenseDetailRepo.Total
+	
+	service.ExpenseRepository.Update(ctx, tx, modelExpense)
+
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", o), err
 }
 
 func (service ExpenseServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {

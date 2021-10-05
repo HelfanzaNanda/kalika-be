@@ -5,6 +5,7 @@ import (
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -12,7 +13,7 @@ import (
 
 type (
 	ExpenseRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (domain.Expense, error)
+		Create(ctx echo.Context, db *gorm.DB, expense *web.ExpensePosPost) (domain.Expense, error)
 		Update(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (domain.Expense, error)
 		Delete(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Expense, error)
@@ -29,9 +30,15 @@ func NewExpenseRepository() ExpenseRepository {
 	return &ExpenseRepositoryImpl{}
 }
 
-func (repository ExpenseRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (domain.Expense, error) {
-	db.Create(&expense)
-	expenseRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(expense.Id))
+func (repository ExpenseRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, expense *web.ExpensePosPost) (domain.Expense, error) {
+	model := domain.Expense{}
+	model.Number = "CS"+helpers.IntToString(int(time.Now().Unix()))
+	model.Date = time.Now()
+	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	db.Create(&model)
+	
+
+	expenseRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(model.Id))
 	return expenseRes, nil
 }
 
@@ -63,7 +70,9 @@ func (repository ExpenseRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (
 }
 
 func (repository ExpenseRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.ExpenseDatatable, totalData int64, totalFiltered int64, err error) {
-	qry := db.Table("expenses")
+	qry := db.Table("expenses").
+	Select("expenses.*, users.name created_by_name").
+	Joins("left join users on users.id = expenses.created_by")
 
 	qry.Count(&totalData)
 	if search != "" {

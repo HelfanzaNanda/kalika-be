@@ -2,15 +2,17 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
 	ExpenseDetailRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (domain.ExpenseDetail, error)
+		Create(ctx echo.Context, db *gorm.DB, expenseDetail *web.ExpensePosPost) (web.ExpensePosPost, error)
 		Update(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (domain.ExpenseDetail, error)
 		Delete(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.ExpenseDetail, error)
@@ -26,10 +28,16 @@ func NewExpenseDetailRepository() ExpenseDetailRepository {
 	return &ExpenseDetailRepositoryImpl{}
 }
 
-func (repository ExpenseDetailRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (domain.ExpenseDetail, error) {
-	db.Create(&expenseDetail)
-	expenseDetailRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(expenseDetail.Id))
-	return expenseDetailRes, nil
+func (repository ExpenseDetailRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, expenseDetail *web.ExpensePosPost) (res web.ExpensePosPost, err error) {
+	var total float64 = 0
+	for _, val := range expenseDetail.ExpenseDetails {
+		val.ExpenseId = expenseDetail.Id
+		db.Create(&val)
+		total += val.Amount
+		res.ExpenseDetails = append(res.ExpenseDetails, val)
+	}
+	res.Total = total
+	return res, nil
 }
 
 func (repository ExpenseDetailRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (domain.ExpenseDetail, error) {

@@ -126,10 +126,6 @@ func Routes(db *gorm.DB) *echo.Echo {
 	purchaseReturnDetailService := services.NewPurchaseReturnDetailService(purchaseReturnDetailRepository, db)
 	purchaseReturnDetailController := controllers.NewPurchaseReturnDetailController(purchaseReturnDetailService)
 	
-	purchaseOrderRepository := repository.NewPurchaseOrderRepository()
-	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, db)
-	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
-	
 	purchaseOrderDetailRepository := repository.NewPurchaseOrderDetailRepository()
 	purchaseOrderDetailService := services.NewPurchaseOrderDetailService(purchaseOrderDetailRepository, db)
 	purchaseOrderDetailController := controllers.NewPurchaseOrderDetailController(purchaseOrderDetailService)
@@ -181,6 +177,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	saleRepository := repository.NewSalesRepository()
 	saleService := services.NewSalesService(saleRepository, salesDetailRepository, paymentRepository, customerRepository, db)
 	saleController := controllers.NewSaleController(saleService)
+
+	purchaseOrderRepository := repository.NewPurchaseOrderRepository()
+	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, purchaseOrderDetailRepository, paymentRepository, db)
+	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
 
 	productRepository := repository.NewProductRepository()
 	productService := services.NewProductService(productRepository, db)
@@ -361,12 +361,13 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/purchase_orders", purchaseOrderController.FindAll)
 	api.GET("/purchase_orders/:id", purchaseOrderController.FindById)
 	api.POST("/purchase_orders", purchaseOrderController.Create)
+	api.POST("/purchase_order_datatables", purchaseOrderController.Datatable)
 	api.PUT("/purchase_orders/:id", purchaseOrderController.Update)
 	api.DELETE("/purchase_orders/:id", purchaseOrderController.Delete)
 	
 	api.GET("/purchase_order_details", purchaseOrderDetailController.FindAll)
 	api.GET("/purchase_order_details/:id", purchaseOrderDetailController.FindById)
-	api.POST("/purchase_order_details", purchaseOrderDetailController.Create)
+	//api.POST("/purchase_order_details", purchaseOrderDetailController.Create)
 	api.PUT("/purchase_order_details/:id", purchaseOrderDetailController.Update)
 	api.DELETE("/purchase_order_details/:id", purchaseOrderDetailController.Delete)
 	

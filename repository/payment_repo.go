@@ -14,8 +14,8 @@ type (
 		Create(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (domain.Payment, error)
 		Update(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (domain.Payment, error)
 		Delete(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (bool, error)
-		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Payment, error)
-		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Payment, error)
+		FindById(ctx echo.Context, db *gorm.DB, key string, value string, params map[string][]string) (domain.Payment, error)
+		FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) ([]domain.Payment, error)
 	}
 
 	PaymentRepositoryImpl struct {
@@ -30,13 +30,18 @@ func NewPaymentRepository() PaymentRepository {
 func (repository PaymentRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (domain.Payment, error) {
 	payment.Number = "PY"+helpers.IntToString(int(time.Now().Unix()))
 	db.Create(&payment)
-	paymentRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(payment.Id))
+	paymentRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(payment.Id), map[string][]string{})
 	return paymentRes, nil
 }
 
-func (repository PaymentRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (domain.Payment, error) {
-	db.Where("id = ?", payment.Id).Updates(&payment)
-	paymentRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(payment.Id))
+func (repository PaymentRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, payment *domain.Payment) (res domain.Payment, err error) {
+	if err := db.Where("id = ?", payment.Id).First(&res).Error; err != nil {
+		return res, errors.New("NOT_FOUND|pembayaran tidak ditemukan")
+	}
+
+	db.Model(&res).Updates(&payment)
+
+	paymentRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(payment.Id), map[string][]string{})
 	return paymentRes, nil
 }
 
@@ -48,15 +53,21 @@ func (repository PaymentRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, pa
 	return true, nil
 }
 
-func (repository PaymentRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (paymentRes domain.Payment, err error) {
-	results := db.Where(key+" = ?", value).First(&paymentRes)
+func (repository PaymentRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string, params map[string][]string) (paymentRes domain.Payment, err error) {
+	results := db.Where(key+" = ?", value)
+	for k, v := range params {
+		if v[0] != "" && k != "id" {
+			results = results.Where(k+" = ?", v[0])
+		}
+	}
+	results.First(&paymentRes)
 	if results.RowsAffected < 1 {
 		return paymentRes, errors.New("NOT_FOUND|payment tidak ditemukan")
 	}
 	return paymentRes, nil
 }
 
-func (repository PaymentRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (paymentRes []domain.Payment, err error) {
+func (repository PaymentRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) (paymentRes []domain.Payment, err error) {
 	db.Find(&paymentRes)
 	return paymentRes, nil
 }

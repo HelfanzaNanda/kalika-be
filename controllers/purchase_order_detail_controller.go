@@ -11,7 +11,7 @@ import (
 type PurchaseOrderDetailController interface {
 	FindById(ctx echo.Context) error
 	FindAll(ctx echo.Context) error
-	Create(ctx echo.Context) error
+	//Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
@@ -38,11 +38,11 @@ func (dc *PurchaseOrderDetailControllerImpl) FindAll(ctx echo.Context) error {
 	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
 }
 
-func (dc *PurchaseOrderDetailControllerImpl) Create(ctx echo.Context) error {
-	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.Create(ctx)
-
-	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
-}
+//func (dc *PurchaseOrderDetailControllerImpl) Create(ctx echo.Context) error {
+//	purchaseOrderDetailResponse, _ := dc.PurchaseOrderDetailService.Create(ctx)
+//
+//	return ctx.JSON(purchaseOrderDetailResponse.Code, purchaseOrderDetailResponse)
+//}
 
 func (dc *PurchaseOrderDetailControllerImpl) Update(ctx echo.Context) error {
 	id := ctx.Param("id")

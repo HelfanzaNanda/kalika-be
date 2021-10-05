@@ -12,6 +12,7 @@ type PurchaseOrderController interface {
 	FindById(ctx echo.Context) error
 	FindAll(ctx echo.Context) error
 	Create(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
@@ -56,4 +57,9 @@ func (dc *PurchaseOrderControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	purchaseOrderResponse, _ := dc.PurchaseOrderService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(purchaseOrderResponse.Code, purchaseOrderResponse)
+}
+
+func (dc *PurchaseOrderControllerImpl) Datatable(ctx echo.Context) error {
+	purchaseOrderResponse, _ := dc.PurchaseOrderService.Datatable(ctx)
+	return ctx.JSON(202, purchaseOrderResponse)
 }

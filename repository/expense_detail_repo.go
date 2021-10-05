@@ -15,8 +15,9 @@ type (
 		Create(ctx echo.Context, db *gorm.DB, expenseDetail *web.ExpensePosPost) (web.ExpensePosPost, error)
 		Update(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (domain.ExpenseDetail, error)
 		Delete(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (bool, error)
+		DeleteByExpenseId(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.ExpenseDetail, error)
-		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.ExpenseDetail, error)
+		FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) (web.ExpensePosPost, error)
 	}
 
 	ExpenseDetailRepositoryImpl struct {
@@ -53,6 +54,13 @@ func (repository ExpenseDetailRepositoryImpl) Delete(ctx echo.Context, db *gorm.
 	}
 	return true, nil
 }
+func (repository ExpenseDetailRepositoryImpl) DeleteByExpenseId(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (bool, error) {
+	results := db.Where("expense_id = ?", expense.Id).Delete(domain.ExpenseDetail{})
+	if results.RowsAffected < 1 {
+		return false, errors.New("NOT_FOUND|expense Detail tidak ditemukan")
+	}
+	return true, nil
+}
 
 func (repository ExpenseDetailRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (expenseDetailRes domain.ExpenseDetail, err error) {
 	results := db.Where(key+" = ?", value).First(&expenseDetailRes)
@@ -62,8 +70,15 @@ func (repository ExpenseDetailRepositoryImpl) FindById(ctx echo.Context, db *gor
 	return expenseDetailRes, nil
 }
 
-func (repository ExpenseDetailRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (expenseDetailRes []domain.ExpenseDetail, err error) {
-	db.Find(&expenseDetailRes)
+func (repository ExpenseDetailRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) (expenseDetailRes web.ExpensePosPost, err error) {
+	results := db.Table("expense_details").Preload("Expsense")
+	for k, v := range params {
+		if v[0] != "" && k != "id" {
+			results = results.Where(k+" = ?", v[0])
+		}
+	}
+
+	results.Find(&expenseDetailRes.ExpenseDetails)
 	return expenseDetailRes, nil
 }
 

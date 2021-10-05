@@ -68,19 +68,30 @@ func (service *ExpenseServiceImpl) Create(ctx echo.Context) (res web.Response, e
 }
 
 func (service ExpenseServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Expense)
+	o := new(web.ExpensePosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
-	o.Id = id
-
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	expenseRepo, err := service.ExpenseRepository.Update(ctx, tx, o)
+	expense := new(domain.Expense)
+	expense.Id = id
+	expenseRepo, err := service.ExpenseDetailRepository.DeleteByExpenseId(ctx, tx, expense)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "delete expense detail by expense_id error", nil), err
 	}
+	o.Id = id
+	expenseDetailRepo, err := service.ExpenseDetailRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create many expense detail error", nil), err
+	}
+	o.ExpenseDetails = expenseDetailRepo.ExpenseDetails
+
+	expense.Id = id
+	expense.Total = expenseDetailRepo.Total
+	
+	service.ExpenseRepository.Update(ctx, tx, expense)
 
 	return helpers.Response("OK", "Sukses Mengubah Data", expenseRepo), err
 }
@@ -104,16 +115,23 @@ func (service ExpenseServiceImpl) Delete(ctx echo.Context, id int) (res web.Resp
 }
 
 func (service ExpenseServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+	expensePost := web.ExpensePosPost{}
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
 	expenseRepo, err := service.ExpenseRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	
+	expenseDetailSearch := make(map[string][]string)
+	expenseDetailRepo, err := service.ExpenseDetailRepository.FindAll(ctx, tx, expenseDetailSearch)
+
+	expensePost.Expense = expenseRepo
+	expensePost.ExpenseDetails = expenseDetailRepo.ExpenseDetails
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", expenseRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", expensePost), err
 }
 
 func (service ExpenseServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {

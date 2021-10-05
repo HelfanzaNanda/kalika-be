@@ -102,8 +102,8 @@ func (service ExpenseDetailServiceImpl) FindById(ctx echo.Context, id int) (res 
 func (service ExpenseDetailServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
-	expenseDetailRepo, err := service.ExpenseDetailRepository.FindAll(ctx, tx)
+	params := make(map[string][]string)
+	expenseDetailRepo, err := service.ExpenseDetailRepository.FindAll(ctx, tx, params)
 
 	return helpers.Response("OK", "Sukses Mengambil Data", expenseDetailRepo), err
 }

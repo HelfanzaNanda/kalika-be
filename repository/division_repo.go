@@ -29,7 +29,7 @@ func NewDivisionRepository() DivisionRepository {
 }
 
 func (repository DivisionRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, division *domain.Division) (domain.Division, error) {
-	division.Active = true
+	//division.Active = true
 	db.Create(&division)
 	divisionRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(division.Id))
 	return divisionRes, nil

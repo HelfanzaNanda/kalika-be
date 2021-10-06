@@ -14,6 +14,7 @@ type ExpenseCategoryController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type ExpenseCategoryControllerImpl struct {
 		ExpenseCategoryService services.ExpenseCategoryService
@@ -56,4 +57,9 @@ func (dc *ExpenseCategoryControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	expenseCategoryResponse, _ := dc.ExpenseCategoryService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(expenseCategoryResponse.Code, expenseCategoryResponse)
+}
+
+func (dc *ExpenseCategoryControllerImpl) Datatable(ctx echo.Context) error {
+	expenseCategoryResponse, _ := dc.ExpenseCategoryService.Datatable(ctx)
+	return ctx.JSON(202, expenseCategoryResponse)
 }

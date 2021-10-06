@@ -109,13 +109,14 @@ func Routes(db *gorm.DB) *echo.Echo {
 	receivableDetailService := services.NewReceivableService(receivableDetailRepository, db)
 	receivableDetailController := controllers.NewReceivableController(receivableDetailService)
 	
-	expenseRepository := repository.NewExpenseRepository()
-	expenseService := services.NewExpenseService(expenseRepository, db)
-	expenseController := controllers.NewExpenseController(expenseService)
-	
 	expenseDetailRepository := repository.NewExpenseDetailRepository()
 	expenseDetailService := services.NewExpenseDetailService(expenseDetailRepository, db)
 	expenseDetailController := controllers.NewExpenseDetailController(expenseDetailService)
+	
+	expenseRepository := repository.NewExpenseRepository()
+	expenseService := services.NewExpenseService(expenseRepository, expenseDetailRepository, db)
+	expenseController := controllers.NewExpenseController(expenseService)
+	
 	
 	purchaseReturnRepository := repository.NewPurchaseReturnRepository()
 	purchaseReturnService := services.NewPurchaseReturnService(purchaseReturnRepository, db)
@@ -283,6 +284,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/expense_categories", expenseCategoryController.FindAll)
 	api.GET("/expense_categories/:id", expenseCategoryController.FindById)
 	api.POST("/expense_categories", expenseCategoryController.Create)
+	api.POST("/expense_category_datatables", expenseCategoryController.Datatable)
 	api.PUT("/expense_categories/:id", expenseCategoryController.Update)
 	api.DELETE("/expense_categories/:id", expenseCategoryController.Delete)
 	
@@ -340,6 +342,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/expenses", expenseController.FindAll)
 	api.GET("/expenses/:id", expenseController.FindById)
 	api.POST("/expenses", expenseController.Create)
+	api.POST("/expense_datatables", expenseController.Datatable)
 	api.PUT("/expenses/:id", expenseController.Update)
 	api.DELETE("/expenses/:id", expenseController.Delete)
 	

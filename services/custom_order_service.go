@@ -3,6 +3,7 @@ package services
 import (
 	//"fmt"
 	"strings"
+	// "time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -26,14 +27,14 @@ type (
 
 	CustomOrderServiceImpl struct {
 		CustomOrderRepository repository.CustomOrderRepository
-		db *gorm.DB
+		db                    *gorm.DB
 	}
 )
 
 func NewCustomOrderService(CustomOrderRepository repository.CustomOrderRepository, db *gorm.DB) CustomOrderService {
 	return &CustomOrderServiceImpl{
 		CustomOrderRepository: CustomOrderRepository,
-		db: db,
+		db:                    db,
 	}
 }
 
@@ -114,7 +115,7 @@ func (service CustomOrderServiceImpl) FindAll(ctx echo.Context) (res web.Respons
 }
 
 func (service *CustomOrderServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
-	params,_ := ctx.FormParams()
+	params, _ := ctx.FormParams()
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
@@ -132,8 +133,8 @@ func (service *CustomOrderServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	data := make([]interface{}, 0)
 	for _, v := range customOrderRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
-		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
 		v.Action += `</div>`
 
 		data = append(data, v)

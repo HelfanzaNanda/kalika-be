@@ -6,23 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="3dbea7a9-1d8a-4844-bae1-64bfcc57e984" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/purchase_order_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/purchase_order_controller.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/purchase_order_detail_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/purchase_order_detail_controller.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/domain/product.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/product.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/web/sales_pos_post.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/web/sales_pos_post.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/customer_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/customer_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/payment_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/payment_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/purchase_order_detail_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/purchase_order_detail_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/purchase_order_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/purchase_order_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/raw_material_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/raw_material_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/sales_detail_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sales_detail_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/sales_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sales_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/sales_consignment_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/sales_consignment_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/sales_consignment_detail_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/sales_consignment_detail_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migration.go" beforeDir="false" afterPath="$PROJECT_DIR$/database/migration.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/sales_consignment.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/sales_consignment.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/sales_consignment_detail.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/sales_consignment_detail.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/sales_consignment_detail_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sales_consignment_detail_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/sales_consignment_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sales_consignment_repo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/payment_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/payment_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/purchase_order_detail_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/purchase_order_detail_service.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/purchase_order_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/purchase_order_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/sales_detail_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_detail_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/sales_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/sales_consignment_detail_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_consignment_detail_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/sales_consignment_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_consignment_service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,6 +65,7 @@
       <recent name="$PROJECT_DIR$/repository" />
       <recent name="$PROJECT_DIR$/services" />
       <recent name="$PROJECT_DIR$/controllers" />
+      <recent name="$PROJECT_DIR$/models/domain" />
     </key>
   </component>
   <component name="RunManager">

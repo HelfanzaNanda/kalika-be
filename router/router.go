@@ -157,14 +157,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	salesReturnDetailService := services.NewSalesReturnDetailService(salesReturnDetailRepository, db)
 	salesReturnDetailController := controllers.NewSalesReturnDetailController(salesReturnDetailService)
 	
-	salesConsignmentRepository := repository.NewSalesConsignmentRepository()
-	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, db)
-	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
-	
 	salesConsignmentDetailRepository := repository.NewSalesConsignmentDetailRepository()
 	salesConsignmentDetailService := services.NewSalesConsignmentDetailService(salesConsignmentDetailRepository, db)
 	salesConsignmentDetailController := controllers.NewSalesConsignmentDetailController(salesConsignmentDetailService)
-	
+
 	cashRegisterRepository := repository.NewCashRegisterRepository()
 	cashRegisterService := services.NewCashRegisterService(cashRegisterRepository, db)
 	cashRegisterController := controllers.NewCashRegisterController(cashRegisterService)
@@ -181,6 +177,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, purchaseOrderDetailRepository, paymentRepository, db)
 	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
 
+	salesConsignmentRepository := repository.NewSalesConsignmentRepository()
+	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, salesConsignmentDetailRepository, paymentRepository, storeConsignmentRepository, db)
+	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
+
 	productRepository := repository.NewProductRepository()
 	productService := services.NewProductService(productRepository, db)
 	productController := controllers.NewProductController(productService)
@@ -196,6 +196,12 @@ func Routes(db *gorm.DB) *echo.Echo {
 	permissionRepository := repository.NewPermissionRepository()
 	permissionService := services.NewPermissionService(permissionRepository, db)
 	permissionController := controllers.NewPermissionController(permissionService)
+
+	recipeDetailRepository := repository.NewRecipeDetailRepository()
+
+	recipeRepository := repository.NewRecipeRepository()
+	recipeService := services.NewRecipeService(recipeRepository, recipeDetailRepository, db)
+	recipeController := controllers.NewRecipeController(recipeService)
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)
@@ -354,13 +360,21 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/purchase_return_details", purchaseReturnDetailController.Create)
 	api.PUT("/purchase_return_details/:id", purchaseReturnDetailController.Update)
 	api.DELETE("/purchase_return_details/:id", purchaseReturnDetailController.Delete)
-	
+
 	api.GET("/purchase_orders", purchaseOrderController.FindAll)
 	api.GET("/purchase_orders/:id", purchaseOrderController.FindById)
 	api.POST("/purchase_orders", purchaseOrderController.Create)
 	api.POST("/purchase_order_datatables", purchaseOrderController.Datatable)
 	api.PUT("/purchase_orders/:id", purchaseOrderController.Update)
 	api.DELETE("/purchase_orders/:id", purchaseOrderController.Delete)
+
+	api.GET("/recipes", recipeController.FindAll)
+	api.GET("/recipes/:id", recipeController.FindById)
+	api.GET("/recipe_by_product_id/:id", recipeController.FindByProductId)
+	api.POST("/recipes", recipeController.Create)
+	api.POST("/recipe_datatables", recipeController.Datatable)
+	api.PUT("/recipes/:id", recipeController.Update)
+	api.DELETE("/recipes/:id", recipeController.Delete)
 	
 	api.GET("/purchase_order_details", purchaseOrderDetailController.FindAll)
 	api.GET("/purchase_order_details/:id", purchaseOrderDetailController.FindById)
@@ -417,15 +431,16 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.PUT("/sales_return_details/:id", salesReturnDetailController.Update)
 	api.DELETE("/sales_return_details/:id", salesReturnDetailController.Delete)
 	
-	api.GET("/sales_consignment", salesConsignmentController.FindAll)
-	api.GET("/sales_consignment/:id", salesConsignmentController.FindById)
-	api.POST("/sales_consignment", salesConsignmentController.Create)
-	api.PUT("/sales_consignment/:id", salesConsignmentController.Update)
-	api.DELETE("/sales_consignment/:id", salesConsignmentController.Delete)
+	api.GET("/sales_consignments", salesConsignmentController.FindAll)
+	api.GET("/sales_consignments/:id", salesConsignmentController.FindById)
+	api.POST("/sales_consignments", salesConsignmentController.Create)
+	api.POST("/sales_consignment_datatables", salesConsignmentController.Datatable)
+	api.PUT("/sales_consignments/:id", salesConsignmentController.Update)
+	api.DELETE("/sales_consignments/:id", salesConsignmentController.Delete)
 	
 	api.GET("/sales_consignment_details", salesConsignmentDetailController.FindAll)
 	api.GET("/sales_consignment_details/:id", salesConsignmentDetailController.FindById)
-	api.POST("/sales_consignment_details", salesConsignmentDetailController.Create)
+	//api.POST("/sales_consignment_details", salesConsignmentDetailController.Create)
 	api.PUT("/sales_consignment_details/:id", salesConsignmentDetailController.Update)
 	api.DELETE("/sales_consignment_details/:id", salesConsignmentDetailController.Delete)
 	

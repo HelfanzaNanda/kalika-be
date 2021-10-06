@@ -13,7 +13,6 @@ import (
 
 type (
 	SalesConsignmentDetailService interface {
-		Create(ctx echo.Context) (res web.Response, err error)
 		Update(ctx echo.Context, id int) (res web.Response, err error)
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
@@ -31,23 +30,6 @@ func NewSalesConsignmentDetailService(SalesConsignmentDetailRepository repositor
 		SalesConsignmentDetailRepository: SalesConsignmentDetailRepository,
 		db: db,
 	}
-}
-
-func (service *SalesConsignmentDetailServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.SalesConsignmentDetail)
-	if err := ctx.Bind(o); err != nil {
-		return helpers.Response(err.Error(), "Error Data Binding", nil), err
-	}
-
-	tx := service.db.Begin()
-	defer helpers.CommitOrRollback(tx)
-
-	salesConsignmentDetailRepo, err := service.SalesConsignmentDetailRepository.Create(ctx, tx, o)
-	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
-	}
-
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", salesConsignmentDetailRepo), err
 }
 
 func (service SalesConsignmentDetailServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
@@ -103,7 +85,7 @@ func (service SalesConsignmentDetailServiceImpl) FindAll(ctx echo.Context) (res 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	salesConsignmentDetailRepo, err := service.SalesConsignmentDetailRepository.FindAll(ctx, tx)
+	salesConsignmentDetailRepo, err := service.SalesConsignmentDetailRepository.FindAll(ctx, tx, map[string][]string{})
 
 	return helpers.Response("OK", "Sukses Mengambil Data", salesConsignmentDetailRepo), err
 }

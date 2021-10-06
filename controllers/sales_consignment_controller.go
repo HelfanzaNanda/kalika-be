@@ -14,6 +14,7 @@ type SalesConsignmentController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type SalesConsignmentControllerImpl struct {
 		SalesConsignmentService services.SalesConsignmentService
@@ -56,4 +57,10 @@ func (dc *SalesConsignmentControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	salesConsignmentResponse, _ := dc.SalesConsignmentService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(salesConsignmentResponse.Code, salesConsignmentResponse)
+}
+
+func (dc *SalesConsignmentControllerImpl) Datatable(ctx echo.Context) error {
+	divisionResponse, _ := dc.SalesConsignmentService.Datatable(ctx)
+
+	return ctx.JSON(202, divisionResponse)
 }

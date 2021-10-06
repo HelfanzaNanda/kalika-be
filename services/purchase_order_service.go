@@ -55,14 +55,14 @@ func (service *PurchaseOrderServiceImpl) Create(ctx echo.Context) (res web.Respo
 	purchaseOrderDetailRepo := []web.PurchaseOrderDetailGet{}
 	paymentRepo := domain.Payment{}
 
-	o.PurchaseOrder.Number = "PO"+helpers.IntToString(int(time.Now().Unix()))
-	o.PurchaseOrder.Date = time.Now()
-	o.PurchaseOrder.Status = "submission"
-	o.PurchaseOrder.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 	if o.Id > 0 {
 		message = "Sukses Memperbarui Data"
 		purchaseOrderRepo, err = service.PurchaseOrderRepository.Update(ctx, tx, &o.PurchaseOrder)
 	} else {
+		o.PurchaseOrder.Number = "PO"+helpers.IntToString(int(time.Now().Unix()))
+		o.PurchaseOrder.Date = time.Now()
+		o.PurchaseOrder.Status = "submission"
+		o.PurchaseOrder.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 		purchaseOrderRepo, err = service.PurchaseOrderRepository.Create(ctx, tx, &o.PurchaseOrder)
 	}
 	if err != nil {

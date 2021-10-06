@@ -6,6 +6,7 @@ import (
 type SalesConsignment struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
 	Number string `json:"number"`
+	Status string `json:"status"`
 	Date time.Time `json:"date"`
 	Total float64 `json:"total"`
 	StoreConsignmentId int `json:"store_consignment_id"`

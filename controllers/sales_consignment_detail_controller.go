@@ -11,7 +11,7 @@ import (
 type SalesConsignmentDetailController interface {
 	FindById(ctx echo.Context) error
 	FindAll(ctx echo.Context) error
-	Create(ctx echo.Context) error
+	//Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 }
@@ -38,11 +38,11 @@ func (dc *SalesConsignmentDetailControllerImpl) FindAll(ctx echo.Context) error 
 	return ctx.JSON(salesConsignmentDetailResponse.Code, salesConsignmentDetailResponse)
 }
 
-func (dc *SalesConsignmentDetailControllerImpl) Create(ctx echo.Context) error {
-	salesConsignmentDetailResponse, _ := dc.SalesConsignmentDetailService.Create(ctx)
-
-	return ctx.JSON(salesConsignmentDetailResponse.Code, salesConsignmentDetailResponse)
-}
+//func (dc *SalesConsignmentDetailControllerImpl) Create(ctx echo.Context) error {
+//	salesConsignmentDetailResponse, _ := dc.SalesConsignmentDetailService.Create(ctx)
+//
+//	return ctx.JSON(salesConsignmentDetailResponse.Code, salesConsignmentDetailResponse)
+//}
 
 func (dc *SalesConsignmentDetailControllerImpl) Update(ctx echo.Context) error {
 	id := ctx.Param("id")

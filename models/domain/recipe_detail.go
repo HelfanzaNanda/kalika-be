@@ -1,16 +1,17 @@
 package domain
+
 import (
 	"time"
 )
 
-type SalesConsignmentDetail struct {
+type RecipeDetail struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
-	SalesConsignmentId int `json:"sales_consignment_id"`
-	Qty float64 `json:"qty"`
-	ProductId int `json:"product_id"`
+	RecipeId int `json:"recipe_id"`
+	RawMaterialId int `json:"raw_material_id"`
+	Price float64 `json:"price"`
+	UnitId int `json:"unit_id"`
+	Quantity float64 `json:"quantity"`
 	Total float64 `json:"total"`
-	Discount float64 `json:"discount"`
-	UnitPrice float64 `json:"unit_price"`
 	CreatedAt time.Time`json:"created_at,omitempty" example:"2020-03-16T13:55:09.598136+07:00"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" example:"2020-03-16T13:55:09.598136+07:00"`
 }

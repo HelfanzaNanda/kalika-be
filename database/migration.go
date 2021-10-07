@@ -72,4 +72,5 @@ var migration = map[string]func(){
 	"0041": func() { db.AutoMigrate(&domain.Unit{}) },
 	"0042": func() { db.AutoMigrate(&domain.UnitConversion{}) },
 	"0043": func() { db.AutoMigrate(&domain.User{}) },
+	"0044": func() { db.AutoMigrate(&domain.ProductPrice{}) },
 }

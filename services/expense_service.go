@@ -48,21 +48,22 @@ func (service *ExpenseServiceImpl) Create(ctx echo.Context) (res web.Response, e
 	defer helpers.CommitOrRollback(tx)
 	expenseRepo, err := service.ExpenseRepository.Create(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "create expense error", nil), err
 	}
 	o.Expense = expenseRepo
 
 	expenseDetailRepo, err := service.ExpenseDetailRepository.Create(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "create expense detail error", nil), err
+	}
+	o.Total = expenseDetailRepo.Total
+	
+	_, err = service.ExpenseRepository.Update(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "update total expense error", nil), err
 	}
 	o.ExpenseDetails = expenseDetailRepo.ExpenseDetails
-
-	modelExpense := new(domain.Expense)
-	modelExpense.Id = expenseRepo.Id
-	modelExpense.Total = expenseDetailRepo.Total
 	
-	service.ExpenseRepository.Update(ctx, tx, modelExpense)
 
 	return helpers.Response("CREATED", "Sukses Menyimpan Data", o), err
 }
@@ -75,9 +76,7 @@ func (service ExpenseServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	expense := new(domain.Expense)
-	expense.Id = id
-	expenseRepo, err := service.ExpenseDetailRepository.DeleteByExpenseId(ctx, tx, expense)
+	_, err = service.ExpenseDetailRepository.DeleteByExpenseId(ctx, tx, id)
 	if err != nil {
 		return helpers.Response(err.Error(), "delete expense detail by expense_id error", nil), err
 	}
@@ -86,14 +85,15 @@ func (service ExpenseServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 	if err != nil {
 		return helpers.Response(err.Error(), "create many expense detail error", nil), err
 	}
+	o.Total = expenseDetailRepo.Total
+	expenseRepo, err := service.ExpenseRepository.Update(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "update expense error", nil), err
+	}
+	o.Expense = expenseRepo
 	o.ExpenseDetails = expenseDetailRepo.ExpenseDetails
 
-	expense.Id = id
-	expense.Total = expenseDetailRepo.Total
-	
-	service.ExpenseRepository.Update(ctx, tx, expense)
-
-	return helpers.Response("OK", "Sukses Mengubah Data", expenseRepo), err
+	return helpers.Response("OK", "Sukses Mengubah Data", o), err
 }
 
 func (service ExpenseServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
@@ -105,11 +105,15 @@ func (service ExpenseServiceImpl) Delete(ctx echo.Context, id int) (res web.Resp
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
+	_, err = service.ExpenseDetailRepository.DeleteByExpenseId(ctx, tx, id)
+	if err != nil {
+		return helpers.Response(err.Error(), "delete expense detail error", nil), err
+	}
 	_, err = service.ExpenseRepository.Delete(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
+
 
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
 }
@@ -121,11 +125,10 @@ func (service ExpenseServiceImpl) FindById(ctx echo.Context, id int) (res web.Re
 
 	expenseRepo, err := service.ExpenseRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
 	
-	expenseDetailSearch := make(map[string][]string)
-	expenseDetailRepo, err := service.ExpenseDetailRepository.FindAll(ctx, tx, expenseDetailSearch)
+	expenseDetailRepo, err := service.ExpenseDetailRepository.FindByExpenseId(ctx, tx, id)
 
 	expensePost.Expense = expenseRepo
-	expensePost.ExpenseDetails = expenseDetailRepo.ExpenseDetails
+	expensePost.ExpenseDetails = expenseDetailRepo
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err

@@ -183,7 +183,8 @@ func Routes(db *gorm.DB) *echo.Echo {
 	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
 
 	productRepository := repository.NewProductRepository()
-	productService := services.NewProductService(productRepository, db)
+	productPriceRepository := repository.NewProductPriceRepository()
+	productService := services.NewProductService(productRepository, productPriceRepository, db)
 	productController := controllers.NewProductController(productService)
 	
 	roleRepository := repository.NewRoleRepository()

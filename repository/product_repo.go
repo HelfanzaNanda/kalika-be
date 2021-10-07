@@ -12,8 +12,8 @@ import (
 
 type (
 	ProductRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, product *domain.Product) (domain.Product, error)
-		Update(ctx echo.Context, db *gorm.DB, product *domain.Product) (domain.Product, error)
+		Create(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (domain.Product, error)
+		Update(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (domain.Product, error)
 		Delete(ctx echo.Context, db *gorm.DB, product *domain.Product) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Product, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Product, error)
@@ -29,13 +29,23 @@ func NewProductRepository() ProductRepository {
 	return &ProductRepositoryImpl{}
 }
 
-func (repository ProductRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, product *domain.Product) (domain.Product, error) {
-	db.Create(&product)
-	productRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(product.Id))
+func (repository ProductRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (domain.Product, error) {
+	m := domain.Product{}
+	m.Name = product.Name
+	m.StockMinimum = product.StockMinimum
+	m.ProductionMinimum = product.ProductionMinimum
+	m.DivisionId = product.DivisionId
+	m.CakeTypeId = product.CakeTypeId
+	m.CategoryId = product.CategoryId
+	m.Active = product.Active
+	m.IsCustomPrice = product.IsCustomPrice
+	m.IsCustomProduct = product.IsCustomProduct
+	db.Create(&m)
+	productRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(m.Id))
 	return productRes, nil
 }
 
-func (repository ProductRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, product *domain.Product) (domain.Product, error) {
+func (repository ProductRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (domain.Product, error) {
 	db.Where("id = ?", product.Id).Updates(&product)
 	productRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(product.Id))
 	return productRes, nil

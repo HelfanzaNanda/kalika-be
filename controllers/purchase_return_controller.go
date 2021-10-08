@@ -14,6 +14,7 @@ type PurchaseReturnController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	ReportDatatable(ctx echo.Context) error
 }
 type PurchaseReturnControllerImpl struct {
 		PurchaseReturnService services.PurchaseReturnService
@@ -56,4 +57,9 @@ func (dc *PurchaseReturnControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	purchaseReturnResponse, _ := dc.PurchaseReturnService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(purchaseReturnResponse.Code, purchaseReturnResponse)
+}
+
+func (dc *PurchaseReturnControllerImpl) ReportDatatable(ctx echo.Context) error {
+	purchaseReturnResponse, _ := dc.PurchaseReturnService.ReportDatatable(ctx)
+	return ctx.JSON(202, purchaseReturnResponse)
 }

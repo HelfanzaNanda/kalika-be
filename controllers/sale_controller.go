@@ -15,6 +15,7 @@ type SaleController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 	Datatable(ctx echo.Context) error
+	ReportDatatable(ctx echo.Context) error
 }
 type SaleControllerImpl struct {
 		SalesService services.SalesService
@@ -61,5 +62,10 @@ func (dc *SaleControllerImpl) Delete(ctx echo.Context) error {
 
 func (dc *SaleControllerImpl) Datatable(ctx echo.Context) error {
 	salesResponse, _ := dc.SalesService.Datatable(ctx)
+	return ctx.JSON(202, salesResponse)
+}
+
+func (dc *SaleControllerImpl) ReportDatatable(ctx echo.Context) error {
+	salesResponse, _ := dc.SalesService.ReportDatatable(ctx)
 	return ctx.JSON(202, salesResponse)
 }

@@ -8,7 +8,7 @@ type Receivable struct {
 	Model string `json:"model"`
 	ModelId int `json:"model_id"`
 	Total float64 `json:"total"`
-	Receivables float64 `json:"Receivables"`
+	Receivables float64 `json:"receivables"`
 	Date time.Time `json:"date"`
 	Note string `json:"note"`
 	CreatedBy int `json:"created_by"`

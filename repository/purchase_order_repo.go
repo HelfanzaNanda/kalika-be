@@ -17,6 +17,7 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.PurchaseOrder, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.PurchaseOrder, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.PurchaseOrderDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.PurchaseOrderDatatable, int64, int64, error)
 	}
 
 	PurchaseOrderRepositoryImpl struct {
@@ -72,6 +73,27 @@ func (repository PurchaseOrderRepositoryImpl) Datatable(ctx echo.Context, db *go
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
 	}
 	qry.Order("id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}
+func (repository PurchaseOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.PurchaseOrderDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("purchase_orders")
+	qry.Select(`
+		purchase_orders.*,
+		suppliers.id supplier_id, suppliers.name supplier_name,
+	`)
+	qry.Joins(`
+		left join suppliers on suppliers.id = purchase_orders.supplier_id
+	`)
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(purchase_orders.id = ? OR purchase_orders.number LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("purchase_orders.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
 }

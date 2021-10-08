@@ -2,8 +2,11 @@ package services
 
 import (
 	//"fmt"
+	"strings"
+
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
+
 	//"kalika-be/config"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
@@ -18,6 +21,8 @@ type (
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
+		Datatable(ctx echo.Context) (res web.Datatable, err error)
+		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
 	}
 
 	ReceivableServiceImpl struct {
@@ -34,7 +39,8 @@ func NewReceivableService(ReceivableRepository repository.ReceivableRepository, 
 }
 
 func (service *ReceivableServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.Receivable)
+	receivable := domain.Receivable{}
+	o := new(web.ReceivablePosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -42,16 +48,20 @@ func (service *ReceivableServiceImpl) Create(ctx echo.Context) (res web.Response
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	receivableRepo, err := service.ReceivableRepository.Create(ctx, tx, o)
+	if o.Id > 0 {
+		receivable, err = service.ReceivableRepository.Update(ctx, tx, o)
+	} else {
+		receivable, err = service.ReceivableRepository.Create(ctx, tx, o)
+	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", receivableRepo), err
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", receivable), err
 }
 
 func (service ReceivableServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Receivable)
+	o := new(web.ReceivablePosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -108,3 +118,68 @@ func (service ReceivableServiceImpl) FindAll(ctx echo.Context) (res web.Response
 	return helpers.Response("OK", "Sukses Mengambil Data", receivableRepo), err
 }
 
+func (service *ReceivableServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
+	params,_ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+
+	receivableRepo, totalData, totalFiltered, _ := service.ReceivableRepository.Datatable(ctx, tx, draw, limit, start, search)
+	// if err != nil {
+	// 	return helpers.Response(err.Error(), "", nil), err
+	// }
+
+	data := make([]interface{}, 0)
+	for _, v := range receivableRepo {
+		v.Action = `<div class="flex">`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `</div>`
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
+}
+
+func (service *ReceivableServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datatable, err error) {
+	params,_ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+
+	receivableRepo, totalData, totalFiltered, _ := service.ReceivableRepository.ReportDatatable(ctx, tx, draw, limit, start, search)
+	// if err != nil {
+	// 	return helpers.Response(err.Error(), "", nil), err
+	// }
+
+	data := make([]interface{}, 0)
+	for _, v := range receivableRepo {
+		v.Action = `<div class="flex">`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="pdf" class="w-4 h-4 mr-1"></i> Print </button>`
+		// v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `</div>`
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
+}

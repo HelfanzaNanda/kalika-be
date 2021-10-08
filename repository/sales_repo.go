@@ -18,6 +18,7 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Sale, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Sale, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SaleDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SaleDatatable, int64, int64, error)
 	}
 
 	SalesRepositoryImpl struct {
@@ -92,6 +93,33 @@ func (repository SalesRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (sa
 }
 
 func (repository SalesRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.SaleDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("sales").
+		Select(`
+			sales.*,
+			stores.id store_id, stores.name store_name, 
+			customers.id customer_id, customers.name customer_name, 
+			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_register_cash_in_hand 
+		`).
+		Joins(`
+			left join stores on stores.id = sales.store_id
+			left join customers on customers.id = sales.customer_id
+			left join cash_registers on cash_registers.id = sales.cash_register_id
+		`)
+
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(sales.id = ? OR sales.number LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("sales.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.SaleDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("sales").
 		Select(`
 			sales.*,

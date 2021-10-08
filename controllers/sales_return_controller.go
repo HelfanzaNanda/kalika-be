@@ -14,6 +14,7 @@ type SalesReturnController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	ReportDatatable(ctx echo.Context) error
 }
 type SalesReturnControllerImpl struct {
 		SalesReturnService services.SalesReturnService
@@ -56,4 +57,9 @@ func (dc *SalesReturnControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	salesReturnResponse, _ := dc.SalesReturnService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(salesReturnResponse.Code, salesReturnResponse)
+}
+
+func (dc *SalesReturnControllerImpl) ReportDatatable(ctx echo.Context) error {
+	salesReturnResponse, _ := dc.SalesReturnService.ReportDatatable(ctx)
+	return ctx.JSON(202, salesReturnResponse)
 }

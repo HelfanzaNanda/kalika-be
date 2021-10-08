@@ -12,12 +12,13 @@ import (
 
 type (
 	ProductLocationRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, product *domain.ProductLocation) (web.ProductLocationGet, error)
+		Create(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (web.ProductPosPost, error)
 		Update(ctx echo.Context, db *gorm.DB, product *domain.ProductLocation) (web.ProductLocationGet, error)
 		Delete(ctx echo.Context, db *gorm.DB, product *domain.ProductLocation) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (web.ProductLocationGet, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.ProductLocation, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ProductDatatable, int64, int64, error)
+		DeleteByProduct(ctx echo.Context, db *gorm.DB, productId int) (bool, error)
 	}
 
 	ProductLocationRepositoryImpl struct {
@@ -29,10 +30,13 @@ func NewProductLocationRepository() ProductLocationRepository {
 	return &ProductLocationRepositoryImpl{}
 }
 
-func (repository ProductLocationRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, product *domain.ProductLocation) (web.ProductLocationGet, error) {
-	db.Create(&product)
-	productLocationRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(product.Id))
-	return productLocationRes, nil
+func (repository ProductLocationRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (res web.ProductPosPost, err error) {
+	for _, val := range product.ProductLocations {
+		val.ProductId = product.Id
+		db.Create(&val)
+		res.ProductLocations = append(res.ProductLocations, val)
+	}
+	return res, nil
 }
 
 func (repository ProductLocationRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, product *domain.ProductLocation) (web.ProductLocationGet, error) {
@@ -96,4 +100,9 @@ func (repository ProductLocationRepositoryImpl) Datatable(ctx echo.Context, db *
 	qry.Order("product_locations.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository ProductLocationRepositoryImpl) DeleteByProduct(ctx echo.Context, db *gorm.DB, productId int) (bool, error) {
+	db.Where("product_id = ?", productId).Delete(domain.ProductLocation{})
+	return true, nil
 }

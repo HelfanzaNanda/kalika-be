@@ -182,10 +182,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, salesConsignmentDetailRepository, paymentRepository, storeConsignmentRepository, db)
 	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
 
-	productRepository := repository.NewProductRepository()
 	productPriceRepository := repository.NewProductPriceRepository()
-	productService := services.NewProductService(productRepository, productPriceRepository, db)
-	productController := controllers.NewProductController(productService)
 	
 	roleRepository := repository.NewRoleRepository()
 	roleService := services.NewRoleService(roleRepository, db)
@@ -204,6 +201,14 @@ func Routes(db *gorm.DB) *echo.Echo {
 	stockOpnameRepository := repository.NewStockOpnameRepository()
 	stockOpnameService := services.NewStockOpnameService(stockOpnameRepository, stockOpnameDetailRepository, db)
 	stockOpnameController := controllers.NewStockOpnameController(stockOpnameService)
+
+	productLocationRepository := repository.NewProductLocationRepository()
+	productLocationService := services.NewProductLocationService(productLocationRepository, db)
+	productLocationController := controllers.NewProductLocationController(productLocationService)
+
+	productRepository := repository.NewProductRepository()
+	productService := services.NewProductService(productRepository, productPriceRepository, productLocationRepository, db)
+	productController := controllers.NewProductController(productService)
 
 	recipeDetailRepository := repository.NewRecipeDetailRepository()
 
@@ -508,6 +513,12 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/stock_opname_datatables", stockOpnameController.Datatable)
 	api.PUT("/stock_opnames/:id", stockOpnameController.Update)
 	api.DELETE("/stock_opnames/:id", stockOpnameController.Delete)
+
+	api.GET("/product_locations", productLocationController.FindAll)
+	api.GET("/product_locations/:id", productLocationController.FindById)
+	api.POST("/product_locations", productLocationController.Create)
+	api.PUT("/product_locations/:id", productLocationController.Update)
+	api.DELETE("/product_locations/:id", productLocationController.Delete)
 
 	return e
 }

@@ -28,14 +28,16 @@ type (
 	ProductServiceImpl struct {
 		ProductRepository repository.ProductRepository
 		ProductPriceRepository repository.ProductPriceRepository
+		ProductLocationRepository repository.ProductLocationRepository
 		db *gorm.DB
 	}
 )
 
-func NewProductService(productRepository repository.ProductRepository, productPriceRepository repository.ProductPriceRepository, db *gorm.DB) ProductService {
+func NewProductService(productRepository repository.ProductRepository, productPriceRepository repository.ProductPriceRepository, productLocationRepository repository.ProductLocationRepository, db *gorm.DB) ProductService {
 	return &ProductServiceImpl{
 		ProductRepository: productRepository,
 		ProductPriceRepository: productPriceRepository,
+		ProductLocationRepository: productLocationRepository,
 		db: db,
 	}
 }
@@ -57,6 +59,13 @@ func (service *ProductServiceImpl) Create(ctx echo.Context) (res web.Response, e
 	if err != nil {
 		return helpers.Response(err.Error(), "create product price error", nil), err
 	}
+	for key, _ := range o.ProductLocations {
+		o.ProductLocations[key].Model = "Product"
+	}
+	_, err = service.ProductLocationRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create product location error", nil), err
+	}
 
 	return helpers.Response("CREATED", "Sukses Menyimpan Data", o), err
 }
@@ -77,10 +86,22 @@ func (service ProductServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 		return helpers.Response(err.Error(), "delete product price by product error", nil), err
 	}
 
+	_, err = service.ProductLocationRepository.DeleteByProduct(ctx, tx, id)
+	if err != nil {
+		return helpers.Response(err.Error(), "delete product location by product error", nil), err
+	}
+
 	o.Id = id
 	_, err = service.ProductPriceRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "create many product prices error", nil), err
+	}
+	for key, _ := range o.ProductLocations {
+		o.ProductLocations[key].Model = "Product"
+	}
+	_, err = service.ProductLocationRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create many product location error", nil), err
 	}
 
 	return helpers.Response("OK", "Sukses Mengubah Data", o), err
@@ -114,15 +135,16 @@ func (service ProductServiceImpl) FindById(ctx echo.Context, id int) (res web.Re
 	defer helpers.CommitOrRollback(tx)
 
 	productRepo, err := service.ProductRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
-	
-	productPriceRepo, err := service.ProductPriceRepository.FindByProductId(ctx, tx, id)
-
-	productPost.Product = productRepo
-	productPost.ProductPrices = productPriceRepo
-
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
+	productPriceRepo, err := service.ProductPriceRepository.FindByProductId(ctx, tx, id)
+	if err != nil {
+		productPriceRepo = []domain.ProductPrice{}
+	}
+
+	productPost.Product = productRepo
+	productPost.ProductPrices = productPriceRepo
 
 	return helpers.Response("OK", "Sukses Mengambil Data", productPost), err
 }

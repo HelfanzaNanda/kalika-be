@@ -54,10 +54,7 @@ func (repository ProductPriceRepositoryImpl) Delete(ctx echo.Context, db *gorm.D
 }
 
 func (repository ProductPriceRepositoryImpl) DeleteByProduct(ctx echo.Context, db *gorm.DB, productId int) (bool, error) {
-	results := db.Where("product_id = ?", productId).Delete(domain.ProductPrice{})
-	if results.RowsAffected < 1 {
-		return false, errors.New("NOT_FOUND|product price tidak ditemukan")
-	}
+	db.Where("product_id = ?", productId).Delete(domain.ProductPrice{})
 	return true, nil
 }
 

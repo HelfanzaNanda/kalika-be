@@ -49,7 +49,7 @@ func (service *ProductLocationServiceImpl) Create(ctx echo.Context) (res web.Res
 	if o.Id > 0 {
 		productLocationRepo, err = service.ProductLocationRepository.Update(ctx, tx, &o.ProductLocation)
 	} else {
-		productLocationRepo, err = service.ProductLocationRepository.Create(ctx, tx, &o.ProductLocation)
+		//productLocationRepo, err = service.ProductLocationRepository.Create(ctx, tx, &o.ProductLocation)
 	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err

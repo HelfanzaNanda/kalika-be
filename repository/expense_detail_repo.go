@@ -15,8 +15,9 @@ type (
 		Create(ctx echo.Context, db *gorm.DB, expenseDetail *web.ExpensePosPost) (web.ExpensePosPost, error)
 		Update(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (domain.ExpenseDetail, error)
 		Delete(ctx echo.Context, db *gorm.DB, expenseDetail *domain.ExpenseDetail) (bool, error)
-		DeleteByExpenseId(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (bool, error)
+		DeleteByExpenseId(ctx echo.Context, db *gorm.DB, expenseId int) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.ExpenseDetail, error)
+		FindByExpenseId(ctx echo.Context, db *gorm.DB, expenseId int) ([]domain.ExpenseDetail, error)
 		FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) (web.ExpensePosPost, error)
 	}
 
@@ -54,8 +55,8 @@ func (repository ExpenseDetailRepositoryImpl) Delete(ctx echo.Context, db *gorm.
 	}
 	return true, nil
 }
-func (repository ExpenseDetailRepositoryImpl) DeleteByExpenseId(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (bool, error) {
-	results := db.Where("expense_id = ?", expense.Id).Delete(domain.ExpenseDetail{})
+func (repository ExpenseDetailRepositoryImpl) DeleteByExpenseId(ctx echo.Context, db *gorm.DB, expenseId int) (bool, error) {
+	results := db.Where("expense_id = ?", expenseId).Delete(domain.ExpenseDetail{})
 	if results.RowsAffected < 1 {
 		return false, errors.New("NOT_FOUND|expense Detail tidak ditemukan")
 	}
@@ -66,6 +67,13 @@ func (repository ExpenseDetailRepositoryImpl) FindById(ctx echo.Context, db *gor
 	results := db.Where(key+" = ?", value).First(&expenseDetailRes)
 	if results.RowsAffected < 1 {
 		return expenseDetailRes, errors.New("NOT_FOUND|expenseDetail tidak ditemukan")
+	}
+	return expenseDetailRes, nil
+}
+func (repository ExpenseDetailRepositoryImpl) FindByExpenseId(ctx echo.Context, db *gorm.DB, expenseId int) (expenseDetailRes []domain.ExpenseDetail, err error) {
+	results := db.Where("expense_id = ?", expenseId).Find(&expenseDetailRes)
+	if results.RowsAffected < 1 {
+		return expenseDetailRes, errors.New("NOT_FOUND|expense Detail tidak ditemukan")
 	}
 	return expenseDetailRes, nil
 }

@@ -14,7 +14,7 @@ import (
 type (
 	ExpenseRepository interface{
 		Create(ctx echo.Context, db *gorm.DB, expense *web.ExpensePosPost) (domain.Expense, error)
-		Update(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (domain.Expense, error)
+		Update(ctx echo.Context, db *gorm.DB, expense *web.ExpensePosPost) (domain.Expense, error)
 		Delete(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Expense, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Expense, error)
@@ -42,8 +42,8 @@ func (repository ExpenseRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, ex
 	return expenseRes, nil
 }
 
-func (repository ExpenseRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, expense *domain.Expense) (domain.Expense, error) {
-	db.Where("id = ?", expense.Id).Updates(&expense)
+func (repository ExpenseRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, expense *web.ExpensePosPost) (domain.Expense, error) {
+	db.Where("id = ?", expense.Id).Updates(&expense.Expense)
 	expenseRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(expense.Id))
 	return expenseRes, nil
 }

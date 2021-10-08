@@ -27,55 +27,63 @@ type (
 
 	ProductServiceImpl struct {
 		ProductRepository repository.ProductRepository
+		ProductPriceRepository repository.ProductPriceRepository
 		db *gorm.DB
 	}
 )
 
-func NewProductService(ProductRepository repository.ProductRepository, db *gorm.DB) ProductService {
+func NewProductService(productRepository repository.ProductRepository, productPriceRepository repository.ProductPriceRepository, db *gorm.DB) ProductService {
 	return &ProductServiceImpl{
-		ProductRepository: ProductRepository,
+		ProductRepository: productRepository,
+		ProductPriceRepository: productPriceRepository,
 		db: db,
 	}
 }
 
 func (service *ProductServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	productRepo := domain.Product{}
-	o := new(domain.Product)
+	o := new(web.ProductPosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
-	if o.Id > 0 {
-		productRepo, err = service.ProductRepository.Update(ctx, tx, o)
-	} else {
-		productRepo, err = service.ProductRepository.Create(ctx, tx, o)
-	}
+	productRepo, err := service.ProductRepository.Create(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "create product error", nil), err
+	}
+	o.Id = productRepo.Id
+	_, err = service.ProductPriceRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create product price error", nil), err
 	}
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", productRepo), err
+	return helpers.Response("CREATED", "Sukses Menyimpan Data", o), err
 }
 
 func (service ProductServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.Product)
+	o := new(web.ProductPosPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
-	o.Id = id
-
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
-	productRepo, err := service.ProductRepository.Update(ctx, tx, o)
+	_, err = service.ProductRepository.Update(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "update product error", nil), err
+	}
+	_, err = service.ProductPriceRepository.DeleteByProduct(ctx, tx, id)
+	if err != nil {
+		return helpers.Response(err.Error(), "delete product price by product error", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengubah Data", productRepo), err
+	o.Id = id
+	_, err = service.ProductPriceRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create many product prices error", nil), err
+	}
+
+	return helpers.Response("OK", "Sukses Mengubah Data", o), err
 }
 
 func (service ProductServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
@@ -88,6 +96,10 @@ func (service ProductServiceImpl) Delete(ctx echo.Context, id int) (res web.Resp
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
+	_, err = service.ProductPriceRepository.DeleteByProduct(ctx, tx, id)
+	if err != nil {
+		return helpers.Response(err.Error(), "delete prices error ", nil), err
+	}
 	_, err = service.ProductRepository.Delete(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
@@ -97,16 +109,22 @@ func (service ProductServiceImpl) Delete(ctx echo.Context, id int) (res web.Resp
 }
 
 func (service ProductServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+	productPost := web.ProductPosPost{}
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
 	productRepo, err := service.ProductRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	
+	productPriceRepo, err := service.ProductPriceRepository.FindByProductId(ctx, tx, id)
+
+	productPost.Product = productRepo
+	productPost.ProductPrices = productPriceRepo
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", productRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", productPost), err
 }
 
 func (service ProductServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {

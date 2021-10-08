@@ -198,6 +198,12 @@ func Routes(db *gorm.DB) *echo.Echo {
 	permissionService := services.NewPermissionService(permissionRepository, db)
 	permissionController := controllers.NewPermissionController(permissionService)
 
+	stockOpnameDetailRepository := repository.NewStockOpnameDetailRepository()
+
+	stockOpnameRepository := repository.NewStockOpnameRepository()
+	stockOpnameService := services.NewStockOpnameService(stockOpnameRepository, stockOpnameDetailRepository, db)
+	stockOpnameController := controllers.NewStockOpnameController(stockOpnameService)
+
 	recipeDetailRepository := repository.NewRecipeDetailRepository()
 
 	recipeRepository := repository.NewRecipeRepository()
@@ -408,7 +414,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/purchase_order_delivery_details", purchaseOrderDeliveryDetailController.Create)
 	api.PUT("/purchase_order_delivery_details/:id", purchaseOrderDeliveryDetailController.Update)
 	api.DELETE("/purchase_order_delivery_details/:id", purchaseOrderDeliveryDetailController.Delete)
-	
+
 	api.GET("/sales", saleController.FindAll)
 	api.GET("/sales/:id", saleController.FindById)
 	api.POST("/sales", saleController.Create)
@@ -485,6 +491,13 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/permissions", permissionController.Create)
 	api.PUT("/permissions/:id", permissionController.Update)
 	api.DELETE("/permissions/:id", permissionController.Delete)
+
+	api.GET("/stock_opnames", stockOpnameController.FindAll)
+	api.GET("/stock_opnames/:id", stockOpnameController.FindById)
+	api.POST("/stock_opnames", stockOpnameController.Create)
+	api.POST("/stock_opname_datatables", stockOpnameController.Datatable)
+	api.PUT("/stock_opnames/:id", stockOpnameController.Update)
+	api.DELETE("/stock_opnames/:id", stockOpnameController.Delete)
 
 	return e
 }

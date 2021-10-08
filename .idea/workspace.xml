@@ -6,17 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="3dbea7a9-1d8a-4844-bae1-64bfcc57e984" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/sales_consignment_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/sales_consignment_controller.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/sales_consignment_detail_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/sales_consignment_detail_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/migration.go" beforeDir="false" afterPath="$PROJECT_DIR$/database/migration.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/domain/sales_consignment.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/sales_consignment.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/domain/sales_consignment_detail.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/sales_consignment_detail.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/sales_consignment_detail_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sales_consignment_detail_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/sales_consignment_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/sales_consignment_repo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/purchase_order_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/purchase_order_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/sales_consignment_detail_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_consignment_detail_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/sales_consignment_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_consignment_service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,8 +48,9 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/models/web" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -87,6 +80,18 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>

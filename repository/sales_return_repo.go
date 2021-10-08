@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,6 +17,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.SalesReturn, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.SalesReturn, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SalesReturnDatatable, int64, int64, error)
 	}
 
 	SalesReturnRepositoryImpl struct {
@@ -59,3 +62,27 @@ func (repository SalesReturnRepositoryImpl) FindAll(ctx echo.Context, db *gorm.D
 	return salesReturnRes, nil
 }
 
+func (repository SalesReturnRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.SalesReturnDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("sales_returns").
+		Select(`
+			sales_returns.*,
+			store_consignments.id store_consignment_id, store_consignments.name store_consignment_name, 
+			customers.id customer_id, customers.name customer_name
+		`).
+		Joins(`
+			left join store_consignments on store_consignments.id = sales_returns.store_id
+			left join customers on customers.id = sales_returns.customer_id
+		`)
+
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(sales_returns.id = ? OR sales_returns.number LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("sales_returns.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}

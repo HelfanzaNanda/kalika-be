@@ -2,19 +2,25 @@ package repository
 
 import (
 	"errors"
-	"github.com/labstack/echo"
-	"gorm.io/gorm"
+	"fmt"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
+	"kalika-be/models/web"
+	"time"
+
+	"github.com/labstack/echo"
+	"gorm.io/gorm"
 )
 
 type (
 	DebtRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (domain.Debt, error)
-		Update(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (domain.Debt, error)
+		Create(ctx echo.Context, db *gorm.DB, debt *web.DebtPosPost) (domain.Debt, error)
+		Update(ctx echo.Context, db *gorm.DB, debt *web.DebtPosPost) (domain.Debt, error)
 		Delete(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Debt, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Debt, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.DebtDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.DebtDatatable, int64, int64, error)
 	}
 
 	DebtRepositoryImpl struct {
@@ -26,14 +32,42 @@ func NewDebtRepository() DebtRepository {
 	return &DebtRepositoryImpl{}
 }
 
-func (repository DebtRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (domain.Debt, error) {
-	db.Create(&debt)
+func (repository DebtRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, debt *web.DebtPosPost) (domain.Debt, error) {
+	layoutFormat := "2006-01-02"
+	date, err := time.Parse(layoutFormat, debt.Date)
+	if err != nil{
+		fmt.Println("########## ERROR TIME PARSE")
+		fmt.Println(err)
+		fmt.Println(debt)
+		fmt.Println("########## ERROR TIME PARSE")
+	}
+	model := domain.Debt{}
+	model.Debts = debt.Debts
+	model.Total = debt.Total
+	model.Note = debt.Note
+	model.Date = date
+	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	db.Create(&model)
 	debtRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(debt.Id))
 	return debtRes, nil
 }
 
-func (repository DebtRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (domain.Debt, error) {
-	db.Where("id = ?", debt.Id).Updates(&debt)
+func (repository DebtRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, debt *web.DebtPosPost) (domain.Debt, error) {
+	layoutFormat := "2006-01-02"
+	date, err := time.Parse(layoutFormat, debt.Date)
+	if err != nil{
+		fmt.Println("########## ERROR TIME PARSE")
+		fmt.Println(err)
+		fmt.Println(debt)
+		fmt.Println("########## ERROR TIME PARSE")
+	}
+	model := domain.Debt{}
+	model.Debts = debt.Debts
+	model.Total = debt.Total
+	model.Note = debt.Note
+	model.Date = date
+	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	db.Where("id = ?", debt.Id).Updates(&model)
 	debtRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(debt.Id))
 	return debtRes, nil
 }
@@ -59,3 +93,38 @@ func (repository DebtRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (deb
 	return debtRes, nil
 }
 
+
+func (repository DebtRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.DebtDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("debts")
+	qry.Select(`
+		debts.*,
+		users.id user_id, users.name user_name
+	`)
+	qry.Joins("left join users on users.id = debts.created_by")
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(debts.id = ? OR debts.date LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("debts.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository DebtRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.DebtDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("debts")
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(id = ? OR date LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}

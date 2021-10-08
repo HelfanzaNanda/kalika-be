@@ -6,6 +6,7 @@ import (
 
 type DebtPosPost struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
+	SupplierId int `json:"supplier_id"`
 	Model string `json:"model"`
 	ModelId int `json:"model_id"`
 	Total float64 `json:"total"`

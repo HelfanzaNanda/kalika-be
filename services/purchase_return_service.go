@@ -38,7 +38,7 @@ func NewPurchaseReturnService(PurchaseReturnRepository repository.PurchaseReturn
 }
 
 func (service *PurchaseReturnServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.PurchaseReturn)
+	o := new(web.PurchaseReturnPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -55,7 +55,7 @@ func (service *PurchaseReturnServiceImpl) Create(ctx echo.Context) (res web.Resp
 }
 
 func (service PurchaseReturnServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.PurchaseReturn)
+	o := new(web.PurchaseReturnPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}

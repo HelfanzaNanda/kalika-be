@@ -66,12 +66,14 @@ func (repository SalesReturnRepositoryImpl) ReportDatatable(ctx echo.Context, db
 	qry := db.Table("sales_returns").
 		Select(`
 			sales_returns.*,
-			store_consignments.id store_consignment_id, store_consignments.name store_consignment_name, 
-			customers.id customer_id, customers.name customer_name
+			store_consignments.id store_consignment_id, store_consignments.store_name store_consignment_name, 
+			customers.id customer_id, customers.name customer_name,
+			users.name created_by_name
 		`).
 		Joins(`
-			left join store_consignments on store_consignments.id = sales_returns.store_id
+			left join store_consignments on store_consignments.id = sales_returns.store_consignment_id
 			left join customers on customers.id = sales_returns.customer_id
+			left join users on users.id = sales_returns.created_by
 		`)
 
 	qry.Count(&totalData)

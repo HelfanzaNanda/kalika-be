@@ -4,5 +4,8 @@ import "kalika-be/models/domain"
 
 type SalesReturnDatatable struct {
 	domain.SalesReturn
-	Action string `json:"action"`
+	CustomerName         string `json:"customer_name"`
+	StoreConsignmentName string `json:"store_consignment_name"`
+	CreatedByName        string `json:"created_by_name"`
+	Action               string `json:"action"`
 }

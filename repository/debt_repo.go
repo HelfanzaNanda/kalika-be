@@ -19,8 +19,9 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Debt, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Debt, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]domain.Debt, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.DebtDatatable, int64, int64, error)
-		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.DebtDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.DebtDatatable, int64, int64, error)
 	}
 
 	DebtRepositoryImpl struct {
@@ -42,6 +43,7 @@ func (repository DebtRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, debt 
 		fmt.Println("########## ERROR TIME PARSE")
 	}
 	model := domain.Debt{}
+	model.SupplierId = debt.SupplierId
 	model.Debts = debt.Debts
 	model.Total = debt.Total
 	model.Note = debt.Note
@@ -62,6 +64,7 @@ func (repository DebtRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, debt 
 		fmt.Println("########## ERROR TIME PARSE")
 	}
 	model := domain.Debt{}
+	model.SupplierId = debt.SupplierId
 	model.Debts = debt.Debts
 	model.Total = debt.Total
 	model.Note = debt.Note
@@ -98,9 +101,13 @@ func (repository DebtRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, dr
 	qry := db.Table("debts")
 	qry.Select(`
 		debts.*,
-		users.id user_id, users.name user_name
+		users.id user_id, users.name user_name,
+		suppliers.id supplier_id, suppliers.name supplier_name
 	`)
-	qry.Joins("left join users on users.id = debts.created_by")
+	qry.Joins(`
+		left join users on users.id = debts.created_by
+		left join suppliers on suppliers.id = debts.supplier_id
+	`)
 	qry.Count(&totalData)
 	if search != "" {
 		qry.Where("(debts.id = ? OR debts.date LIKE ?)", search, "%"+search+"%")
@@ -114,17 +121,39 @@ func (repository DebtRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, dr
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository DebtRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.DebtDatatable, totalData int64, totalFiltered int64, err error) {
+func (repository DebtRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (debtRes []domain.Debt, err error) {
 	qry := db.Table("debts")
+	if dateRange.StartDate != "" && dateRange.EndDate != ""{
+		qry.Where("(debts.created_at > ? AND debts.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	}
+	qry.Find(&debtRes)
+	return debtRes, nil
+}
+
+
+func (repository DebtRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.DebtDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("debts")
+	qry.Select(`
+		debts.*,
+		users.id user_id, users.name user_name,
+		suppliers.id supplier_id, suppliers.name supplier_name
+	`)
+	qry.Joins(`
+		left join users on users.id = debts.created_by
+		left join suppliers on suppliers.id = debts.supplier_id
+	`)
 	qry.Count(&totalData)
 	if search != "" {
-		qry.Where("(id = ? OR date LIKE ?)", search, "%"+search+"%")
+		qry.Where("(debts.id = ? OR debts.date LIKE ?)", search, "%"+search+"%")
+	}
+	if filter["start_date"] != "" && filter["end_date"] != "" {
+		qry.Where("(debts.created_at > ? AND debts.created_at < ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
 	}
-	qry.Order("id desc")
+	qry.Order("debts.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
 }

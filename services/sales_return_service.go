@@ -22,6 +22,7 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	SalesReturnServiceImpl struct {
@@ -122,8 +123,10 @@ func (service *SalesReturnServiceImpl) ReportDatatable(ctx echo.Context) (res we
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
-
-	salesRepo, totalData, totalFiltered, _ := service.SalesReturnRepository.ReportDatatable(ctx, tx, draw, limit, start, search)
+	filter :=  make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	salesRepo, totalData, totalFiltered, _ := service.SalesReturnRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
 	// if err != nil {
 	// 	return helpers.Response(err.Error(), "", nil), err
 	// }
@@ -143,4 +146,31 @@ func (service *SalesReturnServiceImpl) ReportDatatable(ctx echo.Context) (res we
 	res.RecordsTotal = totalData
 
 	return res, nil
+}
+
+func (service SalesReturnServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.DateRange)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+	
+	salesReturnRepo, err := service.SalesReturnRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	for _, item := range salesReturnRepo {
+		froot := []string{}
+		froot = append(froot, item.Number)
+		froot = append(froot, item.CustomerName)
+		froot = append(froot, item.StoreConsignmentName)
+		froot = append(froot, helpers.IntToString(int(item.Total)))
+		
+		datas = append(datas, froot)
+	}
+	title := "laporan-return-penjualan"
+	headings := []string{"Number", "Customer Name", "Store Consignment Name", "Total"}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

@@ -17,7 +17,8 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.PurchaseOrder, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.PurchaseOrder, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.PurchaseOrderDatatable, int64, int64, error)
-		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.PurchaseOrderDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.PurchaseOrderDatatable, int64, int64, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.PurchaseOrderGet, error)
 	}
 
 	PurchaseOrderRepositoryImpl struct {
@@ -64,27 +65,11 @@ func (repository PurchaseOrderRepositoryImpl) FindAll(ctx echo.Context, db *gorm
 
 func (repository PurchaseOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.PurchaseOrderDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("purchase_orders")
-	qry.Count(&totalData)
-	if search != "" {
-		qry.Where("(id = ? OR number LIKE ?)", search, "%"+search+"%")
-	}
-	qry.Count(&totalFiltered)
-	if helpers.StringToInt(limit) > 0 {
-		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
-	}
-	qry.Order("id desc")
-	qry.Find(&datatableRes)
-	return datatableRes, totalData, totalFiltered, nil
-}
-func (repository PurchaseOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.PurchaseOrderDatatable, totalData int64, totalFiltered int64, err error) {
-	qry := db.Table("purchase_orders")
 	qry.Select(`
 		purchase_orders.*,
-		suppliers.id supplier_id, suppliers.name supplier_name,
+		suppliers.id supplier_id, suppliers.name supplier_name
 	`)
-	qry.Joins(`
-		left join suppliers on suppliers.id = purchase_orders.supplier_id
-	`)
+	qry.Joins("left join suppliers on suppliers.id = purchase_orders.supplier_id")
 	qry.Count(&totalData)
 	if search != "" {
 		qry.Where("(purchase_orders.id = ? OR purchase_orders.number LIKE ?)", search, "%"+search+"%")
@@ -96,5 +81,49 @@ func (repository PurchaseOrderRepositoryImpl) ReportDatatable(ctx echo.Context, 
 	qry.Order("purchase_orders.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+func (repository PurchaseOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.PurchaseOrderDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("purchase_orders")
+	qry.Select(`
+		purchase_orders.*,
+		users.name created_by_name,
+		suppliers.id supplier_id, suppliers.name supplier_name
+	`)
+	qry.Joins(`
+		left join users on users.id = purchase_orders.created_by
+		left join suppliers on suppliers.id = purchase_orders.supplier_id
+	`)
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(purchase_orders.id = ? OR purchase_orders.number LIKE ?)", search, "%"+search+"%")
+	}
+	if filter["start_date"] != "" && filter["end_date"] != "" {
+		qry.Where("(purchase_orders.created_at > ? AND purchase_orders.created_at < ?)", filter["start_date"], filter["end_date"])
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("purchase_orders.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository PurchaseOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (purchaseOrderRes []web.PurchaseOrderGet, err error) {
+	qry := db.Table("purchase_orders")
+	qry.Select(`
+		purchase_orders.*,
+		users.name created_by_name,
+		suppliers.id supplier_id, suppliers.name supplier_name
+	`)
+	qry.Joins(`
+		left join users on users.id = purchase_orders.created_by
+		left join suppliers on suppliers.id = purchase_orders.supplier_id
+	`)
+	if dateRange.StartDate != "" && dateRange.EndDate != ""{
+		qry.Where("(purchase_orders.created_at > ? AND purchase_orders.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	}
+	qry.Find(&purchaseOrderRes)
+	return purchaseOrderRes, nil
 }
 

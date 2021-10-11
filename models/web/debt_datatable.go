@@ -4,6 +4,7 @@ import "kalika-be/models/domain"
 
 type DebtDatatable struct {
 	domain.Debt
-	UserName string `json:"user_name"`
-	Action string `json:"action"`
+	SupplierName string `json:"supplier_name"`
+	UserName     string `json:"user_name"`
+	Action       string `json:"action"`
 }

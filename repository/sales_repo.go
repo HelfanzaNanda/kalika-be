@@ -18,7 +18,8 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Sale, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Sale, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SaleDatatable, int64, int64, error)
-		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SaleDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.SaleDatatable, int64, int64, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.SalesPosGet, error)
 	}
 
 	SalesRepositoryImpl struct {
@@ -119,7 +120,7 @@ func (repository SalesRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, d
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.SaleDatatable, totalData int64, totalFiltered int64, err error) {
+func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.SaleDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("sales").
 		Select(`
 			sales.*,
@@ -144,4 +145,24 @@ func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm
 	qry.Order("sales.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository SalesRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (saleRes []web.SalesPosGet, err error) {
+	qry := db.Table("sales")
+	qry.Select(`
+			sales.*,
+			stores.id store_id, stores.name store_name, 
+			customers.id customer_id, customers.name customer_name, 
+			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_in_hand 
+		`)
+	qry.Joins(`
+			left join stores on stores.id = sales.store_id
+			left join customers on customers.id = sales.customer_id
+			left join cash_registers on cash_registers.id = sales.cash_register_id
+		`)
+	if dateRange.StartDate != "" && dateRange.EndDate != ""{
+		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	}
+	qry.Find(&saleRes)
+	return saleRes, nil
 }

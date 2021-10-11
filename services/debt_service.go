@@ -1,13 +1,10 @@
 package services
 
 import (
-	//"fmt"
+	"strconv"
 	"strings"
-
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
-
-	//"kalika-be/config"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
@@ -23,6 +20,7 @@ type (
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
 		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	DebtServiceImpl struct {
@@ -161,8 +159,10 @@ func (service *DebtServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datat
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
-
-	debtRepo, totalData, totalFiltered, _ := service.DebtRepository.ReportDatatable(ctx, tx, draw, limit, start, search)
+	filter :=  make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	debtRepo, totalData, totalFiltered, _ := service.DebtRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
 	// if err != nil {
 	// 	return helpers.Response(err.Error(), "", nil), err
 	// }
@@ -182,4 +182,32 @@ func (service *DebtServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datat
 	res.RecordsTotal = totalData
 
 	return res, nil
+}
+
+
+func (service DebtServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.DateRange)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+	
+	debtRepo, err := service.DebtRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	for _, item := range debtRepo {
+		froot := []string{}
+		froot = append(froot, strconv.Itoa(int(item.Total)))
+		froot = append(froot, strconv.Itoa(int(item.Debts)))
+		froot = append(froot, item.Date.String())
+		froot = append(froot, item.Note)
+		
+		datas = append(datas, froot)
+	}
+	title := "laporan-hutang"
+	headings := []string{"Total", "Debts", "Date", "Note"}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

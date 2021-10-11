@@ -25,24 +25,25 @@ type (
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
 		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	SalesServiceImpl struct {
-		SalesRepository repository.SalesRepository
+		SalesRepository       repository.SalesRepository
 		SalesDetailRepository repository.SalesDetailRepository
-		PaymentRepository repository.PaymentRepository
-		CustomerRepository repository.CustomerRepository
-		db *gorm.DB
+		PaymentRepository     repository.PaymentRepository
+		CustomerRepository    repository.CustomerRepository
+		db                    *gorm.DB
 	}
 )
 
 func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepository repository.SalesDetailRepository, PaymentRepository repository.PaymentRepository, CustomerRepository repository.CustomerRepository, db *gorm.DB) SalesService {
 	return &SalesServiceImpl{
-		SalesRepository: SalesRepository,
+		SalesRepository:       SalesRepository,
 		SalesDetailRepository: SalesDetailRepository,
-		PaymentRepository: PaymentRepository,
-		CustomerRepository: CustomerRepository,
-		db: db,
+		PaymentRepository:     PaymentRepository,
+		CustomerRepository:    CustomerRepository,
+		db:                    db,
 	}
 }
 
@@ -183,7 +184,7 @@ func (service SalesServiceImpl) FindAll(ctx echo.Context) (res web.Response, err
 }
 
 func (service *SalesServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
-	params,_ := ctx.FormParams()
+	params, _ := ctx.FormParams()
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
@@ -201,8 +202,8 @@ func (service *SalesServiceImpl) Datatable(ctx echo.Context) (res web.Datatable,
 	data := make([]interface{}, 0)
 	for _, v := range salesRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
-		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
 		v.Action += `</div>`
 
 		data = append(data, v)
@@ -217,7 +218,7 @@ func (service *SalesServiceImpl) Datatable(ctx echo.Context) (res web.Datatable,
 }
 
 func (service *SalesServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datatable, err error) {
-	params,_ := ctx.FormParams()
+	params, _ := ctx.FormParams()
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
@@ -226,8 +227,10 @@ func (service *SalesServiceImpl) ReportDatatable(ctx echo.Context) (res web.Data
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
-
-	expenseRepo, totalData, totalFiltered, _ := service.SalesRepository.ReportDatatable(ctx, tx, draw, limit, start, search)
+	filter := make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	expenseRepo, totalData, totalFiltered, _ := service.SalesRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
 	// if err != nil {
 	// 	return helpers.Response(err.Error(), "", nil), err
 	// }
@@ -235,7 +238,7 @@ func (service *SalesServiceImpl) ReportDatatable(ctx echo.Context) (res web.Data
 	data := make([]interface{}, 0)
 	for _, v := range expenseRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="pdf" class="w-4 h-4 mr-1"></i> Print </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="pdf" class="w-4 h-4 mr-1"></i> Print </button>`
 		// v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
 		v.Action += `</div>`
 		data = append(data, v)
@@ -247,4 +250,40 @@ func (service *SalesServiceImpl) ReportDatatable(ctx echo.Context) (res web.Data
 	res.RecordsTotal = totalData
 
 	return res, nil
+}
+
+func (service SalesServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.DateRange)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	salesRepo, err := service.SalesRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	for _, item := range salesRepo {
+		froot := []string{}
+		froot = append(froot, item.Number)
+		froot = append(froot, item.StoreName)
+		// froot = append(froot, item.CashInHand)
+		froot = append(froot, item.CustomerName)
+		froot = append(froot, helpers.IntToString(item.DiscountPercentage) +"/"+helpers.IntToString(item.DiscountValue))
+		froot = append(froot, helpers.IntToString(int(item.Total)))
+		froot = append(froot, item.PaymentStatus)
+		froot = append(froot, item.SaleStatus)
+		froot = append(froot, item.Note)
+		froot = append(froot, helpers.IntToString(int(item.CustomerPay)))
+		froot = append(froot, helpers.IntToString(int(item.CustomerChange)))
+
+		datas = append(datas, froot)
+	}
+	title := "laporan-penjualan"
+	headings := []string{"Number", "Store Name", "Customer Name",
+		"Discount", "Total", "Payment Status", "Sale Status", "Note",
+		"Customer Pay", "Customer Charge"}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

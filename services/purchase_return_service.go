@@ -22,6 +22,7 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	PurchaseReturnServiceImpl struct {
@@ -122,8 +123,10 @@ func (service *PurchaseReturnServiceImpl) ReportDatatable(ctx echo.Context) (res
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
-
-	purchaseReturnRepo, totalData, totalFiltered, _ := service.PurchaseReturnRepository.ReportDatatable(ctx, tx, draw, limit, start, search)
+	filter :=  make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	purchaseReturnRepo, totalData, totalFiltered, _ := service.PurchaseReturnRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
 	// if err != nil {
 	// 	return helpers.Response(err.Error(), "", nil), err
 	// }
@@ -143,4 +146,29 @@ func (service *PurchaseReturnServiceImpl) ReportDatatable(ctx echo.Context) (res
 	res.RecordsTotal = totalData
 
 	return res, nil
+}
+
+func (service PurchaseReturnServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.DateRange)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+	
+	purchaseReturnRepo, err := service.PurchaseReturnRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	for _, item := range purchaseReturnRepo {
+		froot := []string{}
+		froot = append(froot, item.Date.String())
+		froot = append(froot, item.Number)
+		
+		datas = append(datas, froot)
+	}
+	title := "laporan-return-pembelian"
+	headings := []string{"Date", "Number"}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

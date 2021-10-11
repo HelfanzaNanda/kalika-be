@@ -16,6 +16,7 @@ type ReceivableController interface {
 	Delete(ctx echo.Context) error
 	Datatable(ctx echo.Context) error
 	ReportDatatable(ctx echo.Context) error
+	GeneratePdf(ctx echo.Context) error
 }
 
 type ReceivableControllerImpl struct {
@@ -68,5 +69,10 @@ func (dc *ReceivableControllerImpl) Datatable(ctx echo.Context) error {
 
 func (dc *ReceivableControllerImpl) ReportDatatable(ctx echo.Context) error {
 	receivableResponse, _ := dc.ReceivableService.ReportDatatable(ctx)
+	return ctx.JSON(202, receivableResponse)
+}
+
+func (dc *ReceivableControllerImpl) GeneratePdf(ctx echo.Context) error {
+	receivableResponse, _ := dc.ReceivableService.GeneratePdf(ctx)
 	return ctx.JSON(202, receivableResponse)
 }

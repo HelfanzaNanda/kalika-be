@@ -23,6 +23,7 @@ type (
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
 		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	PurchaseOrderServiceImpl struct {
@@ -179,7 +180,6 @@ func (service *PurchaseOrderServiceImpl) Datatable(ctx echo.Context) (res web.Da
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
-
 	purchaseOrderRepo, totalData, totalFiltered, _ := service.PurchaseOrderRepository.Datatable(ctx, tx, draw, limit, start, search)
 
 	data := make([]interface{}, 0)
@@ -211,8 +211,10 @@ func (service *PurchaseOrderServiceImpl) ReportDatatable(ctx echo.Context) (res 
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
-
-	purchaseOrderRepo, totalData, totalFiltered, _ := service.PurchaseOrderRepository.ReportDatatable(ctx, tx, draw, limit, start, search)
+	filter :=  make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	purchaseOrderRepo, totalData, totalFiltered, _ := service.PurchaseOrderRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
 	// if err != nil {
 	// 	return helpers.Response(err.Error(), "", nil), err
 	// }
@@ -232,4 +234,32 @@ func (service *PurchaseOrderServiceImpl) ReportDatatable(ctx echo.Context) (res 
 	res.RecordsTotal = totalData
 
 	return res, nil
+}
+
+func (service PurchaseOrderServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.DateRange)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+	
+	purchaseOrderRepo, err := service.PurchaseOrderRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	for _, item := range purchaseOrderRepo {
+		froot := []string{}
+		froot = append(froot, item.Number)
+		froot = append(froot, item.SupplierName)
+		froot = append(froot, item.Date.String())
+		froot = append(froot, helpers.IntToString(int(item.Discount)))
+		froot = append(froot, helpers.IntToString(int(item.Total)))
+		
+		datas = append(datas, froot)
+	}
+	title := "laporan-pembelian"
+	headings := []string{"Number", "Supplier Name", "Date", "Discount", "Total"}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

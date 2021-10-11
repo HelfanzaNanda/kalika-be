@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	//"fmt"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
@@ -19,7 +20,8 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Expense, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Expense, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ExpenseDatatable, int64, int64, error)
-		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ExpenseDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.ExpenseDatatable, int64, int64, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]domain.Expense, error)
 	}
 
 	ExpenseRepositoryImpl struct {
@@ -88,14 +90,17 @@ func (repository ExpenseRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB,
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.ExpenseDatatable, totalData int64, totalFiltered int64, err error) {
+func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.ExpenseDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("expenses").
 	Select("expenses.*, users.name created_by_name").
 	Joins("left join users on users.id = expenses.created_by")
 
 	qry.Count(&totalData)
 	if search != "" {
-		qry.Where("(id = ? OR name LIKE ?)", search, "%"+search+"%")
+		qry.Where("(expenses.id = ? OR expenses.name LIKE ?)", search, "%"+search+"%")
+	}
+	if filter["start_date"] != "" && filter["end_date"] != "" {
+		qry.Where("(expenses.created_at > ? AND expenses.created_at < ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
@@ -104,4 +109,13 @@ func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *go
 	qry.Order("id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository ExpenseRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (expenseRes []domain.Expense, err error) {
+	qry := db.Table("expenses")
+	if dateRange.StartDate != "" && dateRange.EndDate != ""{
+		qry.Where("(expenses.created_at > ? AND expenses.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	}
+	qry.Find(&expenseRes)
+	return expenseRes, nil
 }

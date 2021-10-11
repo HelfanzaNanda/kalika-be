@@ -20,7 +20,8 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Receivable, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Receivable, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ReceivableDatatable, int64, int64, error)
-		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ReceivableDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.ReceivableDatatable, int64, int64, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.ReceivableGet, error)
 	}
 
 	ReceivableRepositoryImpl struct {
@@ -125,7 +126,7 @@ func (repository ReceivableRepositoryImpl) Datatable(ctx echo.Context, db *gorm.
 }
 
 
-func (repository ReceivableRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.ReceivableDatatable, totalData int64, totalFiltered int64, err error) {
+func (repository ReceivableRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.ReceivableDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("receivables")
 	qry.Select(`
 		receivables.*,
@@ -142,6 +143,9 @@ func (repository ReceivableRepositoryImpl) ReportDatatable(ctx echo.Context, db 
 	if search != "" {
 		qry.Where("(receivables.id = ? OR receivables.date LIKE ?)", search, "%"+search+"%")
 	}
+	if filter["start_date"] != "" && filter["end_date"] != "" {
+		qry.Where("(receivables.created_at > ? AND receivables.created_at < ?)", filter["start_date"], filter["end_date"])
+	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
@@ -149,4 +153,24 @@ func (repository ReceivableRepositoryImpl) ReportDatatable(ctx echo.Context, db 
 	qry.Order("receivables.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository ReceivableRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (receivableRes []web.ReceivableGet, err error) {
+	qry := db.Table("receivables")
+	qry.Select(`
+		receivables.*,
+		users.id user_id, users.name user_name,
+		customers.id customer_id, customers.name customer_name,
+		store_consignments.id store_consignment_id, store_consignments.store_name store_consignment_name
+	`)
+	qry.Joins(`
+		left join users on users.id = receivables.created_by
+		left join customers on customers.id = receivables.customer_id
+		left join store_consignments on store_consignments.id = receivables.store_consignment_id
+	`)
+	if dateRange.StartDate != "" && dateRange.EndDate != ""{
+		qry.Where("(receivables.created_at > ? AND receivables.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	}
+	qry.Find(&receivableRes)
+	return receivableRes, nil
 }

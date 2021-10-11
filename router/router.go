@@ -18,6 +18,8 @@ func Routes(db *gorm.DB) *echo.Echo {
 	userService := services.NewUserService(userRepository, db)
 	userController := controllers.NewUserController(userService)
 
+	downloadController := controllers.NewDownloadController()
+
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -25,13 +27,16 @@ func Routes(db *gorm.DB) *echo.Echo {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
+		//AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 	}))
 
 	api := e.Group("/api")
 
 	api.POST("/login", userController.Login)
+	api.GET("/download", downloadController.DownloadPdf)
 
 	api.Use(middlewares.Auth)
+	
 
 	divisionRepository := repository.NewDivisionRepository()
 	divisionService := services.NewDivisionService(divisionRepository, db)
@@ -332,6 +337,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/debts", debtController.Create)
 	api.POST("/debt_datatables", debtController.Datatable)
 	api.POST("/report_debt_datatables", debtController.ReportDatatable)
+	api.POST("/debt_pdf", debtController.GeneratePdf)
 	api.PUT("/debts/:id", debtController.Update)
 	api.DELETE("/debts/:id", debtController.Delete)
 	
@@ -346,6 +352,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/receivables", receivableController.Create)
 	api.POST("/receivable_datatables", receivableController.Datatable)
 	api.POST("/report_receivable_datatables", receivableController.ReportDatatable)
+	api.POST("/receivable_pdf", receivableController.GeneratePdf)
 	api.PUT("/receivables/:id", receivableController.Update)
 	api.DELETE("/receivables/:id", receivableController.Delete)
 	
@@ -360,6 +367,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/expenses", expenseController.Create)
 	api.POST("/expense_datatables", expenseController.Datatable)
 	api.POST("/report_expense_datatables", expenseController.ReportDatatable)
+	api.POST("/expense_pdf", expenseController.GeneratePdf)
 	api.PUT("/expenses/:id", expenseController.Update)
 	api.DELETE("/expenses/:id", expenseController.Delete)
 	
@@ -373,6 +381,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/purchase_returns/:id", purchaseReturnController.FindById)
 	api.POST("/purchase_returns", purchaseReturnController.Create)
 	api.POST("/report_purchase_return_datatables", purchaseReturnController.ReportDatatable)
+	api.POST("/purchase_return_pdf", purchaseReturnController.GeneratePdf)
 	api.PUT("/purchase_returns/:id", purchaseReturnController.Update)
 	api.DELETE("/purchase_returns/:id", purchaseReturnController.Delete)
 	
@@ -387,6 +396,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/purchase_orders", purchaseOrderController.Create)
 	api.POST("/purchase_order_datatables", purchaseOrderController.Datatable)
 	api.POST("/report_purchase_order_datatables", purchaseOrderController.ReportDatatable)
+	api.POST("/purchase_order_pdf", purchaseOrderController.GeneratePdf)
 	api.PUT("/purchase_orders/:id", purchaseOrderController.Update)
 	api.DELETE("/purchase_orders/:id", purchaseOrderController.Delete)
 
@@ -433,6 +443,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/sales", saleController.Create)
 	api.POST("/sale_datatables", saleController.Datatable)
 	api.POST("/report_sale_datatables", saleController.ReportDatatable)
+	api.POST("/sale_pdf", saleController.GeneratePdf)
 	api.PUT("/sales/:id", saleController.Update)
 	api.DELETE("/sales/:id", saleController.Delete)
 	
@@ -446,6 +457,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/sales_returns/:id", salesReturnController.FindById)
 	api.POST("/sales_returns", salesReturnController.Create)
 	api.POST("/report_sales_return_datatables", salesReturnController.ReportDatatable)
+	api.POST("/sale_return_pdf", salesReturnController.GeneratePdf)
 	api.PUT("/sales_returns/:id", salesReturnController.Update)
 	api.DELETE("/sales_returns/:id", salesReturnController.Delete)
 	
@@ -519,6 +531,8 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/product_locations", productLocationController.Create)
 	api.PUT("/product_locations/:id", productLocationController.Update)
 	api.DELETE("/product_locations/:id", productLocationController.Delete)
+
+	
 
 	return e
 }

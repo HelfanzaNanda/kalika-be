@@ -16,6 +16,7 @@ type ExpenseController interface {
 	Delete(ctx echo.Context) error
 	Datatable(ctx echo.Context) error
 	ReportDatatable(ctx echo.Context) error
+	GeneratePdf(ctx echo.Context) error
 }
 type ExpenseControllerImpl struct {
 		ExpenseService services.ExpenseService
@@ -67,5 +68,10 @@ func (dc *ExpenseControllerImpl) Datatable(ctx echo.Context) error {
 
 func (dc *ExpenseControllerImpl) ReportDatatable(ctx echo.Context) error {
 	expenseResponse, _ := dc.ExpenseService.ReportDatatable(ctx)
+	return ctx.JSON(202, expenseResponse)
+}
+
+func (dc *ExpenseControllerImpl) GeneratePdf(ctx echo.Context) error {
+	expenseResponse, _ := dc.ExpenseService.GeneratePdf(ctx)
 	return ctx.JSON(202, expenseResponse)
 }

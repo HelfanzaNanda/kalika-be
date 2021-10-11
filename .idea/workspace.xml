@@ -6,17 +6,30 @@
   <component name="ChangeListManager">
     <list default="true" id="3dbea7a9-1d8a-4844-bae1-64bfcc57e984" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/web/product_pos_post.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/web/product_pos_post.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/domain/cash_register.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/domain/cash_register.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/web/product_location_get.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/web/product_location_get.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/cash_register_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/cash_register_repo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repository/product_location_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/product_location_repo.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/product_price_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/product_price_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/product_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/product_repo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/product_location_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/product_location_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/cash_register_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/cash_register_service.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/product_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/product_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/purchase_order_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/purchase_order_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/raw_material_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/raw_material_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/sales_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/sales_service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
   </component>
   <component name="GOROOT" url="file:///usr/local/opt/go/libexec" />
   <component name="Git.Settings">
@@ -44,6 +57,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -51,7 +65,7 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/models/web" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>

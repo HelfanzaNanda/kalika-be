@@ -32,16 +32,18 @@ type (
 		SalesDetailRepository repository.SalesDetailRepository
 		PaymentRepository repository.PaymentRepository
 		CustomerRepository repository.CustomerRepository
+		ProductLocationRepository repository.ProductLocationRepository
 		db *gorm.DB
 	}
 )
 
-func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepository repository.SalesDetailRepository, PaymentRepository repository.PaymentRepository, CustomerRepository repository.CustomerRepository, db *gorm.DB) SalesService {
+func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepository repository.SalesDetailRepository, PaymentRepository repository.PaymentRepository, CustomerRepository repository.CustomerRepository, ProductLocationRepository repository.ProductLocationRepository, db *gorm.DB) SalesService {
 	return &SalesServiceImpl{
 		SalesRepository: SalesRepository,
 		SalesDetailRepository: SalesDetailRepository,
 		PaymentRepository: PaymentRepository,
 		CustomerRepository: CustomerRepository,
+		ProductLocationRepository: ProductLocationRepository,
 		db: db,
 	}
 }
@@ -107,6 +109,18 @@ func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.Payment = paymentRepo
+
+	productLocations := []map[string]interface{}{}
+	for _, val := range salesDetailRepo {
+		productLocation := map[string]interface{}{}
+		productLocation["model"] = "Product"
+		productLocation["product_id"] = helpers.IntToString(val.ProductId)
+		productLocation["quantity"] = helpers.IntToString(val.Qty)
+		productLocation["store_id"] = helpers.IntToString(salesRepo.StoreId)
+		productLocations = append(productLocations, productLocation)
+	}
+
+	_, err = service.ProductLocationRepository.StockDeduction(ctx, tx, productLocations)
 
 	return helpers.Response("CREATED", message, o), err
 }

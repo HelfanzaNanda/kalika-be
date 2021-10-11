@@ -46,7 +46,7 @@ func (repository ProductRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, pr
 }
 
 func (repository ProductRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, product *web.ProductPosPost) (domain.Product, error) {
-	db.Where("id = ?", product.Id).Updates(&product)
+	db.Where("id = ?", product.Id).Updates(&product.Product)
 	productRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(product.Id))
 	return productRes, nil
 }
@@ -70,7 +70,9 @@ func (repository ProductRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, 
 func (repository ProductRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (productRes []domain.Product, err error) {
 	qry := db.Table("products").Select("products.*")
 	for k, v := range ctx.QueryParams() {
-		if v[0] != "" && k != "id" {
+		if k == "name" {
+			qry = qry.Where(k+" LIKE ?", "%"+v[0]+"%")
+		} else if v[0] != "" && k != "id" {
 			qry = qry.Where(k+" = ?", v[0])
 		}
 	}

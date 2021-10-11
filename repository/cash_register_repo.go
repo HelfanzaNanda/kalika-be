@@ -58,14 +58,20 @@ func (repository CashRegisterRepositoryImpl) FindById(ctx echo.Context, db *gorm
 }
 
 func (repository CashRegisterRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (cashRegisterRes []domain.CashRegister, err error) {
-	db.Find(&cashRegisterRes)
+	qry := db.Table("cash_registers").Select("cash_registers.*")
+	for k, v := range ctx.QueryParams() {
+		if v[0] != "" && k != "id" {
+			qry = qry.Where(k+" = ?", v[0])
+		}
+	}
+	qry.Scan(&cashRegisterRes)
 	return cashRegisterRes, nil
 }
 
 func (repository CashRegisterRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.CashRegisterDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("cash_registers").
 		Select(` stores.id store_id, stores.name store_name, 
-			cash_registers.id, cash_registers.cash_in_hand, cash_registers.status, cash_registers.created_by
+			cash_registers.id, cash_registers.cash_in_hand, cash_registers.status, cash_registers.created_by, cash_registers.number, cash_registers.closed_at
 		`).
 		Joins("left join stores on stores.id = cash_registers.store_id")
 	qry.Count(&totalData)

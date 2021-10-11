@@ -21,6 +21,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.HTTPErrorHandler = middlewares.ErrorHandler
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -76,10 +77,6 @@ func Routes(db *gorm.DB) *echo.Echo {
 	expenseCategoryRepository := repository.NewExpenseCategoryRepository()
 	expenseCategoryService := services.NewExpenseCategoryService(expenseCategoryRepository, db)
 	expenseCategoryController := controllers.NewExpenseCategoryController(expenseCategoryService)
-	
-	rawMaterialRepository := repository.NewRawMaterialRepository()
-	rawMaterialService := services.NewRawMaterialService(rawMaterialRepository, db)
-	rawMaterialController := controllers.NewRawMaterialController(rawMaterialService)
 	
 	customOrderRepository := repository.NewCustomOrderRepository()
 	customOrderService := services.NewCustomOrderService(customOrderRepository, db)
@@ -170,14 +167,6 @@ func Routes(db *gorm.DB) *echo.Echo {
 	paymentService := services.NewPaymentService(paymentRepository, db)
 	paymentController := controllers.NewPaymentController(paymentService)
 
-	saleRepository := repository.NewSalesRepository()
-	saleService := services.NewSalesService(saleRepository, salesDetailRepository, paymentRepository, customerRepository, db)
-	saleController := controllers.NewSaleController(saleService)
-
-	purchaseOrderRepository := repository.NewPurchaseOrderRepository()
-	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, purchaseOrderDetailRepository, paymentRepository, db)
-	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
-
 	salesConsignmentRepository := repository.NewSalesConsignmentRepository()
 	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, salesConsignmentDetailRepository, paymentRepository, storeConsignmentRepository, db)
 	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
@@ -215,6 +204,18 @@ func Routes(db *gorm.DB) *echo.Echo {
 	recipeRepository := repository.NewRecipeRepository()
 	recipeService := services.NewRecipeService(recipeRepository, recipeDetailRepository, db)
 	recipeController := controllers.NewRecipeController(recipeService)
+
+	saleRepository := repository.NewSalesRepository()
+	saleService := services.NewSalesService(saleRepository, salesDetailRepository, paymentRepository, customerRepository, productLocationRepository, db)
+	saleController := controllers.NewSaleController(saleService)
+
+	rawMaterialRepository := repository.NewRawMaterialRepository()
+	rawMaterialService := services.NewRawMaterialService(rawMaterialRepository, productLocationRepository, db)
+	rawMaterialController := controllers.NewRawMaterialController(rawMaterialService)
+
+	purchaseOrderRepository := repository.NewPurchaseOrderRepository()
+	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, purchaseOrderDetailRepository, paymentRepository, productLocationRepository, db)
+	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)

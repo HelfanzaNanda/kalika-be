@@ -27,20 +27,22 @@ type (
 
 	RawMaterialServiceImpl struct {
 		RawMaterialRepository repository.RawMaterialRepository
+		ProductLocationRepository repository.ProductLocationRepository
 		db *gorm.DB
 	}
 )
 
-func NewRawMaterialService(RawMaterialRepository repository.RawMaterialRepository, db *gorm.DB) RawMaterialService {
+func NewRawMaterialService(RawMaterialRepository repository.RawMaterialRepository, productLocationRepository repository.ProductLocationRepository, db *gorm.DB) RawMaterialService {
 	return &RawMaterialServiceImpl{
 		RawMaterialRepository: RawMaterialRepository,
+		ProductLocationRepository: productLocationRepository,
 		db: db,
 	}
 }
 
 func (service *RawMaterialServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
 	rawMaterialRepo := domain.RawMaterial{}
-	o := new(domain.RawMaterial)
+	o := new(web.RawMaterialPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -49,12 +51,26 @@ func (service *RawMaterialServiceImpl) Create(ctx echo.Context) (res web.Respons
 	defer helpers.CommitOrRollback(tx)
 
 	if o.Id > 0 {
-		rawMaterialRepo, err = service.RawMaterialRepository.Update(ctx, tx, o)
+		rawMaterialRepo, err = service.RawMaterialRepository.Update(ctx, tx, &o.RawMaterial)
 	} else {
-		rawMaterialRepo, err = service.RawMaterialRepository.Create(ctx, tx, o)
+		rawMaterialRepo, err = service.RawMaterialRepository.Create(ctx, tx, &o.RawMaterial)
 	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
+	}
+
+	for key, _ := range o.ProductLocations {
+		o.ProductLocations[key].Model = "RawMaterial"
+		o.ProductLocations[key].ProductId = rawMaterialRepo.Id
+	}
+	if o.Id > 0 {
+		service.ProductLocationRepository.DeleteByProduct(ctx, tx, "RawMaterial", o.Id)
+		_, err = service.ProductLocationRepository.Create(ctx, tx, o.ProductLocations)
+	} else {
+		_, err = service.ProductLocationRepository.Create(ctx, tx, o.ProductLocations)
+	}
+	if err != nil {
+		return helpers.Response(err.Error(), "create product location error", nil), err
 	}
 
 	return helpers.Response("CREATED", "Sukses Menyimpan Data", rawMaterialRepo), err

@@ -62,7 +62,7 @@ func (service *ProductServiceImpl) Create(ctx echo.Context) (res web.Response, e
 	for key, _ := range o.ProductLocations {
 		o.ProductLocations[key].Model = "Product"
 	}
-	_, err = service.ProductLocationRepository.Create(ctx, tx, o)
+	_, err = service.ProductLocationRepository.Create(ctx, tx, o.ProductLocations)
 	if err != nil {
 		return helpers.Response(err.Error(), "create product location error", nil), err
 	}
@@ -75,6 +75,7 @@ func (service ProductServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
+	o.Id = id
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 	_, err = service.ProductRepository.Update(ctx, tx, o)
@@ -86,7 +87,7 @@ func (service ProductServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 		return helpers.Response(err.Error(), "delete product price by product error", nil), err
 	}
 
-	_, err = service.ProductLocationRepository.DeleteByProduct(ctx, tx, id)
+	_, err = service.ProductLocationRepository.DeleteByProduct(ctx, tx, "Product", id)
 	if err != nil {
 		return helpers.Response(err.Error(), "delete product location by product error", nil), err
 	}
@@ -99,7 +100,7 @@ func (service ProductServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 	for key, _ := range o.ProductLocations {
 		o.ProductLocations[key].Model = "Product"
 	}
-	_, err = service.ProductLocationRepository.Create(ctx, tx, o)
+	_, err = service.ProductLocationRepository.Create(ctx, tx, o.ProductLocations)
 	if err != nil {
 		return helpers.Response(err.Error(), "create many product location error", nil), err
 	}

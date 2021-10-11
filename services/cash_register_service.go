@@ -3,6 +3,7 @@ package services
 import (
 	//"fmt"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -48,6 +49,7 @@ func (service *CashRegisterServiceImpl) Create(ctx echo.Context) (res web.Respon
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
+	o.Number = "CR"+helpers.IntToString(int(time.Now().Unix()))
 	if o.Id > 0 {
 		cashRegisterRepo, err = service.CashRegisterRepository.Update(ctx, tx, o)
 	} else {
@@ -130,9 +132,6 @@ func (service *CashRegisterServiceImpl) Datatable(ctx echo.Context) (res web.Dat
 	search := strings.TrimSpace(params.Get("search[value]"))
 
 	divisionRepo, totalData, totalFiltered, _ := service.CashRegisterRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
 	data := make([]interface{}, 0)
 	for _, v := range divisionRepo {

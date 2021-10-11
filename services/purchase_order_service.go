@@ -29,15 +29,17 @@ type (
 		PurchaseOrderRepository repository.PurchaseOrderRepository
 		PurchaseOrderDetailRepository repository.PurchaseOrderDetailRepository
 		PaymentRepository repository.PaymentRepository
+		ProductLocationRepository repository.ProductLocationRepository
 		db *gorm.DB
 	}
 )
 
-func NewPurchaseOrderService(PurchaseOrderRepository repository.PurchaseOrderRepository, PurchaseOrderDetailRepository repository.PurchaseOrderDetailRepository, PaymentRepository repository.PaymentRepository, db *gorm.DB) PurchaseOrderService {
+func NewPurchaseOrderService(PurchaseOrderRepository repository.PurchaseOrderRepository, PurchaseOrderDetailRepository repository.PurchaseOrderDetailRepository, PaymentRepository repository.PaymentRepository, ProductLocationRepository repository.ProductLocationRepository, db *gorm.DB) PurchaseOrderService {
 	return &PurchaseOrderServiceImpl{
 		PurchaseOrderRepository: PurchaseOrderRepository,
 		PurchaseOrderDetailRepository: PurchaseOrderDetailRepository,
 		PaymentRepository: PaymentRepository,
+		ProductLocationRepository: ProductLocationRepository,
 		db: db,
 	}
 }
@@ -96,6 +98,18 @@ func (service *PurchaseOrderServiceImpl) Create(ctx echo.Context) (res web.Respo
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.Payment = paymentRepo
+
+	productLocations := []map[string]interface{}{}
+	for _, val := range purchaseOrderDetailRepo {
+		productLocation := map[string]interface{}{}
+		productLocation["model"] = "RawMaterial"
+		productLocation["product_id"] = helpers.IntToString(val.RawMaterialId)
+		productLocation["quantity"] = helpers.IntToString(val.Qty)
+		productLocation["store_id"] = ctx.Get("userInfo").(map[string]interface{})["store_id"].(string)
+		productLocations = append(productLocations, productLocation)
+	}
+
+	_, err = service.ProductLocationRepository.StockAddition(ctx, tx, productLocations)
 
 	return helpers.Response("CREATED", message, o), err
 }

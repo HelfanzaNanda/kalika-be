@@ -1,7 +1,7 @@
 package services
 
 import (
-	//"fmt"
+	
 	"strings"
 
 	"github.com/labstack/echo"
@@ -22,18 +22,21 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		Datatable(ctx echo.Context) (res web.Datatable, err error)
 		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	PurchaseReturnServiceImpl struct {
 		PurchaseReturnRepository repository.PurchaseReturnRepository
+		PurchaseReturnDetailRepository repository.PurchaseReturnDetailRepository
 		db *gorm.DB
 	}
 )
 
-func NewPurchaseReturnService(PurchaseReturnRepository repository.PurchaseReturnRepository, db *gorm.DB) PurchaseReturnService {
+func NewPurchaseReturnService(PurchaseReturnRepository repository.PurchaseReturnRepository, PurchaseReturnDetailRepository repository.PurchaseReturnDetailRepository, db *gorm.DB) PurchaseReturnService {
 	return &PurchaseReturnServiceImpl{
 		PurchaseReturnRepository: PurchaseReturnRepository,
+		PurchaseReturnDetailRepository: PurchaseReturnDetailRepository,
 		db: db,
 	}
 }
@@ -46,13 +49,19 @@ func (service *PurchaseReturnServiceImpl) Create(ctx echo.Context) (res web.Resp
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
 	purchaseReturnRepo, err := service.PurchaseReturnRepository.Create(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "create purchase return error", nil), err
 	}
+	o.PurchaseReturn = purchaseReturnRepo
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", purchaseReturnRepo), err
+	purchaseReturnDetailRepo, err := service.PurchaseReturnDetailRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create purchase return detail error", nil), err
+	}
+	
+	o.PurchaseReturnDetails = purchaseReturnDetailRepo
+	return helpers.Response("OK", "Sukses Menyimpan Data", o), err
 }
 
 func (service PurchaseReturnServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
@@ -60,17 +69,28 @@ func (service PurchaseReturnServiceImpl) Update(ctx echo.Context, id int) (res w
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
-	o.Id = id
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
-
 	purchaseReturnRepo, err := service.PurchaseReturnRepository.Update(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "create purchase return error", nil), err
 	}
+	o.PurchaseReturn = purchaseReturnRepo
 
-	return helpers.Response("OK", "Sukses Mengubah Data", purchaseReturnRepo), err
+	_, err = service.PurchaseReturnDetailRepository.DeleteByPurchaseReturnId(ctx, tx, id)
+	if err != nil {
+		return helpers.Response(err.Error(), "delete purchase return detail error", nil), err
+	}
+	
+	o.Id = id
+	purchaseReturnDetailRepo, err := service.PurchaseReturnDetailRepository.Create(ctx, tx, o)
+	if err != nil {
+		return helpers.Response(err.Error(), "create purchase return detail error", nil), err
+	}
+	
+	o.PurchaseReturnDetails = purchaseReturnDetailRepo
+	return helpers.Response("OK", "Sukses Mengubah Data", o), err
 }
 
 func (service PurchaseReturnServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
@@ -85,23 +105,34 @@ func (service PurchaseReturnServiceImpl) Delete(ctx echo.Context, id int) (res w
 
 	_, err = service.PurchaseReturnRepository.Delete(ctx, tx, o)
 	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
+		return helpers.Response(err.Error(), "delete purchase return error", nil), err
+	}
+	_, err = service.PurchaseReturnDetailRepository.DeleteByPurchaseReturnId(ctx, tx, id)
+	if err != nil {
+		return helpers.Response(err.Error(), "delete purchase return detail error", nil), err
 	}
 
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
 }
 
 func (service PurchaseReturnServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+	purxhaseReturn := web.PurchaseReturnPost{}
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
 	purchaseReturnRepo, err := service.PurchaseReturnRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
+	
+	purchaseReturnDetailRepo, err := service.PurchaseReturnDetailRepository.FindByPurchaseReturnId(ctx, tx, id)
+
+	purxhaseReturn.PurchaseReturn = purchaseReturnRepo
+	purxhaseReturn.Date = purchaseReturnRepo.Date.String()
+	purxhaseReturn.PurchaseReturnDetails = purchaseReturnDetailRepo
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", purchaseReturnRepo), err
+	return helpers.Response("OK", "Sukses Mengambil Data", purxhaseReturn), err
 }
 
 func (service PurchaseReturnServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
@@ -111,6 +142,40 @@ func (service PurchaseReturnServiceImpl) FindAll(ctx echo.Context) (res web.Resp
 	purchaseReturnRepo, err := service.PurchaseReturnRepository.FindAll(ctx, tx)
 
 	return helpers.Response("OK", "Sukses Mengambil Data", purchaseReturnRepo), err
+}
+
+func (service *PurchaseReturnServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
+	params,_ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+
+	purchaseReturnRepo, totalData, totalFiltered, _ := service.PurchaseReturnRepository.Datatable(ctx, tx, draw, limit, start, search)
+	// if err != nil {
+	// 	return helpers.Response(err.Error(), "", nil), err
+	// }
+
+	data := make([]interface{}, 0)
+	for _, v := range purchaseReturnRepo {
+		v.Action = `<div class="flex">`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `</div>`
+
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
 }
 
 func (service *PurchaseReturnServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datatable, err error) {

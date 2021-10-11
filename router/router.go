@@ -121,10 +121,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	
 	
 	purchaseReturnRepository := repository.NewPurchaseReturnRepository()
-	purchaseReturnService := services.NewPurchaseReturnService(purchaseReturnRepository, db)
+	purchaseReturnDetailRepository := repository.NewPurchaseReturnDetailRepository()
+	purchaseReturnService := services.NewPurchaseReturnService(purchaseReturnRepository, purchaseReturnDetailRepository, db)
 	purchaseReturnController := controllers.NewPurchaseReturnController(purchaseReturnService)
 	
-	purchaseReturnDetailRepository := repository.NewPurchaseReturnDetailRepository()
 	purchaseReturnDetailService := services.NewPurchaseReturnDetailService(purchaseReturnDetailRepository, db)
 	purchaseReturnDetailController := controllers.NewPurchaseReturnDetailController(purchaseReturnDetailService)
 	
@@ -381,6 +381,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/purchase_returns", purchaseReturnController.FindAll)
 	api.GET("/purchase_returns/:id", purchaseReturnController.FindById)
 	api.POST("/purchase_returns", purchaseReturnController.Create)
+	api.POST("/purchase_return_datatables", purchaseReturnController.Datatable)
 	api.POST("/report_purchase_return_datatables", purchaseReturnController.ReportDatatable)
 	api.POST("/purchase_return_pdf", purchaseReturnController.GeneratePdf)
 	api.PUT("/purchase_returns/:id", purchaseReturnController.Update)

@@ -153,10 +153,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	salesDetailController := controllers.NewSalesDetailController(salesDetailService)
 
 	salesReturnRepository := repository.NewSalesReturnRepository()
-	salesReturnService := services.NewSalesReturnService(salesReturnRepository, db)
+	salesReturnDetailRepository := repository.NewSalesReturnDetailRepository()
+	salesReturnService := services.NewSalesReturnService(salesReturnRepository, salesReturnDetailRepository, db)
 	salesReturnController := controllers.NewSalesReturnController(salesReturnService)
 	
-	salesReturnDetailRepository := repository.NewSalesReturnDetailRepository()
 	salesReturnDetailService := services.NewSalesReturnDetailService(salesReturnDetailRepository, db)
 	salesReturnDetailController := controllers.NewSalesReturnDetailController(salesReturnDetailService)
 	
@@ -459,6 +459,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/sales_returns/:id", salesReturnController.FindById)
 	api.POST("/sales_returns", salesReturnController.Create)
 	api.POST("/report_sales_return_datatables", salesReturnController.ReportDatatable)
+	api.POST("/sales_return_datatables", salesReturnController.Datatable)
 	api.POST("/sale_return_pdf", salesReturnController.GeneratePdf)
 	api.PUT("/sales_returns/:id", salesReturnController.Update)
 	api.DELETE("/sales_returns/:id", salesReturnController.Delete)

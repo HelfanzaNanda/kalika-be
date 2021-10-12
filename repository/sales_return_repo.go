@@ -5,6 +5,7 @@ import (
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -12,11 +13,12 @@ import (
 
 type (
 	SalesReturnRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (domain.SalesReturn, error)
-		Update(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (domain.SalesReturn, error)
+		Create(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (domain.SalesReturn, error)
+		Update(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (domain.SalesReturn, error)
 		Delete(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.SalesReturn, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.SalesReturn, error)
+		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SalesReturnDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.SalesReturnDatatable, int64, int64, error)
 		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.SalesReturnGet, error)
 	}
@@ -30,14 +32,27 @@ func NewSalesReturnRepository() SalesReturnRepository {
 	return &SalesReturnRepositoryImpl{}
 }
 
-func (repository SalesReturnRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (domain.SalesReturn, error) {
-	db.Create(&salesReturn)
-	salesReturnRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(salesReturn.Id))
+func (repository SalesReturnRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (domain.SalesReturn, error) {
+	model := domain.SalesReturn{}
+	model.Number = "SR"+helpers.IntToString(int(time.Now().Unix()))
+	model.CustomerId = salesReturn.CustomerId
+	model.StoreConsignmentId = salesReturn.StoreConsignmentId
+	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	db.Create(&model)
+
+	salesReturnRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(model.Id))
 	return salesReturnRes, nil
 }
 
-func (repository SalesReturnRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (domain.SalesReturn, error) {
-	db.Where("id = ?", salesReturn.Id).Updates(&salesReturn)
+func (repository SalesReturnRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (domain.SalesReturn, error) {
+	model := domain.SalesReturn{}
+	model.Number = "SR"+helpers.IntToString(int(time.Now().Unix()))
+	model.CustomerId = salesReturn.CustomerId
+	model.StoreConsignmentId = salesReturn.StoreConsignmentId
+	model.Total = salesReturn.Total
+	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	db.Where("id = ?", salesReturn.Id).Updates(&model)
+	
 	salesReturnRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(salesReturn.Id))
 	return salesReturnRes, nil
 }
@@ -63,6 +78,33 @@ func (repository SalesReturnRepositoryImpl) FindAll(ctx echo.Context, db *gorm.D
 	return salesReturnRes, nil
 }
 
+func (repository SalesReturnRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.SalesReturnDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("sales_returns").
+		Select(`
+			sales_returns.*,
+			store_consignments.id store_consignment_id, store_consignments.store_name store_consignment_name, 
+			customers.id customer_id, customers.name customer_name,
+			users.name created_by_name
+		`).
+		Joins(`
+			left join store_consignments on store_consignments.id = sales_returns.store_consignment_id
+			left join customers on customers.id = sales_returns.customer_id
+			left join users on users.id = sales_returns.created_by
+		`)
+
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(sales_returns.id = ? OR sales_returns.number LIKE ?)", search, "%"+search+"%")
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("sales_returns.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}
+
 func (repository SalesReturnRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.SalesReturnDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("sales_returns").
 		Select(`
@@ -80,6 +122,9 @@ func (repository SalesReturnRepositoryImpl) ReportDatatable(ctx echo.Context, db
 	qry.Count(&totalData)
 	if search != "" {
 		qry.Where("(sales_returns.id = ? OR sales_returns.number LIKE ?)", search, "%"+search+"%")
+	}
+	if filter["start_date"] != "" && filter["end_date"] != "" {
+		qry.Where("(sales_returns.created_at > ? AND sales_returns.created_at < ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {

@@ -34,7 +34,7 @@ func NewSalesReturnDetailService(SalesReturnDetailRepository repository.SalesRet
 }
 
 func (service *SalesReturnDetailServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.SalesReturnDetail)
+	o := new(web.SalesReturnPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}

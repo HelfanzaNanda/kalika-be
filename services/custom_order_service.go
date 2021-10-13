@@ -3,6 +3,8 @@ package services
 import (
 	//"fmt"
 	"strings"
+	"time"
+
 	// "time"
 
 	"github.com/labstack/echo"
@@ -27,20 +29,22 @@ type (
 
 	CustomOrderServiceImpl struct {
 		CustomOrderRepository repository.CustomOrderRepository
+		ReceivableRepository repository.ReceivableRepository
 		db                    *gorm.DB
 	}
 )
 
-func NewCustomOrderService(CustomOrderRepository repository.CustomOrderRepository, db *gorm.DB) CustomOrderService {
+func NewCustomOrderService(CustomOrderRepository repository.CustomOrderRepository, ReceivableRepository repository.ReceivableRepository, db *gorm.DB) CustomOrderService {
 	return &CustomOrderServiceImpl{
 		CustomOrderRepository: CustomOrderRepository,
+		ReceivableRepository: ReceivableRepository,
 		db:                    db,
 	}
 }
 
 func (service *CustomOrderServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	receivableRepo := web.ReceivablePosPost{}
 	o := new(domain.CustomOrder)
-	//o.DeliveryDate,_ = time.Parse("2006-01-02T15:04:05Z07:00", ctx.Request().Body("delivery_date"))
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -48,10 +52,23 @@ func (service *CustomOrderServiceImpl) Create(ctx echo.Context) (res web.Respons
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
+	o.Number = "CO"+helpers.IntToString(int(time.Now().Unix()))
+	o.Status = "submission"
+	o.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+
 	customOrderRepo, err := service.CustomOrderRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
+
+	receivableRepo.Model = "CustomOrder"
+	receivableRepo.ModelId = customOrderRepo.Id
+	receivableRepo.Total = o.Price
+	receivableRepo.Receivables = o.Price
+	receivableRepo.Date = time.Now().Format("2006-01-02")
+	receivableRepo.Note = o.Number
+
+	service.ReceivableRepository.Create(ctx, tx, &receivableRepo)
 
 	return helpers.Response("CREATED", "Sukses Menyimpan Data", customOrderRepo), err
 }
@@ -126,9 +143,6 @@ func (service *CustomOrderServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	search := strings.TrimSpace(params.Get("search[value]"))
 
 	customOrderRepo, totalData, totalFiltered, _ := service.CustomOrderRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
 	data := make([]interface{}, 0)
 	for _, v := range customOrderRepo {

@@ -82,10 +82,6 @@ func Routes(db *gorm.DB) *echo.Echo {
 	expenseCategoryRepository := repository.NewExpenseCategoryRepository()
 	expenseCategoryService := services.NewExpenseCategoryService(expenseCategoryRepository, db)
 	expenseCategoryController := controllers.NewExpenseCategoryController(expenseCategoryService)
-	
-	customOrderRepository := repository.NewCustomOrderRepository()
-	customOrderService := services.NewCustomOrderService(customOrderRepository, db)
-	customOrderController := controllers.NewCustomOrderController(customOrderService)
 
 	unitRepository := repository.NewUnitRepository()
 	unitService := services.NewUnitService(unitRepository, db)
@@ -107,10 +103,14 @@ func Routes(db *gorm.DB) *echo.Echo {
 	receivableService := services.NewReceivableService(receivableRepository, db)
 	receivableController := controllers.NewReceivableController(receivableService)
 	
-	receivableDetailRepository := repository.NewReceivableRepository()
-	receivableDetailService := services.NewReceivableService(receivableDetailRepository, db)
-	receivableDetailController := controllers.NewReceivableController(receivableDetailService)
-	
+	receivableDetailRepository := repository.NewReceivableDetailRepository()
+	receivableDetailService := services.NewReceivableDetailService(receivableDetailRepository, db)
+	receivableDetailController := controllers.NewReceivableDetailController(receivableDetailService)
+
+	customOrderRepository := repository.NewCustomOrderRepository()
+	customOrderService := services.NewCustomOrderService(customOrderRepository, receivableRepository, db)
+	customOrderController := controllers.NewCustomOrderController(customOrderService)
+
 	expenseDetailRepository := repository.NewExpenseDetailRepository()
 	expenseDetailService := services.NewExpenseDetailService(expenseDetailRepository, db)
 	expenseDetailController := controllers.NewExpenseDetailController(expenseDetailService)
@@ -172,10 +172,6 @@ func Routes(db *gorm.DB) *echo.Echo {
 	paymentService := services.NewPaymentService(paymentRepository, db)
 	paymentController := controllers.NewPaymentController(paymentService)
 
-	salesConsignmentRepository := repository.NewSalesConsignmentRepository()
-	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, salesConsignmentDetailRepository, paymentRepository, storeConsignmentRepository, db)
-	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
-
 	productPriceRepository := repository.NewProductPriceRepository()
 	
 	roleRepository := repository.NewRoleRepository()
@@ -211,7 +207,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	recipeController := controllers.NewRecipeController(recipeService)
 
 	saleRepository := repository.NewSalesRepository()
-	saleService := services.NewSalesService(saleRepository, salesDetailRepository, paymentRepository, customerRepository, productLocationRepository, db)
+	saleService := services.NewSalesService(saleRepository, salesDetailRepository, paymentRepository, customerRepository, productLocationRepository, receivableRepository, db)
 	saleController := controllers.NewSaleController(saleService)
 
 	rawMaterialRepository := repository.NewRawMaterialRepository()
@@ -219,8 +215,16 @@ func Routes(db *gorm.DB) *echo.Echo {
 	rawMaterialController := controllers.NewRawMaterialController(rawMaterialService)
 
 	purchaseOrderRepository := repository.NewPurchaseOrderRepository()
-	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, purchaseOrderDetailRepository, paymentRepository, productLocationRepository, db)
+	purchaseOrderService := services.NewPurchaseOrderService(purchaseOrderRepository, purchaseOrderDetailRepository, paymentRepository, productLocationRepository, debtRepository, db)
 	purchaseOrderController := controllers.NewPurchaseOrderController(purchaseOrderService)
+
+	salesConsignmentRepository := repository.NewSalesConsignmentRepository()
+	salesConsignmentService := services.NewSalesConsignmentService(salesConsignmentRepository, salesConsignmentDetailRepository, paymentRepository, storeConsignmentRepository, productLocationRepository, receivableRepository, db)
+	salesConsignmentController := controllers.NewSalesConsignmentController(salesConsignmentService)
+
+	reportRepository := repository.NewReportRepository()
+	reportService := services.NewReportService(reportRepository, db)
+	reportController := controllers.NewReportController(reportService)
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)
@@ -345,6 +349,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/debt_details", debtDetailController.FindAll)
 	api.GET("/debt_details/:id", debtDetailController.FindById)
 	api.POST("/debt_details", debtDetailController.Create)
+	api.POST("/debt_detail_datatables", debtDetailController.Datatable)
 	api.PUT("/debt_details/:id", debtDetailController.Update)
 	api.DELETE("/debt_details/:id", debtDetailController.Delete)
 	
@@ -360,6 +365,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/receivable_details", receivableDetailController.FindAll)
 	api.GET("/receivable_details/:id", receivableDetailController.FindById)
 	api.POST("/receivable_details", receivableDetailController.Create)
+	api.POST("/receivable_detail_datatables", receivableDetailController.Datatable)
 	api.PUT("/receivable_details/:id", receivableDetailController.Update)
 	api.DELETE("/receivable_details/:id", receivableDetailController.Delete)
 	
@@ -491,6 +497,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/payments", paymentController.FindAll)
 	api.GET("/payments/:id", paymentController.FindById)
 	api.POST("/payments", paymentController.Create)
+	api.POST("/payment_datatables", paymentController.Datatable)
 	api.PUT("/payments/:id", paymentController.Update)
 	api.DELETE("/payments/:id", paymentController.Delete)
 	
@@ -533,7 +540,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.PUT("/product_locations/:id", productLocationController.Update)
 	api.DELETE("/product_locations/:id", productLocationController.Delete)
 
-	
+	api.GET("/profit_loss", reportController.ProfitLoss)
 
 	return e
 }

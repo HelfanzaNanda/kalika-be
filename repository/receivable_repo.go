@@ -43,6 +43,8 @@ func (repository ReceivableRepositoryImpl) Create(ctx echo.Context, db *gorm.DB,
 		fmt.Println("########## ERROR TIME PARSE")
 	}
 	model := domain.Receivable{}
+	model.Model = receivable.Model
+	model.ModelId = receivable.ModelId
 	model.CustomerId = receivable.CustomerId
 	model.StoreConsignmentId = receivable.StoreConsignmentId
 	model.Receivables = receivable.Receivables
@@ -51,7 +53,7 @@ func (repository ReceivableRepositoryImpl) Create(ctx echo.Context, db *gorm.DB,
 	model.Date = date
 	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 	db.Create(&model)
-	receivableRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(receivable.Id))
+	receivableRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(model.Id))
 	return receivableRes, nil
 }
 

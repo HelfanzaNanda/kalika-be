@@ -131,15 +131,11 @@ func (service *ReceivableServiceImpl) Datatable(ctx echo.Context) (res web.Datat
 	search := strings.TrimSpace(params.Get("search[value]"))
 
 	receivableRepo, totalData, totalFiltered, _ := service.ReceivableRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
 	data := make([]interface{}, 0)
 	for _, v := range receivableRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
-		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `<button type="button" class="button px-2 mr-1 mb-2 bg-theme-1 text-white" id="pay-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="dollar-sign" class="w-4 h-4 mr-1"></i></button>`
 		v.Action += `</div>`
 		data = append(data, v)
 	}

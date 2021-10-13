@@ -43,6 +43,8 @@ func (repository DebtRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, debt 
 		fmt.Println("########## ERROR TIME PARSE")
 	}
 	model := domain.Debt{}
+	model.Model = debt.Model
+	model.ModelId = debt.ModelId
 	model.SupplierId = debt.SupplierId
 	model.Debts = debt.Debts
 	model.Total = debt.Total

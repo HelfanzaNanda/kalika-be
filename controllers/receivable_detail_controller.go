@@ -14,6 +14,7 @@ type ReceivableDetailController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type ReceivableDetailControllerImpl struct {
 		ReceivableDetailService services.ReceivableDetailService
@@ -56,4 +57,9 @@ func (dc *ReceivableDetailControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	receivableDetailResponse, _ := dc.ReceivableDetailService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(receivableDetailResponse.Code, receivableDetailResponse)
+}
+
+func (dc *ReceivableDetailControllerImpl) Datatable(ctx echo.Context) error {
+	receivableDetailResponse, _ := dc.ReceivableDetailService.Datatable(ctx)
+	return ctx.JSON(202, receivableDetailResponse)
 }

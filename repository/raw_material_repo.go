@@ -102,12 +102,14 @@ func (repository RawMaterialRepositoryImpl) Datatable(ctx echo.Context, db *gorm
 		suppliers.id supplier_id, suppliers.name supplier_name,
 		units.id unit_id, units.name unit_name,
 		units.id smallest_unit_id, units.name smallest_unit_name,
-		stores.id store_id, stores.name store_name
+		stores.id store_id, stores.name store_name,
+		divisions.name division_name
 	`).
 		Joins(`
 		left join suppliers on suppliers.id = raw_materials.supplier_id
 		left join units on units.id = raw_materials.unit_id
 		left join stores on stores.id = raw_materials.store_id
+		left join divisions on divisions.id = raw_materials.division_id
 	`)
 	qry.Count(&totalData)
 	if search != "" {

@@ -1,14 +1,14 @@
 package services
 
 import (
-	"strconv"
-	"strings"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
 	"kalika-be/repository"
+	"strconv"
+	"strings"
 )
 
 type (
@@ -135,8 +135,7 @@ func (service *DebtServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, 
 	data := make([]interface{}, 0)
 	for _, v := range debtRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
-		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `<button type="button" class="button px-2 mr-1 mb-2 bg-theme-1 text-white" id="pay-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="dollar-sign" class="w-4 h-4 mr-1"></i></button>`
 		v.Action += `</div>`
 		data = append(data, v)
 	}

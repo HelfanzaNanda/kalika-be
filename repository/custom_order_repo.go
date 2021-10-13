@@ -67,11 +67,13 @@ func (repository CustomOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm
 		Select(`
 			custom_orders.*,
 			products.id product_id, products.name product_name, 
-			stores.id store_id, stores.name store_name
+			stores.id store_id, stores.name store_name,
+			users.name created_by_name
 		`).
 		Joins(`
 			left join stores on stores.id = custom_orders.store_id
 			left join products on products.id = custom_orders.product_id
+			left join users on users.id = custom_orders.created_by
 		`)
 
 	qry.Count(&totalData)

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	//"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -31,16 +32,18 @@ type (
 		PurchaseOrderDetailRepository repository.PurchaseOrderDetailRepository
 		PaymentRepository repository.PaymentRepository
 		ProductLocationRepository repository.ProductLocationRepository
+		DebtRepository repository.DebtRepository
 		db *gorm.DB
 	}
 )
 
-func NewPurchaseOrderService(PurchaseOrderRepository repository.PurchaseOrderRepository, PurchaseOrderDetailRepository repository.PurchaseOrderDetailRepository, PaymentRepository repository.PaymentRepository, ProductLocationRepository repository.ProductLocationRepository, db *gorm.DB) PurchaseOrderService {
+func NewPurchaseOrderService(PurchaseOrderRepository repository.PurchaseOrderRepository, PurchaseOrderDetailRepository repository.PurchaseOrderDetailRepository, PaymentRepository repository.PaymentRepository, ProductLocationRepository repository.ProductLocationRepository, DebtRepository repository.DebtRepository, db *gorm.DB) PurchaseOrderService {
 	return &PurchaseOrderServiceImpl{
 		PurchaseOrderRepository: PurchaseOrderRepository,
 		PurchaseOrderDetailRepository: PurchaseOrderDetailRepository,
 		PaymentRepository: PaymentRepository,
 		ProductLocationRepository: ProductLocationRepository,
+		DebtRepository: DebtRepository,
 		db: db,
 	}
 }
@@ -58,6 +61,7 @@ func (service *PurchaseOrderServiceImpl) Create(ctx echo.Context) (res web.Respo
 	purchaseOrderRepo := domain.PurchaseOrder{}
 	purchaseOrderDetailRepo := []web.PurchaseOrderDetailGet{}
 	paymentRepo := domain.Payment{}
+	debtRepo := web.DebtPosPost{}
 
 	if o.Id > 0 {
 		message = "Sukses Memperbarui Data"
@@ -94,23 +98,36 @@ func (service *PurchaseOrderServiceImpl) Create(ctx echo.Context) (res web.Respo
 		o.Payment.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 		o.Payment.Date = time.Now()
 		paymentRepo, err = service.PaymentRepository.Create(ctx, tx, &o.Payment)
+
+		productLocations := []map[string]interface{}{}
+		for _, val := range purchaseOrderDetailRepo {
+			productLocation := map[string]interface{}{}
+			productLocation["model"] = "RawMaterial"
+			productLocation["product_id"] = helpers.IntToString(val.RawMaterialId)
+			productLocation["quantity"] = helpers.IntToString(val.Qty)
+			productLocation["store_id"] = ctx.Get("userInfo").(map[string]interface{})["store_id"].(string)
+			productLocations = append(productLocations, productLocation)
+		}
+
+		_, err = service.ProductLocationRepository.StockAddition(ctx, tx, productLocations)
+
+		if o.Payment.Total > o.CustomerPay {
+			fmt.Println(purchaseOrderRepo)
+			debtRepo.Model = "PurchaseOrder"
+			debtRepo.ModelId = purchaseOrderRepo.Id
+			debtRepo.Total = o.Payment.Total - o.CustomerPay
+			debtRepo.Debts = o.Payment.Total - o.CustomerPay
+			debtRepo.Date = time.Now().Format("2006-01-02")
+			debtRepo.Note = o.PurchaseOrder.Number
+			debtRepo.SupplierId = purchaseOrderRepo.SupplierId
+
+			service.DebtRepository.Create(ctx, tx, &debtRepo)
+		}
 	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.Payment = paymentRepo
-
-	productLocations := []map[string]interface{}{}
-	for _, val := range purchaseOrderDetailRepo {
-		productLocation := map[string]interface{}{}
-		productLocation["model"] = "RawMaterial"
-		productLocation["product_id"] = helpers.IntToString(val.RawMaterialId)
-		productLocation["quantity"] = helpers.IntToString(val.Qty)
-		productLocation["store_id"] = ctx.Get("userInfo").(map[string]interface{})["store_id"].(string)
-		productLocations = append(productLocations, productLocation)
-	}
-
-	_, err = service.ProductLocationRepository.StockAddition(ctx, tx, productLocations)
 
 	return helpers.Response("CREATED", message, o), err
 }

@@ -99,12 +99,14 @@ func (repository SalesRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, d
 			sales.*,
 			stores.id store_id, stores.name store_name, 
 			customers.id customer_id, customers.name customer_name, 
-			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_register_cash_in_hand 
+			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_register_cash_in_hand,
+			users.name created_by_name
 		`).
 		Joins(`
 			left join stores on stores.id = sales.store_id
 			left join customers on customers.id = sales.customer_id
 			left join cash_registers on cash_registers.id = sales.cash_register_id
+			JOIN users ON users.id = sales.created_by
 		`)
 
 	qry.Count(&totalData)
@@ -126,12 +128,14 @@ func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm
 			sales.*,
 			stores.id store_id, stores.name store_name, 
 			customers.id customer_id, customers.name customer_name, 
-			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_register_cash_in_hand 
+			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_register_cash_in_hand ,
+			users.name created_by_name
 		`).
 		Joins(`
 			left join stores on stores.id = sales.store_id
 			left join customers on customers.id = sales.customer_id
 			left join cash_registers on cash_registers.id = sales.cash_register_id
+			JOIN users ON users.id = sales.created_by
 		`)
 
 	qry.Count(&totalData)

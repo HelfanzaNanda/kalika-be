@@ -67,9 +67,13 @@ func (repository PurchaseOrderRepositoryImpl) Datatable(ctx echo.Context, db *go
 	qry := db.Table("purchase_orders")
 	qry.Select(`
 		purchase_orders.*,
+		users.name created_by_name,
 		suppliers.id supplier_id, suppliers.name supplier_name
 	`)
-	qry.Joins("left join suppliers on suppliers.id = purchase_orders.supplier_id")
+	qry.Joins(`
+		left join users on users.id = purchase_orders.created_by
+		left join suppliers on suppliers.id = purchase_orders.supplier_id
+	`)
 	qry.Count(&totalData)
 	if search != "" {
 		qry.Where("(purchase_orders.id = ? OR purchase_orders.number LIKE ?)", search, "%"+search+"%")

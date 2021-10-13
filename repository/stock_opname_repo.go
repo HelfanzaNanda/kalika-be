@@ -63,17 +63,17 @@ func (repository *StockOpnameRepositoryImpl) FindAll(ctx echo.Context, db *gorm.
 }
 
 func (repository *StockOpnameRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (recipeRes []web.StockOpnameDatatable, totalData int64, totalFiltered int64, err error) {
-	qry := db.Table("stock_opnames")
+	qry := db.Table("stock_opnames").Select("stock_opnames.*, users.name as created_by_name")
 	qry.Count(&totalData)
 	if search != "" {
-		qry.Where("(stock_opnames.number LIKE ? AND store_consignment.name LIKE ?)", "%"+search+"%", "%"+search+"%")
+		qry.Where("(stock_opnames.number LIKE ?)", "%"+search+"%")
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
 	}
-
+	qry.Joins("JOIN users ON users.id = stock_opnames.created_by")
 	qry.Order("stock_opnames.id desc")
-	qry.Preload("StoreConsignment").Find(&recipeRes)
+	qry.Preload("Store").Find(&recipeRes)
 	return recipeRes, totalData, totalFiltered, nil
 }

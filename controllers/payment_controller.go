@@ -14,6 +14,7 @@ type PaymentController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type PaymentControllerImpl struct {
 		PaymentService services.PaymentService
@@ -56,4 +57,9 @@ func (dc *PaymentControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	paymentResponse, _ := dc.PaymentService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(paymentResponse.Code, paymentResponse)
+}
+
+func (dc *PaymentControllerImpl) Datatable(ctx echo.Context) error {
+	paymentResponse, _ := dc.PaymentService.Datatable(ctx)
+	return ctx.JSON(202, paymentResponse)
 }

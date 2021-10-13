@@ -12,5 +12,6 @@ type RawMaterialDatatable struct {
 	SmallestUnitName string `json:"smallest_unit_name"`
 	StoreId int `json:"store_id"`
 	StoreName string `json:"store_name"`
+	DivisionName string `json:"division_name"`
 	Action string `json:"action"`
 }

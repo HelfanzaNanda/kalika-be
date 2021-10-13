@@ -131,11 +131,7 @@ func (service *StoreConsignmentServiceImpl) Datatable(ctx echo.Context) (res web
 	search := strings.TrimSpace(params.Get("search[value]"))
 
 	storeConsignmentRepo, totalData, totalFiltered, _ := service.StoreConsignmentRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
-	//var data []interface{}
 	data := make([]interface{}, 0)
 	for _, v := range storeConsignmentRepo {
 		v.Action = `<div class="flex">`

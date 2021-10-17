@@ -201,7 +201,7 @@ func (service DebtServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, 
 		froot = append(froot, item.SupplierName)
 		froot = append(froot, helpers.FormatRupiah(item.Total))
 		froot = append(froot, helpers.FormatRupiah(item.Debts))
-		froot = append(froot, item.Date.Local().Format("02 January 2006"))
+		froot = append(froot, item.Date.Format("02 Jan 2006 15:04:05"))
 		froot = append(froot, item.Note)
 		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)

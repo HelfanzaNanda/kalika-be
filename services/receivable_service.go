@@ -201,7 +201,7 @@ func (service ReceivableServiceImpl) GeneratePdf(ctx echo.Context) (res web.Resp
 		froot = append(froot, item.CustomerName)
 		froot = append(froot, helpers.FormatRupiah(item.Total))
 		froot = append(froot, helpers.FormatRupiah(item.Receivables))
-		froot = append(froot, item.Date.Local().Format("02 January 2006"))
+		froot = append(froot, item.Date.Format("02 Jan 2006 15:04:05"))
 		froot = append(froot, item.Note)
 		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)

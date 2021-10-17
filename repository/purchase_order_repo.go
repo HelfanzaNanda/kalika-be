@@ -127,6 +127,7 @@ func (repository PurchaseOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, 
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(purchase_orders.created_at > ? AND purchase_orders.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
+	qry.Order("purchase_orders.id desc")
 	qry.Find(&purchaseOrderRes)
 	return purchaseOrderRes, nil
 }

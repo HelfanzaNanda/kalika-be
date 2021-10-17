@@ -58,13 +58,7 @@ func (repository DebtRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, debt 
 
 func (repository DebtRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, debt *web.DebtPosPost) (domain.Debt, error) {
 	layoutFormat := "2006-01-02"
-	date, err := time.Parse(layoutFormat, debt.Date)
-	if err != nil{
-		fmt.Println("########## ERROR TIME PARSE")
-		fmt.Println(err)
-		fmt.Println(debt)
-		fmt.Println("########## ERROR TIME PARSE")
-	}
+	date, _ := time.Parse(layoutFormat, debt.Date)
 	model := domain.Debt{}
 	model.SupplierId = debt.SupplierId
 	model.Debts = debt.Debts

@@ -134,6 +134,7 @@ func (repository PurchaseReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context,
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(purchase_returns.created_at > ? AND purchase_returns.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
+	qry.Order("purchase_returns.id desc")
 	qry.Find(&purchaseReturnRes)
 	return purchaseReturnRes, nil
 }

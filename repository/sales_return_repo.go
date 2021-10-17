@@ -151,6 +151,7 @@ func (repository SalesReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(sales_returns.created_at > ? AND sales_returns.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
+	qry.Order("sales_returns.id desc")
 	qry.Find(&saleReturnRes)
 	return saleReturnRes, nil
 }

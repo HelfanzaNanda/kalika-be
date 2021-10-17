@@ -173,7 +173,7 @@ func (repository ReceivableRepositoryImpl) FindByCreatedAt(ctx echo.Context, db 
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(receivables.created_at > ? AND receivables.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
-	qry.Order("id desc")
+	qry.Order("receivables.id desc")
 	qry.Find(&receivableRes)
 	return receivableRes, nil
 }

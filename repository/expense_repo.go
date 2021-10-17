@@ -116,6 +116,7 @@ func (repository ExpenseRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *go
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(expenses.created_at > ? AND expenses.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
+	qry.Order("expenses.id desc")
 	qry.Find(&expenseRes)
 	return expenseRes, nil
 }

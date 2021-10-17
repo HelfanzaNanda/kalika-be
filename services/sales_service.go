@@ -34,17 +34,19 @@ type (
 		PaymentRepository repository.PaymentRepository
 		CustomerRepository repository.CustomerRepository
 		ProductLocationRepository repository.ProductLocationRepository
+		ReceivableRepository repository.ReceivableRepository
 		db *gorm.DB
 	}
 )
 
-func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepository repository.SalesDetailRepository, PaymentRepository repository.PaymentRepository, CustomerRepository repository.CustomerRepository, ProductLocationRepository repository.ProductLocationRepository, db *gorm.DB) SalesService {
+func NewSalesService(SalesRepository repository.SalesRepository, SalesDetailRepository repository.SalesDetailRepository, PaymentRepository repository.PaymentRepository, CustomerRepository repository.CustomerRepository, ProductLocationRepository repository.ProductLocationRepository, ReceivableRepository repository.ReceivableRepository, db *gorm.DB) SalesService {
 	return &SalesServiceImpl{
 		SalesRepository:       SalesRepository,
 		SalesDetailRepository: SalesDetailRepository,
 		PaymentRepository: PaymentRepository,
 		CustomerRepository: CustomerRepository,
 		ProductLocationRepository: ProductLocationRepository,
+		ReceivableRepository: ReceivableRepository,
 		db: db,
 	}
 }
@@ -63,6 +65,7 @@ func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err
 	salesRepo := domain.Sale{}
 	salesDetailRepo := []web.SalesDetailPosGet{}
 	paymentRepo := domain.Payment{}
+	receivableRepo := web.ReceivablePosPost{}
 
 	if o.Customer.Id > 0 {
 		customerRepo, err = service.CustomerRepository.Update(ctx, tx, &o.Customer)
@@ -105,23 +108,35 @@ func (service *SalesServiceImpl) Create(ctx echo.Context) (res web.Response, err
 		o.Payment.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 		o.Payment.Date = time.Now()
 		paymentRepo, err = service.PaymentRepository.Create(ctx, tx, &o.Payment)
+
+		if o.Payment.Total > o.CustomerPay {
+			// Receivable
+			receivableRepo.Model = "Sales"
+			receivableRepo.ModelId = salesRepo.Id
+			receivableRepo.Total = o.Payment.Total - o.CustomerPay
+			receivableRepo.Receivables = o.Payment.Total - o.CustomerPay
+			receivableRepo.Date = time.Now().Format("2006-01-02")
+			receivableRepo.Note = o.Number
+
+			service.ReceivableRepository.Create(ctx, tx, &receivableRepo)
+		}
+
+		productLocations := []map[string]interface{}{}
+		for _, val := range salesDetailRepo {
+			productLocation := map[string]interface{}{}
+			productLocation["model"] = "Product"
+			productLocation["product_id"] = helpers.IntToString(val.ProductId)
+			productLocation["quantity"] = helpers.IntToString(val.Qty)
+			productLocation["store_id"] = helpers.IntToString(salesRepo.StoreId)
+			productLocations = append(productLocations, productLocation)
+		}
+
+		service.ProductLocationRepository.StockDeduction(ctx, tx, productLocations)
 	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 	o.Payment = paymentRepo
-
-	productLocations := []map[string]interface{}{}
-	for _, val := range salesDetailRepo {
-		productLocation := map[string]interface{}{}
-		productLocation["model"] = "Product"
-		productLocation["product_id"] = helpers.IntToString(val.ProductId)
-		productLocation["quantity"] = helpers.IntToString(val.Qty)
-		productLocation["store_id"] = helpers.IntToString(salesRepo.StoreId)
-		productLocations = append(productLocations, productLocation)
-	}
-
-	_, err = service.ProductLocationRepository.StockDeduction(ctx, tx, productLocations)
 
 	return helpers.Response("CREATED", message, o), err
 }

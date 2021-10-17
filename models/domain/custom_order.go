@@ -6,6 +6,7 @@ import (
 
 type CustomOrder struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
+	Number string `json:"number"`
 	StoreId int `json:"store_id"`
 	ProductId int `json:"product_id"`
 	CakeCharacter string `json:"cake_character"`

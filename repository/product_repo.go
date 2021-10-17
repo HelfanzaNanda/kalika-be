@@ -77,6 +77,11 @@ func (repository ProductRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (
 		}
 	}
 	qry.Scan(&productRes)
+
+	for key, val := range productRes {
+		db.Table("product_prices").Where("product_id = ?", val.Id).Scan(&productRes[key].ProductPrice)
+	}
+
 	return productRes, nil
 }
 

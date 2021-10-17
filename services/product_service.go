@@ -171,9 +171,6 @@ func (service *ProductServiceImpl) Datatable(ctx echo.Context) (res web.Datatabl
 	search := strings.TrimSpace(params.Get("search[value]"))
 
 	productRepo, totalData, totalFiltered, _ := service.ProductRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
 	data := make([]interface{}, 0)
 	for _, v := range productRepo {

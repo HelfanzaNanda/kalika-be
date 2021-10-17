@@ -14,6 +14,7 @@ type DebtDetailController interface {
 	Create(ctx echo.Context) error
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
+	Datatable(ctx echo.Context) error
 }
 type DebtDetailControllerImpl struct {
 		DebtDetailService services.DebtDetailService
@@ -56,4 +57,9 @@ func (dc *DebtDetailControllerImpl) Delete(ctx echo.Context) error {
 	id := ctx.Param("id")
 	debtDetailResponse, _ := dc.DebtDetailService.Delete(ctx, helpers.StringToInt(id))
 	return ctx.JSON(debtDetailResponse.Code, debtDetailResponse)
+}
+
+func (dc *DebtDetailControllerImpl) Datatable(ctx echo.Context) error {
+	debtDetailResponse, _ := dc.DebtDetailService.Datatable(ctx)
+	return ctx.JSON(202, debtDetailResponse)
 }

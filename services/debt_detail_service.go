@@ -4,6 +4,9 @@ import (
 	//"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
+	"strings"
+	"time"
+
 	//"kalika-be/config"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
@@ -18,6 +21,7 @@ type (
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
+		Datatable(ctx echo.Context) (res web.Datatable, err error)
 	}
 
 	DebtDetailServiceImpl struct {
@@ -42,6 +46,7 @@ func (service *DebtDetailServiceImpl) Create(ctx echo.Context) (res web.Response
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
+	o.DatePay = time.Now()
 	debtDetailRepo, err := service.DebtDetailRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
@@ -50,7 +55,7 @@ func (service *DebtDetailServiceImpl) Create(ctx echo.Context) (res web.Response
 	return helpers.Response("CREATED", "Sukses Menyimpan Data", debtDetailRepo), err
 }
 
-func (service DebtDetailServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
+func (service *DebtDetailServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
 	o := new(domain.DebtDetail)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
@@ -68,7 +73,7 @@ func (service DebtDetailServiceImpl) Update(ctx echo.Context, id int) (res web.R
 	return helpers.Response("OK", "Sukses Mengubah Data", debtDetailRepo), err
 }
 
-func (service DebtDetailServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
+func (service *DebtDetailServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
 	o := new(domain.DebtDetail)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Bnding", nil), err
@@ -86,7 +91,7 @@ func (service DebtDetailServiceImpl) Delete(ctx echo.Context, id int) (res web.R
 	return helpers.Response("OK", "Sukses Menghapus Data", true), err
 }
 
-func (service DebtDetailServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
+func (service *DebtDetailServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
@@ -99,7 +104,7 @@ func (service DebtDetailServiceImpl) FindById(ctx echo.Context, id int) (res web
 	return helpers.Response("OK", "Sukses Mengambil Data", debtDetailRepo), err
 }
 
-func (service DebtDetailServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
+func (service *DebtDetailServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
@@ -108,3 +113,33 @@ func (service DebtDetailServiceImpl) FindAll(ctx echo.Context) (res web.Response
 	return helpers.Response("OK", "Sukses Mengambil Data", debtDetailRepo), err
 }
 
+func (service *DebtDetailServiceImpl) Datatable(ctx echo.Context) (res web.Datatable, err error) {
+	params,_ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+
+	debtDetailRepo, totalData, totalFiltered, _ := service.DebtDetailRepository.Datatable(ctx, tx, draw, limit, start, search)
+
+	data := make([]interface{}, 0)
+	for _, v := range debtDetailRepo {
+		v.Action = `<div class="flex">`
+		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `</div>`
+
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
+}

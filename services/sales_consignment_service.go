@@ -29,6 +29,8 @@ type (
 		SalesConsignmentDetailRepository repository.SalesConsignmentDetailRepository
 		PaymentRepository repository.PaymentRepository
 		StoreConsignmentRepository repository.StoreConsignmentRepository
+		ProductLocationRepository repository.ProductLocationRepository
+		ReceivableRepository repository.ReceivableRepository
 		db *gorm.DB
 	}
 )
@@ -38,12 +40,16 @@ func NewSalesConsignmentService(
 	SalesConsignmentDetailRepository repository.SalesConsignmentDetailRepository,
 	PaymentRepository repository.PaymentRepository,
 	StoreConsignmentRepository repository.StoreConsignmentRepository,
+	ProductLocationRepository repository.ProductLocationRepository,
+	ReceivableRepository repository.ReceivableRepository,
 	db *gorm.DB) SalesConsignmentService {
 	return &SalesConsignmentServiceImpl{
 		SalesConsignmentRepository: SalesConsignmentRepository,
 		PaymentRepository: PaymentRepository,
 		SalesConsignmentDetailRepository: SalesConsignmentDetailRepository,
 		StoreConsignmentRepository: StoreConsignmentRepository,
+		ProductLocationRepository: ProductLocationRepository,
+		ReceivableRepository: ReceivableRepository,
 		db: db,
 	}
 }
@@ -62,6 +68,7 @@ func (service *SalesConsignmentServiceImpl) Create(ctx echo.Context) (res web.Re
 	salesConsignmentDetailRepo := []web.SalesConsignmentDetailGet{}
 	paymentRepo := domain.Payment{}
 	storeConsignmentRepo := domain.StoreConsignment{}
+	receivableRepo := web.ReceivablePosPost{}
 
 	o.SalesConsignment.Total = 0
 	for _, val := range o.SalesConsignmentDetails {
@@ -110,6 +117,28 @@ func (service *SalesConsignmentServiceImpl) Create(ctx echo.Context) (res web.Re
 		o.Payment.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 		o.Payment.Date = time.Now()
 		paymentRepo, err = service.PaymentRepository.Create(ctx, tx, &o.Payment)
+
+		productLocations := []map[string]interface{}{}
+		for _, val := range salesConsignmentDetailRepo {
+			productLocation := map[string]interface{}{}
+			productLocation["model"] = "Product"
+			productLocation["product_id"] = helpers.IntToString(val.ProductId)
+			productLocation["quantity"] = helpers.IntToString(int(val.Qty))
+			productLocation["store_id"] = ctx.Get("userInfo").(map[string]interface{})["store_id"].(string)
+			productLocations = append(productLocations, productLocation)
+		}
+
+		_, err = service.ProductLocationRepository.StockDeduction(ctx, tx, productLocations)
+
+		receivableRepo.Model = "SalesConsignment"
+		receivableRepo.ModelId = salesConsignmentRepo.Id
+		receivableRepo.Total = o.Total
+		receivableRepo.Receivables = o.Total
+		receivableRepo.Date = time.Now().Format("2006-01-02")
+		receivableRepo.Note = o.Number
+		receivableRepo.StoreConsignmentId = o.SalesConsignment.StoreConsignmentId
+
+		service.ReceivableRepository.Create(ctx, tx, &receivableRepo)
 	}
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err

@@ -12,6 +12,7 @@ type PurchaseOrder struct {
 	Status string `json:"status"`
 	Discount float64 `json:"discount"`
 	Total float64 `json:"total"`
+	CustomerPay float64 `json:"customer_pay"`
 	CreatedBy int `json:"created_by"`
 	CreatedAt time.Time`json:"created_at,omitempty" example:"2020-03-16T13:55:09.598136+07:00"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" example:"2020-03-16T13:55:09.598136+07:00"`

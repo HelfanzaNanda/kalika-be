@@ -466,7 +466,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/sales_returns", salesReturnController.Create)
 	api.POST("/report_sales_return_datatables", salesReturnController.ReportDatatable)
 	api.POST("/sales_return_datatables", salesReturnController.Datatable)
-	api.POST("/sale_return_pdf", salesReturnController.GeneratePdf)
+	api.POST("/sales_return_pdf", salesReturnController.GeneratePdf)
 	api.PUT("/sales_returns/:id", salesReturnController.Update)
 	api.DELETE("/sales_returns/:id", salesReturnController.Delete)
 	

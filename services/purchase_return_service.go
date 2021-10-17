@@ -228,12 +228,12 @@ func (service PurchaseReturnServiceImpl) GeneratePdf(ctx echo.Context) (res web.
 		froot := []string{}
 		froot = append(froot, item.Date.String())
 		froot = append(froot, item.Number)
-		
+		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)
 	}
-	title := "laporan-return-pembelian"
-	headings := []string{"Date", "Number"}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	title := "laporan-retur-pembelian"
+	headings := []string{"Date", "No. Ref", "Dibuat Oleh"}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, map[string]float64{})
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

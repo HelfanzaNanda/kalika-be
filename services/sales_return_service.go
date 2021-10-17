@@ -227,18 +227,23 @@ func (service SalesReturnServiceImpl) GeneratePdf(ctx echo.Context) (res web.Res
 	
 	salesReturnRepo, err := service.SalesReturnRepository.FindByCreatedAt(ctx, tx, o)
 	var datas [][]string
+	var total float64 = 0
 	for _, item := range salesReturnRepo {
 		froot := []string{}
 		froot = append(froot, item.Number)
 		froot = append(froot, item.CustomerName)
 		froot = append(froot, item.StoreConsignmentName)
-		froot = append(froot, helpers.IntToString(int(item.Total)))
-		
+		froot = append(froot, helpers.FormatRupiah(item.Total))
+		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)
+
+		total += item.Total
 	}
-	title := "laporan-return-penjualan"
-	headings := []string{"Number", "Customer Name", "Store Consignment Name", "Total"}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	title := "laporan-retur-penjualan"
+	headings := []string{"No. Ref", "Kustomer", "Konsiyasi", "Total", "Dibuat Oleh"}
+	footer := map[string]float64{}
+	footer["Total"] = total
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

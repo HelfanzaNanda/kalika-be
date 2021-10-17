@@ -21,7 +21,7 @@ type (
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.PurchaseReturn, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.PurchaseReturnDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.PurchaseReturnDatatable, int64, int64, error)
-		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]domain.PurchaseReturn, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.PurchaseReturnGet, error)
 	}
 
 	PurchaseReturnRepositoryImpl struct {
@@ -124,8 +124,13 @@ func (repository PurchaseReturnRepositoryImpl) ReportDatatable(ctx echo.Context,
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository PurchaseReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (purchaseReturnRes []domain.PurchaseReturn, err error) {
+func (repository PurchaseReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (purchaseReturnRes []web.PurchaseReturnGet, err error) {
 	qry := db.Table("purchase_returns")
+	qry.Select(`
+		purchase_returns.*,
+		users.name created_by_name
+	`)
+	qry.Joins("join users on users.id = purchase_returns.created_by")
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(purchase_returns.created_at > ? AND purchase_returns.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}

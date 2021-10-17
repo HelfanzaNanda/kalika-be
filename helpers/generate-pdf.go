@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"fmt"
+	"strings"
 	//"kalika-be/config"
 
 	// "os"
@@ -14,17 +15,14 @@ import (
 	// "github.com/divrhino/fruitful-pdf/data"
 )
 
-func GeneratePdf(ctx echo.Context, title string, headings []string, datas [][]string) (pdfUrl string, err error) {
+func GeneratePdf(ctx echo.Context, title string, headings []string, datas [][]string, footer map[string]float64) (pdfUrl string, err error) {
 	m := pdf.NewMaroto(consts.Portrait, consts.A4)
 	m.SetPageMargins(20, 10, 20)
 
 	buildHeading(m, title)
-	// buildFruitList(m)
 	buildList(m, headings, datas)
+	buildFooter(m, footer)
 	filename := title + ".pdf"
-	// appUrl := config.Get("APP_URL").String()
-	// appPort := config.Get("APP_PORT").String()
-	//result := appUrl+":"+appPort+"/exports/"+filename
 	err = m.OutputFileAndClose("exports/"+filename)
 	if err != nil {
 		fmt.Println("⚠️  Could not save PDF:", err)
@@ -37,7 +35,7 @@ func GeneratePdf(ctx echo.Context, title string, headings []string, datas [][]st
 func buildHeading(m pdf.Maroto, title string) {
 	m.Row(10, func() {
 		m.Col(12, func() {
-			m.Text(title, props.Text{
+			m.Text(strings.Title(strings.Replace(title, "-", " ", -1)), props.Text{
 				Top:   3,
 				Style: consts.Bold,
 				Align: consts.Center,
@@ -84,7 +82,24 @@ func buildList(m pdf.Maroto, headings []string, datas [][]string) {
 		AlternatedBackground: &lightPurpleColor,
 		Line:                 false,
 	})
+}
 
+func buildFooter(m pdf.Maroto, footer map[string]float64){
+	m.Line(2)
+	m.Row(10, func ()  {
+		for index, value :=range footer {
+			rowHeight := 5.0
+			m.Row(rowHeight, func() {
+				m.Text(
+					index +" : " + FormatRupiah(float64(value)), 
+					props.Text {
+						Size: 9,
+						Align: consts.Right,
+						//Style: consts.Bold,
+				})
+			})
+		}
+	})
 }
 
 func getDarkPurpleColor() color.Color {

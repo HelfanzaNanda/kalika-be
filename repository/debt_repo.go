@@ -19,7 +19,7 @@ type (
 		Delete(ctx echo.Context, db *gorm.DB, debt *domain.Debt) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Debt, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Debt, error)
-		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]domain.Debt, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.DebtPosGet, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.DebtDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.DebtDatatable, int64, int64, error)
 	}
@@ -123,11 +123,21 @@ func (repository DebtRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, dr
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository DebtRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (debtRes []domain.Debt, err error) {
+func (repository DebtRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (debtRes []web.DebtPosGet, err error) {
 	qry := db.Table("debts")
+	qry.Select(`
+		debts.*,
+		users.id user_id, users.name created_by_name,
+		suppliers.id supplier_id, suppliers.name supplier_name
+	`)
+	qry.Joins(`
+		join users on users.id = debts.created_by
+		left join suppliers on suppliers.id = debts.supplier_id
+	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(debts.created_at > ? AND debts.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
+	qry.Order("id desc")
 	qry.Find(&debtRes)
 	return debtRes, nil
 }

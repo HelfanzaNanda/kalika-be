@@ -7,7 +7,6 @@ import (
 	"kalika-be/models/domain"
 	"kalika-be/models/web"
 	"kalika-be/repository"
-	"strconv"
 	"strings"
 )
 
@@ -195,18 +194,27 @@ func (service DebtServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, 
 	
 	debtRepo, err := service.DebtRepository.FindByCreatedAt(ctx, tx, o)
 	var datas [][]string
+	var totalDebt float64 = 0
+	var remainingDebt float64 = 0
 	for _, item := range debtRepo {
 		froot := []string{}
-		froot = append(froot, strconv.Itoa(int(item.Total)))
-		froot = append(froot, strconv.Itoa(int(item.Debts)))
-		froot = append(froot, item.Date.String())
+		froot = append(froot, item.SupplierName)
+		froot = append(froot, helpers.FormatRupiah(item.Total))
+		froot = append(froot, helpers.FormatRupiah(item.Debts))
+		froot = append(froot, item.Date.Local().Format("02 January 2006"))
 		froot = append(froot, item.Note)
-		
+		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)
+
+		totalDebt += item.Total
+		remainingDebt += item.Debts
 	}
 	title := "laporan-hutang"
-	headings := []string{"Total", "Debts", "Date", "Note"}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	headings := []string{"Supplier", "Total Hutang", "Sisa Hutang", "Tanggal", "Note", "Dibuat Oleh"}
+	footer := map[string]float64{}
+	footer["Total Hutang"] = totalDebt
+	footer["Sisa Hutang"] = remainingDebt
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

@@ -194,20 +194,26 @@ func (service ReceivableServiceImpl) GeneratePdf(ctx echo.Context) (res web.Resp
 	
 	receivableRepo, err := service.ReceivableRepository.FindByCreatedAt(ctx, tx, o)
 	var datas [][]string
+	var totalReceivable float64 = 0
+	var remainingReceivable float64 = 0
 	for _, item := range receivableRepo {
 		froot := []string{}
-		froot = append(froot, helpers.IntToString(int(item.Total)))
-		froot = append(froot, helpers.IntToString(int(item.Receivables)))
 		froot = append(froot, item.CustomerName)
-		froot = append(froot, item.StoreConsignmentName)
-		froot = append(froot, item.Date.String())
+		froot = append(froot, helpers.FormatRupiah(item.Total))
+		froot = append(froot, helpers.FormatRupiah(item.Receivables))
+		froot = append(froot, item.Date.Local().Format("02 January 2006"))
 		froot = append(froot, item.Note)
-		
+		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)
+		totalReceivable += item.Total
+		remainingReceivable += item.Receivables
 	}
 	title := "laporan-piutang"
-	headings := []string{"Total", "Receivables", "Customer Name", "Store Consignment Name", "Date", "Note"}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	headings := []string{"Kustomer", "Total Piutang", "Sisa Piutang", "Tanggal", "Note", "Dibuat Oleh"}
+	footer := map[string]float64{}
+	footer["Total Piutang"] = totalReceivable
+	footer["Sisa Piutang"] = remainingReceivable
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

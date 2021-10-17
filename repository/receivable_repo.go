@@ -161,18 +161,19 @@ func (repository ReceivableRepositoryImpl) FindByCreatedAt(ctx echo.Context, db 
 	qry := db.Table("receivables")
 	qry.Select(`
 		receivables.*,
-		users.id user_id, users.name user_name,
+		users.id user_id, users.name created_by_name,
 		customers.id customer_id, customers.name customer_name,
 		store_consignments.id store_consignment_id, store_consignments.store_name store_consignment_name
 	`)
 	qry.Joins(`
-		left join users on users.id = receivables.created_by
+		join users on users.id = receivables.created_by
 		left join customers on customers.id = receivables.customer_id
 		left join store_consignments on store_consignments.id = receivables.store_consignment_id
 	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(receivables.created_at > ? AND receivables.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
+	qry.Order("id desc")
 	qry.Find(&receivableRes)
 	return receivableRes, nil
 }

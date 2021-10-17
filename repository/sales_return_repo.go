@@ -146,7 +146,7 @@ func (repository SalesReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db
 	qry.Joins(`
 		left join store_consignments on store_consignments.id = sales_returns.store_consignment_id
 		left join customers on customers.id = sales_returns.customer_id
-		left join users on users.id = sales_returns.created_by
+		join users on users.id = sales_returns.created_by
 	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(sales_returns.created_at > ? AND sales_returns.created_at < ?)", dateRange.StartDate, dateRange.EndDate)

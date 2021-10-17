@@ -123,15 +123,15 @@ func (repository SalesRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, d
 }
 
 func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.SaleDatatable, totalData int64, totalFiltered int64, err error) {
-	qry := db.Table("sales").
-		Select(`
+	qry := db.Table("sales")
+	qry.Select(`
 			sales.*,
 			stores.id store_id, stores.name store_name, 
 			customers.id customer_id, customers.name customer_name, 
 			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_register_cash_in_hand ,
 			users.name created_by_name
-		`).
-		Joins(`
+		`)
+	qry.Joins(`
 			left join stores on stores.id = sales.store_id
 			left join customers on customers.id = sales.customer_id
 			left join cash_registers on cash_registers.id = sales.cash_register_id
@@ -157,12 +157,14 @@ func (repository SalesRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm
 			sales.*,
 			stores.id store_id, stores.name store_name, 
 			customers.id customer_id, customers.name customer_name, 
-			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_in_hand 
+			cash_registers.id cash_register_id, cash_registers.cash_in_hand cash_in_hand,
+			users.name created_by_name
 		`)
 	qry.Joins(`
 			left join stores on stores.id = sales.store_id
 			left join customers on customers.id = sales.customer_id
 			left join cash_registers on cash_registers.id = sales.cash_register_id
+			JOIN users ON users.id = sales.created_by
 		`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
 		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", dateRange.StartDate, dateRange.EndDate)

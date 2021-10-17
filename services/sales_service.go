@@ -292,27 +292,23 @@ func (service SalesServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response,
 
 	salesRepo, err := service.SalesRepository.FindByCreatedAt(ctx, tx, o)
 	var datas [][]string
+	var total float64 = 0
 	for _, item := range salesRepo {
 		froot := []string{}
 		froot = append(froot, item.Number)
 		froot = append(froot, item.StoreName)
-		// froot = append(froot, item.CashInHand)
 		froot = append(froot, item.CustomerName)
-		froot = append(froot, helpers.IntToString(item.DiscountPercentage) +"/"+helpers.IntToString(item.DiscountValue))
-		froot = append(froot, helpers.IntToString(int(item.Total)))
-		froot = append(froot, item.PaymentStatus)
-		froot = append(froot, item.SaleStatus)
-		froot = append(froot, item.Note)
-		froot = append(froot, helpers.IntToString(int(item.CustomerPay)))
-		froot = append(froot, helpers.IntToString(int(item.CustomerChange)))
-
+		froot = append(froot, helpers.FormatRupiah(item.Total))
+		froot = append(froot, item.CreatedByName)
+		froot = append(froot, item.CreatedAt.Local().Format("02 January 2006"))
 		datas = append(datas, froot)
+		total += item.Total
 	}
 	title := "laporan-penjualan"
-	headings := []string{"Number", "Store Name", "Customer Name",
-		"Discount", "Total", "Payment Status", "Sale Status", "Note",
-		"Customer Pay", "Customer Charge"}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	headings := []string{"No. Ref", "Toko", "Kustomer", "Total", "Dibuat Oleh", "Dibuat Pada"}
+	footer := map[string]float64{}
+	footer["Total"] = total
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

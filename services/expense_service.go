@@ -228,17 +228,20 @@ func (service ExpenseServiceImpl) GeneratePdf(ctx echo.Context) (res web.Respons
 	
 	expenseRepo, err := service.ExpenseRepository.FindByCreatedAt(ctx, tx, o)
 	var datas [][]string
+	var totalExpense float64 = 0
 	for _, item := range expenseRepo {
 		froot := []string{}
 		froot = append(froot, item.Number)
 		froot = append(froot, item.Date.String())
-		froot = append(froot, helpers.IntToString(int(item.Total)))
-		
+		froot = append(froot, helpers.FormatRupiah(item.Total))
 		datas = append(datas, froot)
+		totalExpense += item.Total
 	}
 	title := "laporan-biaya"
-	headings := []string{"Number", "Date", "Total"}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas)
+	headings := []string{"No. Ref", "Tanggal", "Total Biaya"}
+	footer := map[string]float64{}
+	footer["Total Biaya"] = totalExpense
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

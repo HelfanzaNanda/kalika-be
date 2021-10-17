@@ -121,7 +121,7 @@ func (repository PurchaseOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, 
 		suppliers.id supplier_id, suppliers.name supplier_name
 	`)
 	qry.Joins(`
-		left join users on users.id = purchase_orders.created_by
+		join users on users.id = purchase_orders.created_by
 		left join suppliers on suppliers.id = purchase_orders.supplier_id
 	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{

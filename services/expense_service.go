@@ -2,7 +2,8 @@ package services
 
 import (
 	"strings"
-
+	// "time"
+	
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 
@@ -232,7 +233,7 @@ func (service ExpenseServiceImpl) GeneratePdf(ctx echo.Context) (res web.Respons
 	for _, item := range expenseRepo {
 		froot := []string{}
 		froot = append(froot, item.Number)
-		froot = append(froot, item.Date.String())
+		froot = append(froot, item.Date.Format("02 Jan 2006 15:04:05"))
 		froot = append(froot, helpers.FormatRupiah(item.Total))
 		datas = append(datas, froot)
 		totalExpense += item.Total

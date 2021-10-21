@@ -226,7 +226,7 @@ func (service PurchaseReturnServiceImpl) GeneratePdf(ctx echo.Context) (res web.
 	var datas [][]string
 	for _, item := range purchaseReturnRepo {
 		froot := []string{}
-		froot = append(froot, item.Date.String())
+		froot = append(froot, item.Date.Format("02 Jan 2006 15:04:05"))
 		froot = append(froot, item.Number)
 		froot = append(froot, item.CreatedByName)
 		datas = append(datas, froot)

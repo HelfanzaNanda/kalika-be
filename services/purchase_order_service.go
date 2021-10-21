@@ -286,7 +286,7 @@ func (service PurchaseOrderServiceImpl) GeneratePdf(ctx echo.Context) (res web.R
 		froot = append(froot, item.Status)
 		froot = append(froot, helpers.FormatRupiah(item.Total))
 		froot = append(froot, item.CreatedByName)
-		froot = append(froot, item.CreatedAt.Local().Format("02 January 2006"))
+		froot = append(froot, item.CreatedAt.Format("02 Jan 2006 15:04:05"))
 		datas = append(datas, froot)
 
 		total += item.Total

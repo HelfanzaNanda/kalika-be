@@ -61,6 +61,7 @@ func (service *ProductServiceImpl) Create(ctx echo.Context) (res web.Response, e
 	}
 	for key, _ := range o.ProductLocations {
 		o.ProductLocations[key].Model = "Product"
+		o.ProductLocations[key].ProductId = o.Id
 	}
 	_, err = service.ProductLocationRepository.Create(ctx, tx, o.ProductLocations)
 	if err != nil {
@@ -99,6 +100,7 @@ func (service ProductServiceImpl) Update(ctx echo.Context, id int) (res web.Resp
 	}
 	for key, _ := range o.ProductLocations {
 		o.ProductLocations[key].Model = "Product"
+		o.ProductLocations[key].ProductId = o.Id
 	}
 	_, err = service.ProductLocationRepository.Create(ctx, tx, o.ProductLocations)
 	if err != nil {

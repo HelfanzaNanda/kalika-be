@@ -57,7 +57,15 @@ func (repository *RecipeRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, 
 }
 
 func (repository *RecipeRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (recipeRes []domain.Recipe, err error) {
-	db.Find(&recipeRes)
+	qry := db.Table("recipes").Select("recipes.*")
+	for k, v := range ctx.QueryParams() {
+		if k == "name" {
+			qry = qry.Where(k+" LIKE ?", "%"+v[0]+"%")
+		} else {
+			qry = qry.Where(k+" = ?", v[0])
+		}
+	}
+	qry.Scan(&recipeRes)
 	return recipeRes, nil
 }
 

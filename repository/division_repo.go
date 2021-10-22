@@ -63,7 +63,7 @@ func (repository DivisionRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) 
 }
 
 func (repository DivisionRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (divisionRes []web.DivisionDatatable, totalData int64, totalFiltered int64, err error) {
-	qry := db.Table("divisions").Select("id, name, active, created_at, updated_at")
+	qry := db.Table("divisions").Select("id, name, active, type, created_at, updated_at")
 	qry.Count(&totalData)
 	if search != "" {
 		qry.Where("(id = ? OR name LIKE ?)", search, "%"+search+"%")

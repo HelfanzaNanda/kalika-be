@@ -59,19 +59,19 @@ func (repository RawMaterialRepositoryImpl) FindById(ctx echo.Context, db *gorm.
 func (repository RawMaterialRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (rawMaterialRes []web.RawMaterialGet, err error) {
 	qry := db.Table("raw_materials").
 		Select(`
-		raw_materials.id, raw_materials.name, raw_materials.price, raw_materials.stock,
+		raw_materials.id, raw_materials.name, raw_materials.price, raw_materials.qty, raw_materials.qty_conversion,
 		suppliers.id supplier_id, suppliers.name supplier_name,
-		units.id unit_id, units.name unit_name,
-		units.id smallest_unit_id, units.name smallest_unit_name,
+		a.id unit_id, a.name unit_name,
+		b.id smallest_unit_id, b.name smallest_unit_name,
 		stores.id store_id, stores.name store_name
 	`).
 		Joins(`
 		left join suppliers on suppliers.id = raw_materials.supplier_id
-		left join units on units.id = raw_materials.unit_id
+		left join units a on a.id = raw_materials.unit_id
+		left join units b on b.id = raw_materials.smallest_unit_id
 		left join stores on stores.id = raw_materials.store_id
 	`)
 	for k, v := range ctx.QueryParams() {
-		fmt.Println(v)
 		switch val := k; val {
 		case "name":
 			k = "raw_materials.name"
@@ -98,16 +98,17 @@ func (repository RawMaterialRepositoryImpl) FindAll(ctx echo.Context, db *gorm.D
 func (repository RawMaterialRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.RawMaterialDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("raw_materials").
 		Select(`
-		raw_materials.id, raw_materials.name, raw_materials.price, raw_materials.stock,
+		raw_materials.id, raw_materials.name, raw_materials.price, raw_materials.qty, raw_materials.qty_conversion,
 		suppliers.id supplier_id, suppliers.name supplier_name,
-		units.id unit_id, units.name unit_name,
-		units.id smallest_unit_id, units.name smallest_unit_name,
+		a.id unit_id, a.name unit_name,
+		b.id smallest_unit_id, b.name smallest_unit_name,
 		stores.id store_id, stores.name store_name,
 		divisions.name division_name
 	`).
 		Joins(`
 		left join suppliers on suppliers.id = raw_materials.supplier_id
-		left join units on units.id = raw_materials.unit_id
+		left join units a on a.id = raw_materials.unit_id
+		left join units b on b.id = raw_materials.smallest_unit_id
 		left join stores on stores.id = raw_materials.store_id
 		left join divisions on divisions.id = raw_materials.division_id
 	`)

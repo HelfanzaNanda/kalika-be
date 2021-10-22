@@ -97,8 +97,8 @@ func (repository ProductRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB,
 		cake_types.id cake_type_id, cake_types.name cake_type_name
 	`).
 	Joins(`
-		left join divisions on divisions.id = products.division_id
 		left join categories on categories.id = products.category_id
+		left join divisions on divisions.id = categories.division_id
 		left join cake_variants on cake_variants.id = products.cake_variant_id
 		left join cake_types on cake_types.id = products.cake_type_id
 	`)

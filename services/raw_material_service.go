@@ -41,6 +41,7 @@ func NewRawMaterialService(RawMaterialRepository repository.RawMaterialRepositor
 }
 
 func (service *RawMaterialServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
+	msg := "Sukses Menyimpan Data"
 	rawMaterialRepo := domain.RawMaterial{}
 	o := new(web.RawMaterialPost)
 	if err := ctx.Bind(o); err != nil {
@@ -51,6 +52,7 @@ func (service *RawMaterialServiceImpl) Create(ctx echo.Context) (res web.Respons
 	defer helpers.CommitOrRollback(tx)
 
 	if o.Id > 0 {
+		msg = "Sukses Mengubah Data"
 		rawMaterialRepo, err = service.RawMaterialRepository.Update(ctx, tx, &o.RawMaterial)
 	} else {
 		rawMaterialRepo, err = service.RawMaterialRepository.Create(ctx, tx, &o.RawMaterial)
@@ -73,7 +75,7 @@ func (service *RawMaterialServiceImpl) Create(ctx echo.Context) (res web.Respons
 		return helpers.Response(err.Error(), "create product location error", nil), err
 	}
 
-	return helpers.Response("CREATED", "Sukses Menyimpan Data", rawMaterialRepo), err
+	return helpers.Response("CREATED", msg, rawMaterialRepo), err
 }
 
 func (service RawMaterialServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {

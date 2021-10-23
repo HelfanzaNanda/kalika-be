@@ -11,5 +11,6 @@ type SaleDatatable struct {
 	CashRegisterCashInHand string `json:"cash_register_cash_in_hand"`
 	domain.Sale
 	CreatedByName string `json:"created_by_name"`
-	Action string `json:"action"`
+	Metode        string `json:"metode"`
+	Action        string `json:"action"`
 }

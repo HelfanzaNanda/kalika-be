@@ -18,6 +18,7 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string, params map[string][]string) (domain.Payment, error)
 		FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) ([]domain.Payment, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.PaymentDatatable, int64, int64, error)
+		FindByModel(ctx echo.Context, db *gorm.DB, model string, model_id int, filter map[string]string) (web.PaymentGet, error)
 	}
 
 	PaymentRepositoryImpl struct {
@@ -74,6 +75,7 @@ func (repository *PaymentRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB, 
 	return paymentRes, nil
 }
 
+
 func (repository *PaymentRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.PaymentDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("payments").
 		Select(`
@@ -98,5 +100,25 @@ func (repository *PaymentRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB
 	qry.Order("payments.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository *PaymentRepositoryImpl) FindByModel(ctx echo.Context, db *gorm.DB, model string, model_id int, filter map[string]string) (res web.PaymentGet, err error) {
+	qry := db.Table("payments")
+	qry.Select("payments.*, payment_methods.name payment_method_name")
+	qry.Joins("join payment_methods on payment_methods.id = payments.payment_method_id")
+	if model != "" {
+		qry.Where("(payments.model = ?)", model)
+	}
+	if model_id != 0 {
+		qry.Where("(payments.model_id = ?)", model_id)
+	}
+	if filter["payment_method_id"] != "" {
+		qry.Where("(payments.payment_method_id = ?)", filter["payment_method_id"])
+	}
+	qry.First(&res)
+	// if qry.RowsAffected < 1 {
+	// 	return res, errors.New("NOT_FOUND|payment tidak ditemukan")
+	// }
+	return res, nil
 }
 

@@ -19,6 +19,7 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.ExpenseDetail, error)
 		FindByExpenseId(ctx echo.Context, db *gorm.DB, expenseId int) ([]domain.ExpenseDetail, error)
 		FindAll(ctx echo.Context, db *gorm.DB, params map[string][]string) (web.ExpensePosPost, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, daterange *web.DateRange) ([]web.ReportExpenseDatatable, error)
 	}
 
 	ExpenseDetailRepositoryImpl struct {
@@ -90,3 +91,17 @@ func (repository ExpenseDetailRepositoryImpl) FindAll(ctx echo.Context, db *gorm
 	return expenseDetailRes, nil
 }
 
+func (repository ExpenseDetailRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, daterange *web.DateRange) (datatableRes []web.ReportExpenseDatatable, err error) {
+	qry := db.Table("expense_details detail")
+	qry.Select("category.name category_name, sum(detail.amount) total ")
+	qry.Joins(`
+		join expense_categories category on category.id = detail.expense_category_id 
+		join expenses expense on expense.id = detail.expense_id
+	`)
+	if daterange.StartDate != "" && daterange.EndDate != "" {
+		qry.Where("(expense.created_at > ? AND expense.created_at < ?)", daterange.StartDate, daterange.EndDate)
+	}
+	qry.Group("category.name")
+	qry.Find(&datatableRes)
+	return datatableRes, nil
+}

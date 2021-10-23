@@ -19,7 +19,7 @@ type (
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Sale, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SaleDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.SaleDatatable, int64, int64, error)
-		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.SalesPosGet, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.SaleReportFilterDatatable) ([]web.SalesPosGet, error)
 	}
 
 	SalesRepositoryImpl struct {
@@ -142,6 +142,16 @@ func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm
 	if search != "" {
 		qry.Where("(sales.id = ? OR sales.number LIKE ?)", search, "%"+search+"%")
 	}
+	if filter["start_date"] != "" && filter["end_date"] != ""{
+		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", filter["start_date"], filter["end_date"])
+	}
+	if filter["store_id"] != "" {
+		qry.Where("(sales.store_id = ?)", filter["store_id"])
+	}
+	if filter["created_by"] != "" {
+		qry.Where("(sales.created_by = ?)", filter["created_by"])
+	}
+
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
@@ -151,7 +161,7 @@ func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository SalesRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (saleRes []web.SalesPosGet, err error) {
+func (repository SalesRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.SaleReportFilterDatatable) (saleRes []web.SalesPosGet, err error) {
 	qry := db.Table("sales")
 	qry.Select(`
 			sales.*,
@@ -166,8 +176,14 @@ func (repository SalesRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm
 			left join cash_registers on cash_registers.id = sales.cash_register_id
 			JOIN users ON users.id = sales.created_by
 		`)
-	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	if filter.StartDate != "" && filter.EndDate != ""{
+		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", filter.StartDate, filter.EndDate)
+	}
+	if filter.StoreId != 0 {
+		qry.Where("(sales.store_id = ?)", filter.StoreId)
+	}
+	if filter.CreatedBy != 0 {
+		qry.Where("(sales.created_by = ?)", filter.CreatedBy)
 	}
 	qry.Order("sales.id desc")
 	qry.Find(&saleRes)

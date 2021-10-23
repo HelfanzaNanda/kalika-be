@@ -1,8 +1,6 @@
 package services
 
 import (
-	//"fmt"
-
 	"strings"
 	"time"
 
@@ -259,18 +257,18 @@ func (service *SalesServiceImpl) ReportDatatable(ctx echo.Context) (res web.Data
 	filter := make(map[string]string)
 	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
 	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
-	expenseRepo, totalData, totalFiltered, _ := service.SalesRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
+	filter["store_id"] = strings.TrimSpace(params.Get("store_id"))
+	filter["created_by"] = strings.TrimSpace(params.Get("created_by"))
+	filter["payment_method_id"] = strings.TrimSpace(params.Get("payment_method_id"))
+	saleRepo, totalData, totalFiltered, _ := service.SalesRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
 
 	data := make([]interface{}, 0)
-	for _, v := range expenseRepo {
-		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="pdf" class="w-4 h-4 mr-1"></i> Print </button>`
-		// v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
-		v.Action += `</div>`
-		data = append(data, v)
+	for _, v := range saleRepo {
+		paymentMethodName, _ := service.PaymentRepository.FindByModel(ctx, tx, "Sales", v.Id, filter)
+		if paymentMethodName.PaymentMethodName != "" {
+			v.Metode = paymentMethodName.PaymentMethodName
+			data = append(data, v)
+		}
 	}
 	res.Data = data
 	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
@@ -282,7 +280,7 @@ func (service *SalesServiceImpl) ReportDatatable(ctx echo.Context) (res web.Data
 }
 
 func (service SalesServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
-	o := new(web.DateRange)
+	o := new(web.SaleReportFilterDatatable)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -292,21 +290,34 @@ func (service SalesServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response,
 
 	salesRepo, err := service.SalesRepository.FindByCreatedAt(ctx, tx, o)
 	var datas [][]string
+	filter := make(map[string]string)
+	filter["payment_method_id"] = ""
+	if o.PaymentMethodId != 0 {
+		filter["payment_method_id"] = helpers.IntToString(o.PaymentMethodId)
+	}
+	var discount float64 = 0
 	var total float64 = 0
 	for _, item := range salesRepo {
-		froot := []string{}
-		froot = append(froot, item.Number)
-		froot = append(froot, item.StoreName)
-		froot = append(froot, item.CustomerName)
-		froot = append(froot, helpers.FormatRupiah(item.Total))
-		froot = append(froot, item.CreatedByName)
-		froot = append(froot, item.CreatedAt.Format("02 Jan 2006 15:04:05"))
-		datas = append(datas, froot)
-		total += item.Total
+		paymentMethodName, _ := service.PaymentRepository.FindByModel(ctx, tx, "Sales", item.Id, filter)
+		if paymentMethodName.PaymentMethodName != "" {
+			froot := []string{}
+			//froot = append(froot, helpers.IntToString(index + 1))
+			froot = append(froot, item.CreatedAt.Format("02 Jan 2006 15:04:05"))
+			froot = append(froot, item.CreatedByName)
+			froot = append(froot, item.Number)
+			froot = append(froot, helpers.FormatRupiah(float64(item.DiscountValue)))
+			froot = append(froot, helpers.FormatRupiah(item.Total))
+			froot = append(froot, paymentMethodName.PaymentMethodName)
+			datas = append(datas, froot)
+			total += item.Total
+			total += float64(item.DiscountValue)
+		}
+		
 	}
 	title := "laporan-penjualan"
-	headings := []string{"No. Ref", "Toko", "Kustomer", "Total", "Dibuat Oleh", "Dibuat Pada"}
+	headings := []string{"Dibuat Pada", "Dibuat Oleh", "No. Ref", "Diskon", "Total", "Metode"}
 	footer := map[string]float64{}
+	footer["Diskon"] = discount
 	footer["Total"] = total
 	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 

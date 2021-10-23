@@ -1,9 +1,10 @@
 package services
 
 import (
+	"fmt"
 	"strings"
 	// "time"
-	
+
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 
@@ -22,7 +23,7 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
-		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		ReportDatatable(ctx echo.Context) (res web.Response, err error)
 		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
@@ -183,39 +184,18 @@ func (service *ExpenseServiceImpl) Datatable(ctx echo.Context) (res web.Datatabl
 	return res, nil
 }
 
-func (service *ExpenseServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datatable, err error) {
-	params,_ := ctx.FormParams()
-
+func (service *ExpenseServiceImpl) ReportDatatable(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.DateRange)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+	fmt.Println("#### STARTDATE : ", o.StartDate)
+	fmt.Println("#### ENDDATE : ", o.EndDate)
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
+	expenseRepo, _ := service.ExpenseDetailRepository.ReportDatatable(ctx, tx, o)
 
-	draw := strings.TrimSpace(params.Get("draw"))
-	limit := strings.TrimSpace(params.Get("length"))
-	start := strings.TrimSpace(params.Get("start"))
-	search := strings.TrimSpace(params.Get("search[value]"))
-	filter :=  make(map[string]string)
-	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
-	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
-	expenseRepo, totalData, totalFiltered, _ := service.ExpenseRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
-
-	data := make([]interface{}, 0)
-	for _, v := range expenseRepo {
-		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="pdf" class="w-4 h-4 mr-1"></i> Print </button>`
-		// v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
-		v.Action += `</div>`
-		data = append(data, v)
-	}
-	res.Data = data
-	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
-	res.Draw = helpers.StringToInt(draw)
-	res.RecordsFiltered = totalFiltered
-	res.RecordsTotal = totalData
-
-	return res, nil
+	return helpers.Response("OK", "Sukses Mengambil Data", expenseRepo), err
 }
 
 func (service ExpenseServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
@@ -223,25 +203,24 @@ func (service ExpenseServiceImpl) GeneratePdf(ctx echo.Context) (res web.Respons
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
-
+	
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 	
-	expenseRepo, err := service.ExpenseRepository.FindByCreatedAt(ctx, tx, o)
+	expenseRepo, err := service.ExpenseDetailRepository.ReportDatatable(ctx, tx, o)
 	var datas [][]string
-	var totalExpense float64 = 0
+	var total float64 = 0
 	for _, item := range expenseRepo {
 		froot := []string{}
-		froot = append(froot, item.Number)
-		froot = append(froot, item.Date.Format("02 Jan 2006 15:04:05"))
+		froot = append(froot, item.CategoryName)
 		froot = append(froot, helpers.FormatRupiah(item.Total))
 		datas = append(datas, froot)
-		totalExpense += item.Total
+		total += item.Total
 	}
 	title := "laporan-biaya"
-	headings := []string{"No. Ref", "Tanggal", "Total Biaya"}
+	headings := []string{"Nama Biaya", "Total"}
 	footer := map[string]float64{}
-	footer["Total Biaya"] = totalExpense
+	footer["Total Biaya"] = total
 	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err

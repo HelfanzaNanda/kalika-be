@@ -20,7 +20,7 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.Expense, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.Expense, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.ExpenseDatatable, int64, int64, error)
-		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.ExpenseDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, daterange *web.DateRange) ([]web.ReportExpenseDatatable, int64, int64, error)
 		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]domain.Expense, error)
 	}
 
@@ -90,23 +90,19 @@ func (repository ExpenseRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB,
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.ExpenseDatatable, totalData int64, totalFiltered int64, err error) {
-	qry := db.Table("expenses").
-	Select("expenses.*, users.name created_by_name").
-	Joins("left join users on users.id = expenses.created_by")
-
+func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, dateRange *web.DateRange) (datatableRes []web.ReportExpenseDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("expenses expense")
+	qry.Select("category.name category_name, sum(1) total")
+	qry.Joins(`
+		left join expense_details detail on detail.expense_id = expense.id
+		left join expense_categories category on category.id = detail.expense_category_id
+	`)
 	qry.Count(&totalData)
-	if search != "" {
-		qry.Where("(expenses.id = ? OR expenses.name LIKE ?)", search, "%"+search+"%")
+	if dateRange.StartDate != "" && dateRange.EndDate != "" {
+		qry.Where("(expense.created_at > ? AND expense.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
 	}
-	if filter["start_date"] != "" && filter["end_date"] != "" {
-		qry.Where("(expenses.created_at > ? AND expenses.created_at < ?)", filter["start_date"], filter["end_date"])
-	}
-	qry.Count(&totalFiltered)
-	if helpers.StringToInt(limit) > 0 {
-		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
-	}
-	qry.Order("id desc")
+	qry.Group("category.name")
+	qry.Order("expense.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
 }

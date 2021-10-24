@@ -4,6 +4,8 @@ import (
 	//"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
+	"time"
+
 	//"kalika-be/config"
 	"kalika-be/helpers"
 	"kalika-be/models/domain"
@@ -22,19 +24,21 @@ type (
 
 	PurchaseOrderDeliveryServiceImpl struct {
 		PurchaseOrderDeliveryRepository repository.PurchaseOrderDeliveryRepository
+		PurchaseOrderDeliveryDetailRepository repository.PurchaseOrderDeliveryDetailRepository
 		db *gorm.DB
 	}
 )
 
-func NewPurchaseOrderDeliveryService(PurchaseOrderDeliveryRepository repository.PurchaseOrderDeliveryRepository, db *gorm.DB) PurchaseOrderDeliveryService {
+func NewPurchaseOrderDeliveryService(PurchaseOrderDeliveryRepository repository.PurchaseOrderDeliveryRepository, PurchaseOrderDeliveryDetailRepository repository.PurchaseOrderDeliveryDetailRepository, db *gorm.DB) PurchaseOrderDeliveryService {
 	return &PurchaseOrderDeliveryServiceImpl{
 		PurchaseOrderDeliveryRepository: PurchaseOrderDeliveryRepository,
+		PurchaseOrderDeliveryDetailRepository: PurchaseOrderDeliveryDetailRepository,
 		db: db,
 	}
 }
 
 func (service *PurchaseOrderDeliveryServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.PurchaseOrderDelivery)
+	o := new(web.PurchaseOrderDeliveryPost)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -42,7 +46,19 @@ func (service *PurchaseOrderDeliveryServiceImpl) Create(ctx echo.Context) (res w
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	purchaseOrderDeliveryRepo, err := service.PurchaseOrderDeliveryRepository.Create(ctx, tx, o)
+	purchaseOrderDeliveryRepo := domain.PurchaseOrderDelivery{}
+
+	o.Number = "PR" + helpers.IntToString(int(time.Now().Unix()))
+	o.Date = time.Now()
+	o.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	purchaseOrderDeliveryRepo, err = service.PurchaseOrderDeliveryRepository.Create(ctx, tx, &o.PurchaseOrderDelivery)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+
+	ctx.Set("purchase_order_delivery_id", helpers.IntToString(purchaseOrderDeliveryRepo.Id))
+	ctx.Set("purchase_order_id", helpers.IntToString(purchaseOrderDeliveryRepo.PurchaseOrderId))
+	_, err = service.PurchaseOrderDeliveryDetailRepository.Create(ctx, tx, o.PurchaseOrderDeliveryDetails)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}

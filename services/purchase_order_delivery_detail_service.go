@@ -34,7 +34,7 @@ func NewPurchaseOrderDeliveryDetailService(PurchaseOrderDeliveryDetailRepository
 }
 
 func (service *PurchaseOrderDeliveryDetailServiceImpl) Create(ctx echo.Context) (res web.Response, err error) {
-	o := new(domain.PurchaseOrderDeliveryDetail)
+	o := new([]domain.PurchaseOrderDeliveryDetail)
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
@@ -42,7 +42,7 @@ func (service *PurchaseOrderDeliveryDetailServiceImpl) Create(ctx echo.Context) 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
-	purchaseOrderDeliveryDetailRepo, err := service.PurchaseOrderDeliveryDetailRepository.Create(ctx, tx, o)
+	purchaseOrderDeliveryDetailRepo, err := service.PurchaseOrderDeliveryDetailRepository.Create(ctx, tx, *o)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}

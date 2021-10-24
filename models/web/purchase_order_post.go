@@ -7,3 +7,4 @@ type PurchaseOrderPost struct {
 	PurchaseOrderDetails []PurchaseOrderDetailGet `json:"purchase_order_details"`
 	Payment domain.Payment `json:"payment"`
 }
+

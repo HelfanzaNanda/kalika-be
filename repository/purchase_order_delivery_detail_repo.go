@@ -10,7 +10,7 @@ import (
 
 type (
 	PurchaseOrderDeliveryDetailRepository interface{
-		Create(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail *domain.PurchaseOrderDeliveryDetail) (domain.PurchaseOrderDeliveryDetail, error)
+		Create(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail []domain.PurchaseOrderDeliveryDetail) ([]domain.PurchaseOrderDeliveryDetail, error)
 		Update(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail *domain.PurchaseOrderDeliveryDetail) (domain.PurchaseOrderDeliveryDetail, error)
 		Delete(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail *domain.PurchaseOrderDeliveryDetail) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.PurchaseOrderDeliveryDetail, error)
@@ -26,10 +26,33 @@ func NewPurchaseOrderDeliveryDetailRepository() PurchaseOrderDeliveryDetailRepos
 	return &PurchaseOrderDeliveryDetailRepositoryImpl{}
 }
 
-func (repository PurchaseOrderDeliveryDetailRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail *domain.PurchaseOrderDeliveryDetail) (domain.PurchaseOrderDeliveryDetail, error) {
-	db.Create(&purchaseOrderDeliveryDetail)
-	purchaseOrderDeliveryDetailRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(purchaseOrderDeliveryDetail.Id))
-	return purchaseOrderDeliveryDetailRes, nil
+func (repository PurchaseOrderDeliveryDetailRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail []domain.PurchaseOrderDeliveryDetail) (res []domain.PurchaseOrderDeliveryDetail, err error) {
+	purchaseOrderId := helpers.StringToInt(ctx.Get("purchase_order_id").(string))
+	purchaseOrderDetails := []domain.PurchaseOrderDetail{}
+	for _, val := range purchaseOrderDeliveryDetail {
+		val.PurchaseOrderDeliveryId = helpers.StringToInt(ctx.Get("purchase_order_delivery_id").(string))
+		db.Table("purchase_order_delivery_details").Select("purchase_order_delivery_id", "raw_material_id", "delivered_qty", "note").Create(&val)
+		db.Model(&domain.PurchaseOrderDetail{}).Where("purchase_order_id = ? AND raw_material_id = ?", purchaseOrderId, val.RawMaterialId).Update("delivered_qty", gorm.Expr("delivered_qty + ?", val.DeliveredQty))
+
+		res = append(res, val)
+	}
+
+	countDeliveredQty := 0
+	db.Model(&purchaseOrderDetails).Where("purchase_order_id", purchaseOrderId).Find(&purchaseOrderDetails)
+	for _, val := range purchaseOrderDetails {
+		if val.Qty > val.DeliveredQty {
+			db.Model(&domain.PurchaseOrder{}).Where("id", purchaseOrderId).Update("status", "partially_delivered")
+			break
+		} else {
+			countDeliveredQty++
+		}
+	}
+
+	if len(purchaseOrderDetails) == countDeliveredQty {
+		db.Model(&domain.PurchaseOrder{}).Where("id", purchaseOrderId).Update("status", "completed")
+	}
+
+	return res, nil
 }
 
 func (repository PurchaseOrderDeliveryDetailRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, purchaseOrderDeliveryDetail *domain.PurchaseOrderDeliveryDetail) (domain.PurchaseOrderDeliveryDetail, error) {

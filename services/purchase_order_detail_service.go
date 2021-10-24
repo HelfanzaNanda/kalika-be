@@ -14,7 +14,7 @@ import (
 type (
 	PurchaseOrderDetailService interface {
 		//Create(ctx echo.Context) (res web.Response, err error)
-		Update(ctx echo.Context, id int) (res web.Response, err error)
+		//Update(ctx echo.Context, id int) (res web.Response, err error)
 		Delete(ctx echo.Context, id int) (res web.Response, err error)
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
@@ -50,23 +50,23 @@ func NewPurchaseOrderDetailService(PurchaseOrderDetailRepository repository.Purc
 //	return helpers.Response("CREATED", "Sukses Menyimpan Data", purchaseOrderDetailRepo), err
 //}
 
-func (service PurchaseOrderDetailServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
-	o := new(domain.PurchaseOrderDetail)
-	if err := ctx.Bind(o); err != nil {
-		return helpers.Response(err.Error(), "Error Data Binding", nil), err
-	}
-	o.Id = id
-
-	tx := service.db.Begin()
-	defer helpers.CommitOrRollback(tx)
-
-	purchaseOrderDetailRepo, err := service.PurchaseOrderDetailRepository.Update(ctx, tx, o)
-	if err != nil {
-		return helpers.Response(err.Error(), "", nil), err
-	}
-
-	return helpers.Response("OK", "Sukses Mengubah Data", purchaseOrderDetailRepo), err
-}
+//func (service PurchaseOrderDetailServiceImpl) Update(ctx echo.Context, id int) (res web.Response, err error) {
+//	o := new(domain.PurchaseOrderDetail)
+//	if err := ctx.Bind(o); err != nil {
+//		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+//	}
+//	o.Id = id
+//
+//	tx := service.db.Begin()
+//	defer helpers.CommitOrRollback(tx)
+//
+//	purchaseOrderDetailRepo, err := service.PurchaseOrderDetailRepository.Update(ctx, tx, o)
+//	if err != nil {
+//		return helpers.Response(err.Error(), "", nil), err
+//	}
+//
+//	return helpers.Response("OK", "Sukses Mengubah Data", purchaseOrderDetailRepo), err
+//}
 
 func (service PurchaseOrderDetailServiceImpl) Delete(ctx echo.Context, id int) (res web.Response, err error) {
 	o := new(domain.PurchaseOrderDetail)

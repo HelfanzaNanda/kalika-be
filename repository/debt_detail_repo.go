@@ -83,6 +83,11 @@ func (repository *DebtDetailRepositoryImpl) Datatable(ctx echo.Context, db *gorm
 	if search != "" {
 
 	}
+
+	if ctx.QueryParam("debt_id") != "" {
+		qry.Where("debt_id = ?", ctx.QueryParam("debt_id"))
+	}
+
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))

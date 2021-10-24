@@ -83,10 +83,10 @@ func (repository RawMaterialRepositoryImpl) FindAll(ctx echo.Context, db *gorm.D
 			fmt.Printf("%s.\n", k)
 		}
 
-		if k == "active" {
-			qry = qry.Where(k+" = ?", v[0])
-		} else if v[0] != "" && k != "id" {
+		if v[0] != "" && k != "id" && k != "supplier_id" {
 			qry = qry.Where(k+" LIKE ?", "%"+v[0]+"%")
+		} else {
+			qry = qry.Where(k+" = ?", v[0])
 		}
 	}
 	qry.Order("id desc")

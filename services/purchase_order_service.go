@@ -216,7 +216,8 @@ func (service *PurchaseOrderServiceImpl) Datatable(ctx echo.Context) (res web.Da
 	data := make([]interface{}, 0)
 	for _, v := range purchaseOrderRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-4" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-4 text-theme-9" id="receipt-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="truck" class="w-4 h-4 mr-1"></i> Penerimaan </button>`
 		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
 		v.Action += `</div>`
 

@@ -6,7 +6,7 @@ import (
 
 type PurchaseOrderDeliveryDetail struct {
 	Id int `json:"id" gorm:"AUTO_INCREMENT"`
-	PurchaseOrderId int `json:"purchase_order_id"`
+	PurchaseOrderDeliveryId int `json:"purchase_order_delivery_id"`
 	RawMaterialId int `json:"raw_material_id"`
 	DeliveredQty int `json:"delivered_qty"`
 	Note string `json:"note"`

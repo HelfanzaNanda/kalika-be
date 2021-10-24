@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 	"kalika-be/helpers"
@@ -72,9 +71,6 @@ func (repository *ReceivableDetailRepositoryImpl) FindAll(ctx echo.Context, db *
 }
 
 func (repository *ReceivableDetailRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.ReceivableDetailDatatable, totalData int64, totalFiltered int64, err error) {
-	fmt.Println("ASDASDASD")
-	fmt.Println(ctx.Param("receivable_id"))
-	fmt.Println("ASDASDASD")
 	qry := db.Table("receivable_details").
 		Select(`
 		receivable_details.*,
@@ -87,6 +83,11 @@ func (repository *ReceivableDetailRepositoryImpl) Datatable(ctx echo.Context, db
 	if search != "" {
 
 	}
+
+	if ctx.QueryParam("receivable_id") != "" {
+		qry.Where("receivable_id = ?", ctx.QueryParam("receivable_id"))
+	}
+
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
 		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))

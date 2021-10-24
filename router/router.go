@@ -139,14 +139,14 @@ func Routes(db *gorm.DB) *echo.Echo {
 	purchaseInvoiceDetailRepository := repository.NewPurchaseInvoiceDetailRepository()
 	purchaseInvoiceDetailService := services.NewPurchaseInvoiceDetailService(purchaseInvoiceDetailRepository, db)
 	purchaseInvoiceDetailController := controllers.NewPurchaseInvoiceDetailController(purchaseInvoiceDetailService)
-	
-	purchaseOrderDeliveryRepository := repository.NewPurchaseOrderDeliveryRepository()
-	purchaseOrderDeliveryService := services.NewPurchaseOrderDeliveryService(purchaseOrderDeliveryRepository, db)
-	purchaseOrderDeliveryController := controllers.NewPurchaseOrderDeliveryController(purchaseOrderDeliveryService)
 
 	purchaseOrderDeliveryDetailRepository := repository.NewPurchaseOrderDeliveryDetailRepository()
 	purchaseOrderDeliveryDetailService := services.NewPurchaseOrderDeliveryDetailService(purchaseOrderDeliveryDetailRepository, db)
 	purchaseOrderDeliveryDetailController := controllers.NewPurchaseOrderDeliveryDetailController(purchaseOrderDeliveryDetailService)
+
+	purchaseOrderDeliveryRepository := repository.NewPurchaseOrderDeliveryRepository()
+	purchaseOrderDeliveryService := services.NewPurchaseOrderDeliveryService(purchaseOrderDeliveryRepository, purchaseOrderDeliveryDetailRepository, db)
+	purchaseOrderDeliveryController := controllers.NewPurchaseOrderDeliveryController(purchaseOrderDeliveryService)
 
 	salesDetailRepository := repository.NewSalesDetailRepository()
 	salesDetailService := services.NewSalesDetailService(salesDetailRepository, db)
@@ -419,7 +419,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/purchase_order_details", purchaseOrderDetailController.FindAll)
 	api.GET("/purchase_order_details/:id", purchaseOrderDetailController.FindById)
 	//api.POST("/purchase_order_details", purchaseOrderDetailController.Create)
-	api.PUT("/purchase_order_details/:id", purchaseOrderDetailController.Update)
+	//api.PUT("/purchase_order_details/:id", purchaseOrderDetailController.Update)
 	api.DELETE("/purchase_order_details/:id", purchaseOrderDetailController.Delete)
 	
 	api.GET("/purchase_invoices", purchaseInvoiceController.FindAll)

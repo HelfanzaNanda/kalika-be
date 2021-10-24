@@ -17,6 +17,7 @@ type (
 		FindById(echo.Context, *gorm.DB, string, string) (web.StockOpnameGet, error)
 		FindAll(echo.Context, *gorm.DB) ([]domain.StockOpname, error)
 		Datatable(echo.Context, *gorm.DB, string, string, string, string) ([]web.StockOpnameDatatable, int64, int64, error)
+		
 	}
 
 	StockOpnameRepositoryImpl struct {

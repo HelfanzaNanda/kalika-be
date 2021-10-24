@@ -15,6 +15,7 @@ type StockOpnameController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 	Datatable(ctx echo.Context) error
+	GeneratePdf(ctx echo.Context) error
 }
 type StockOpnameControllerImpl struct {
 		StockOpnameService services.StockOpnameService
@@ -60,7 +61,13 @@ func (o *StockOpnameControllerImpl) Delete(ctx echo.Context) error {
 }
 
 func (o *StockOpnameControllerImpl) Datatable(ctx echo.Context) error {
-	divisionResponse, _ := o.StockOpnameService.Datatable(ctx)
+	stockOpnameResponse, _ := o.StockOpnameService.Datatable(ctx)
 
-	return ctx.JSON(202, divisionResponse)
+	return ctx.JSON(202, stockOpnameResponse)
+}
+
+func (dc *StockOpnameControllerImpl) GeneratePdf(ctx echo.Context) error {
+	stockOpnameId := ctx.Param("id")
+	stockOpnameResponse, _ := dc.StockOpnameService.GeneratePdf(ctx, helpers.StringToInt(stockOpnameId))
+	return ctx.JSON(202, stockOpnameResponse)
 }

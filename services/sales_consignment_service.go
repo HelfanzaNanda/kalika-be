@@ -299,13 +299,14 @@ func (service SalesConsignmentServiceImpl) GeneratePdf(ctx echo.Context) (res we
 			froot = append(froot, item.CreatedAt.Format("02 Jan 2006 15:04:05"))
 			froot = append(froot, item.StoreConsignmentName)
 			froot = append(froot, helpers.FormatRupiah(item.Total))
+			froot = append(froot, helpers.FormatRupiah(item.Discount))
 			froot = append(froot, item.CreatedByName)
 			datas = append(datas, froot)
 			total += item.Total
 		
 	}
 	title := "laporan-penjualan-konsiyasi"
-	headings := []string{"No. Ref", "Dibuat Pada", "Toko", "Total", "Dibuat Oleh",}
+	headings := []string{"No. Ref", "Dibuat Pada", "Toko", "Total", "Diskon", "Dibuat Oleh",}
 	footer := map[string]float64{}
 	footer["Total"] = total
 	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)

@@ -31,6 +31,10 @@ func NewSalesConsignmentRepository() SalesConsignmentRepository {
 }
 
 func (repository *SalesConsignmentRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, salesConsignment *domain.SalesConsignment) (domain.SalesConsignment, error) {
+	storeConsignment := domain.StoreConsignment{}
+	db.Model(&storeConsignment).Where("id", salesConsignment.StoreConsignmentId).First(&storeConsignment)
+	salesConsignment.Discount = salesConsignment.Total * (storeConsignment.Discount/100)
+	salesConsignment.Total = salesConsignment.Total - salesConsignment.Discount
 	db.Create(&salesConsignment)
 	salesConsignmentRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(salesConsignment.Id))
 	return salesConsignmentRes, nil

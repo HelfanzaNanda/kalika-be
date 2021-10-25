@@ -39,7 +39,6 @@ func (repository ExpenseRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, ex
 	model.Date = time.Now()
 	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
 	db.Create(&model)
-	
 
 	expenseRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(model.Id))
 	return expenseRes, nil

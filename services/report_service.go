@@ -13,6 +13,8 @@ import (
 type (
 	ReportService interface {
 		ProfitLoss(ctx echo.Context) (res web.Response, err error)
+		ReceivableLedger(ctx echo.Context) (res web.Response, err error)
+		DebtLedger(ctx echo.Context) (res web.Response, err error)
 	}
 
 	ReportServiceImpl struct {
@@ -38,6 +40,40 @@ func (service *ReportServiceImpl) ProfitLoss(ctx echo.Context) (res web.Response
 	defer helpers.CommitOrRollback(tx)
 
 	profitLossRepo, err := service.ReportRepository.ProfitLoss(ctx, tx)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+
+	return helpers.Response("OK", "Sukses Mengambil Data", profitLossRepo), err
+}
+
+func (service *ReportServiceImpl) ReceivableLedger(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.ReportLedgerReceivable)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	profitLossRepo, err := service.ReportRepository.ReceivableLedger(ctx, tx)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+
+	return helpers.Response("OK", "Sukses Mengambil Data", profitLossRepo), err
+}
+
+func (service *ReportServiceImpl) DebtLedger(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.ReportLedgerDebt)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	profitLossRepo, err := service.ReportRepository.DebtLedger(ctx, tx)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}

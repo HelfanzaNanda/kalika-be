@@ -543,6 +543,8 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.DELETE("/product_locations/:id", productLocationController.Delete)
 
 	api.GET("/profit_loss", reportController.ProfitLoss)
+	api.GET("/ledger_receivables", reportController.ReceivableLedger)
+	api.GET("/ledger_debts", reportController.DebtLedger)
 
 	return e
 }

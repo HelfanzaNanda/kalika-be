@@ -22,6 +22,8 @@ type (
 		DeleteByProduct(ctx echo.Context, db *gorm.DB, model string, productId int) (bool, error)
 		StockDeduction(ctx echo.Context, db *gorm.DB, params []map[string]interface{}) (bool, error)
 		StockAddition(ctx echo.Context, db *gorm.DB, params []map[string]interface{}) (bool, error)
+		CheckStockDataTable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.CheckStockDataTable, int64, int64, error)
+		CheckStockPdf(ctx echo.Context, db *gorm.DB, filter *web.CheckStockFilter) ([]web.CheckStockGet, error)
 	}
 
 	ProductLocationRepositoryImpl struct {
@@ -161,4 +163,61 @@ func (r *ProductLocationRepositoryImpl) StockAddition(ctx echo.Context, db *gorm
 		}
 	}
 	return false, nil
+}
+
+func (repository ProductLocationRepositoryImpl) CheckStockDataTable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (res []web.CheckStockDataTable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("product_locations")
+	qry.Select(`
+		product_locations.quantity qty,
+		products.name product_name, products.stock_minimum minimum_stock,
+		divisions.name division_name, categories.name category_name
+	`)
+	qry.Joins(`
+		JOIN products ON products.id = product_locations.product_id
+		JOIN stores ON stores.id = product_locations.store_id
+		JOIN categories ON categories.id = products.category_id
+		JOIN divisions ON divisions.id = categories.division_id
+	`)
+	qry.Where("(product_locations.model = ?)", "Product")
+	qry.Count(&totalData)
+
+	if filter["division_id"] != "" {
+		qry.Where("(categories.division_id = ?)", filter["division_id"])
+	}
+	if filter["store_id"] != "" {
+		qry.Where("(product_locations.store_id = ?)", filter["store_id"])
+	}
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("categories.division_id, products.category_id")
+	qry.Find(&res)
+	return res, totalData, totalFiltered, nil
+}
+
+func (repository ProductLocationRepositoryImpl) CheckStockPdf(ctx echo.Context, db *gorm.DB, filter *web.CheckStockFilter) (res []web.CheckStockGet, err error) {
+	qry := db.Table("product_locations")
+	qry.Select(`
+		product_locations.quantity qty,
+		products.name product_name, products.stock_minimum minimum_stock,
+		divisions.name division_name, categories.name category_name
+	`)
+	qry.Joins(`
+		left JOIN products ON products.id = product_locations.product_id
+		left JOIN stores ON stores.id = product_locations.store_id
+		left JOIN categories ON categories.id = products.category_id
+		JOIN divisions ON divisions.id = categories.division_id
+	`)
+	qry.Where("(product_locations.model = ?)", "Product")
+	
+	if filter.StoreId != 0 {
+		qry.Where("(product_locations.store_id = ?)", filter.StoreId)
+	}
+	if filter.DivisionId != 0 {
+		qry.Where("(categories.division_id = ?)", filter.DivisionId)
+	}
+	qry.Order("categories.division_id, products.category_id")
+	qry.Find(&res)
+	return res, nil
 }

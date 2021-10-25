@@ -22,6 +22,7 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context, stockOpnameId int) (web.Response, error)
 	}
 
 	StockOpnameServiceImpl struct {
@@ -170,8 +171,9 @@ func (service *StockOpnameServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	data := make([]interface{}, 0)
 	for _, v := range recipeRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
-		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `<button type="button" class="btn-edit flex " id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-delete flex mx-3 text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		v.Action += `<button type="button" class="btn-pdf flex text-theme-6" id="pdf-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="file-text" class="w-4 h-4 mr-1"></i> Pdf </button>`
 		v.Action += `</div>`
 
 		data = append(data, v)
@@ -186,3 +188,25 @@ func (service *StockOpnameServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	return res, nil
 }
 
+func (service StockOpnameServiceImpl) GeneratePdf(ctx echo.Context, stockOpnameId int) (res web.Response, err error) {
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	stockOpnameRepo, err := service.StockOpnameDetailRepository.Pdf(ctx, tx, stockOpnameId)
+	var datas [][]string
+	for _, item := range stockOpnameRepo {
+		froot := []string{}
+			froot = append(froot, item.ProductName)
+			froot = append(froot, item.CategoryName)
+			froot = append(froot, helpers.IntToString(item.MinimumStock))
+			froot = append(froot, helpers.IntToString(item.BookStock))
+			froot = append(froot, helpers.IntToString(item.PhysicalStock))
+			datas = append(datas, froot)
+	}
+	title := "laporan-stock-opname"
+	headings := []string{"Produk", "Kategori", "Minimum Stok", "Stok Buku", "Stok Fisik"}
+	footer := map[string]float64{}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
+}

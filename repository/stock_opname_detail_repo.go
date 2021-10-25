@@ -17,6 +17,7 @@ type (
 		DeleteByStockOpname(echo.Context, *gorm.DB, int) (bool, error)
 		FindById(echo.Context, *gorm.DB, string, string) (domain.StockOpnameDetail, error)
 		FindAll(echo.Context, *gorm.DB, map[string][]string) ([]web.StockOpnameDetailGet, error)
+		Pdf(echo.Context, *gorm.DB, int) ([]web.ReportStockOpnameGet, error)
 	}
 
 	StockOpnameDetailRepositoryImpl struct {
@@ -81,4 +82,23 @@ func (repository *StockOpnameDetailRepositoryImpl) DeleteByStockOpname(ctx echo.
 		return false, errors.New("NOT_FOUND|stockOpnameDetail tidak ditemukan")
 	}
 	return true, nil
+}
+
+func (repository *StockOpnameDetailRepositoryImpl) Pdf(ctx echo.Context, db *gorm.DB, stockOpnameId int) (res []web.ReportStockOpnameGet, err error) {
+	qry := db.Table("stock_opname_details")
+	qry.Select(`
+		stock_opname_details.stock_on_book book_stock, stock_opname_details.stock_on_physic physical_stock, 
+		products.name product_name, products.stock_minimum minimum_stock,
+		categories.name category_name
+	`)
+	qry.Joins(`
+		JOIN products ON products.id = stock_opname_details.product_id
+		JOIN categories ON categories.id = products.category_id
+	`)
+	if stockOpnameId != 0 {
+		qry.Where("(stock_opname_details.stock_opname_id = ?)", stockOpnameId)
+	}
+	qry.Order("stock_opname_details.id desc")
+	qry.Find(&res)
+	return res, nil
 }

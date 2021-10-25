@@ -4,5 +4,6 @@ import "kalika-be/models/domain"
 
 type StoreConsignmentDatatable struct {
 	domain.StoreConsignment
-	Action string `json:"action"`
+	CreatedByName        string `json:"created_by_name"`
+	Action               string `json:"action"`
 }

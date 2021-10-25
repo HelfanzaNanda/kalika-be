@@ -18,6 +18,8 @@ type (
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.CustomOrder, error)
 		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.CustomOrder, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.CustomOrderDatatable, int64, int64, error)
+		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.CustomOrderDatatable, int64, int64, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.CustomOrderReportFilterDatatable) ([]web.CustomOrderGet, error)
 	}
 
 	CustomOrderRepositoryImpl struct {
@@ -87,4 +89,53 @@ func (repository CustomOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm
 	qry.Order("custom_orders.id desc")
 	qry.Find(&datatableRes)
 	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository CustomOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.CustomOrderDatatable, totalData int64, totalFiltered int64, err error) {
+	qry := db.Table("custom_orders")
+	qry.Select("custom_orders.*, payment_methods.name payment_method_name, users.name created_by_name")
+	qry.Joins(`
+		JOIN users ON users.id = custom_orders.created_by
+		JOIN payment_methods ON payment_methods.id = custom_orders.payment_method_id
+	`)
+
+	qry.Count(&totalData)
+	if search != "" {
+		qry.Where("(custom_orders.id = ? OR custom_orders.number LIKE ?)", search, "%"+search+"%")
+	}
+	if filter["start_date"] != "" && filter["end_date"] != ""{
+		qry.Where("(custom_orders.created_at >= ? AND custom_orders.created_at <= ?)", filter["start_date"], filter["end_date"])
+	}
+	if filter["created_by"] != "" {
+		qry.Where("(custom_orders.created_by = ?)", filter["created_by"])
+	}
+	if filter["payment_method_id"] != "" {
+		qry.Where("(custom_orders.payment_method_id = ?)", filter["payment_method_id"])
+	}
+
+	qry.Count(&totalFiltered)
+	if helpers.StringToInt(limit) > 0 {
+		qry.Limit(helpers.StringToInt(limit)).Offset(helpers.StringToInt(start))
+	}
+	qry.Order("custom_orders.id desc")
+	qry.Find(&datatableRes)
+	return datatableRes, totalData, totalFiltered, nil
+}
+
+func (repository CustomOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.CustomOrderReportFilterDatatable) (saleRes []web.CustomOrderGet, err error) {
+	qry := db.Table("custom_orders")
+	qry.Select("custom_orders.*, payment_methods.name payment_method_name, users.name created_by_name")
+	qry.Joins(`
+		JOIN users ON users.id = custom_orders.created_by
+		JOIN payment_methods ON payment_methods.id = custom_orders.payment_method_id
+	`)
+	if filter.StartDate != "" && filter.EndDate != ""{
+		qry.Where("(custom_orders.created_at >= ? AND custom_orders.created_at <= ?)", filter.StartDate, filter.EndDate)
+	}
+	if filter.CreatedBy != 0 {
+		qry.Where("(custom_orders.created_by = ?)", filter.CreatedBy)
+	}
+	qry.Order("custom_orders.id desc")
+	qry.Find(&saleRes)
+	return saleRes, nil
 }

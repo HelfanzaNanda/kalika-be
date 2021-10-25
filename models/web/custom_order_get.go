@@ -2,9 +2,8 @@ package web
 
 import "kalika-be/models/domain"
 
-type CustomOrderDatatable struct {
+type CustomOrderGet struct {
 	domain.CustomOrder
 	PaymentMethodName string `json:"payment_method_name"`
 	CreatedByName     string `json:"created_by_name"`
-	Action            string `json:"action"`
 }

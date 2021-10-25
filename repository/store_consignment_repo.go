@@ -77,3 +77,5 @@ func (repository StoreConsignmentRepositoryImpl) Datatable(ctx echo.Context, db 
 	return datatableRes, totalData, totalFiltered, nil
 }
 
+
+

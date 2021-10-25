@@ -25,6 +25,8 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
+		ReportDatatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	CustomOrderServiceImpl struct {
@@ -160,4 +162,70 @@ func (service *CustomOrderServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	res.RecordsTotal = totalData
 
 	return res, nil
+}
+func (service *CustomOrderServiceImpl) ReportDatatable(ctx echo.Context) (res web.Datatable, err error) {
+	params, _ := ctx.FormParams()
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	draw := strings.TrimSpace(params.Get("draw"))
+	limit := strings.TrimSpace(params.Get("length"))
+	start := strings.TrimSpace(params.Get("start"))
+	search := strings.TrimSpace(params.Get("search[value]"))
+	filter := make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	filter["created_by"] = strings.TrimSpace(params.Get("created_by"))
+	filter["payment_method_id"] = strings.TrimSpace(params.Get("payment_method_id"))
+	customOrderRepo, totalData, totalFiltered, _ := service.CustomOrderRepository.ReportDatatable(ctx, tx, draw, limit, start, search, filter)
+
+	data := make([]interface{}, 0)
+	for _, v := range customOrderRepo {
+		data = append(data, v)
+	}
+	res.Data = data
+	res.Order = helpers.ParseFormCollection(ctx.Request(), "order")
+	res.Draw = helpers.StringToInt(draw)
+	res.RecordsFiltered = totalFiltered
+	res.RecordsTotal = totalData
+
+	return res, nil
+}
+
+func (service CustomOrderServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.CustomOrderReportFilterDatatable)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	salesRepo, err := service.CustomOrderRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	filter := make(map[string]string)
+	filter["payment_method_id"] = ""
+	if o.PaymentMethodId != 0 {
+		filter["payment_method_id"] = helpers.IntToString(o.PaymentMethodId)
+	}
+	var total float64 = 0
+	for _, item := range salesRepo {
+		froot := []string{}
+			froot = append(froot, item.Number)
+			froot = append(froot, item.CreatedAt.Format("02 Jan 2006 15:04:05"))
+			froot = append(froot, item.CreatedByName)
+			froot = append(froot, helpers.FormatRupiah(item.Total))
+			froot = append(froot, item.PaymentMethodName)
+			datas = append(datas, froot)
+			total += item.Total
+		
+	}
+	title := "laporan-penjualan-pesanan"
+	headings := []string{"No. Ref", "Dibuat Pada", "Dibuat Oleh", "Total", "Metode"}
+	footer := map[string]float64{}
+	footer["Total"] = total
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

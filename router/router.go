@@ -42,6 +42,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	paymentRepository := repository.NewPaymentRepository()
 	paymentService := services.NewPaymentService(paymentRepository, db)
 	paymentController := controllers.NewPaymentController(paymentService)
+	
+	generalSettingRepository := repository.NewGeneralSettingRepository()
+	generalSettingService := services.NewGeneralSettingService(generalSettingRepository, db)
+	generalSettingController := controllers.NewGeneralSettingController(generalSettingService)
 
 	divisionRepository := repository.NewDivisionRepository()
 	divisionService := services.NewDivisionService(divisionRepository, db)
@@ -227,6 +231,9 @@ func Routes(db *gorm.DB) *echo.Echo {
 	reportRepository := repository.NewReportRepository()
 	reportService := services.NewReportService(reportRepository, db)
 	reportController := controllers.NewReportController(reportService)
+
+	api.GET("/general_settings", generalSettingController.FindAll)
+	api.POST("/general_settings", generalSettingController.Create)
 
 	api.GET("/users", userController.FindAll)
 	api.GET("/users/:id", userController.FindById)

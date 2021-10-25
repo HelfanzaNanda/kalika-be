@@ -11,6 +11,7 @@ type ReportController interface {
 	ProfitLoss(ctx echo.Context) error
 	ReceivableLedger(ctx echo.Context) error
 	DebtLedger(ctx echo.Context) error
+	CashBankLedger(ctx echo.Context) error
 }
 type ReportControllerImpl struct {
 	ReportService services.ReportService
@@ -36,6 +37,12 @@ func (dc *ReportControllerImpl) ReceivableLedger(ctx echo.Context) error {
 
 func (dc *ReportControllerImpl) DebtLedger(ctx echo.Context) error {
 	reportResponse, _ := dc.ReportService.DebtLedger(ctx)
+
+	return ctx.JSON(reportResponse.Code, reportResponse)
+}
+
+func (dc *ReportControllerImpl) CashBankLedger(ctx echo.Context) error {
+	reportResponse, _ := dc.ReportService.CashBankLedger(ctx)
 
 	return ctx.JSON(reportResponse.Code, reportResponse)
 }

@@ -15,6 +15,7 @@ type (
 		ProfitLoss(ctx echo.Context) (res web.Response, err error)
 		ReceivableLedger(ctx echo.Context) (res web.Response, err error)
 		DebtLedger(ctx echo.Context) (res web.Response, err error)
+		CashBankLedger(ctx echo.Context) (res web.Response, err error)
 	}
 
 	ReportServiceImpl struct {
@@ -74,6 +75,23 @@ func (service *ReportServiceImpl) DebtLedger(ctx echo.Context) (res web.Response
 	defer helpers.CommitOrRollback(tx)
 
 	profitLossRepo, err := service.ReportRepository.DebtLedger(ctx, tx)
+	if err != nil {
+		return helpers.Response(err.Error(), "", nil), err
+	}
+
+	return helpers.Response("OK", "Sukses Mengambil Data", profitLossRepo), err
+}
+
+func (service *ReportServiceImpl) CashBankLedger(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.ReportLedgerCashBank)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	profitLossRepo, err := service.ReportRepository.CashBankLedger(ctx, tx)
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}

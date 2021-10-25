@@ -555,6 +555,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/profit_loss", reportController.ProfitLoss)
 	api.GET("/ledger_receivables", reportController.ReceivableLedger)
 	api.GET("/ledger_debts", reportController.DebtLedger)
+	api.GET("/ledger_cash_banks", reportController.CashBankLedger)
 
 	return e
 }

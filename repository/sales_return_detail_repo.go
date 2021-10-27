@@ -32,10 +32,12 @@ func NewSalesReturnDetailRepository() SalesReturnDetailRepository {
 func (repository SalesReturnDetailRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (res web.SalesReturnPost, err error) {
 	var total float64 = 0
 	for _, val := range salesReturn.SalesReturnDetails {
-		val.SalesReturnId = salesReturn.Id
-		db.Create(&val)
-		total += val.Total
-		res.SalesReturnDetails = append(res.SalesReturnDetails, val)
+		if val.Qty > 0 {
+			val.SalesReturnId = salesReturn.Id
+			db.Create(&val)
+			total += val.Total
+			res.SalesReturnDetails = append(res.SalesReturnDetails, val)
+		}
 	}
 	res.Total = total
 	return res, nil

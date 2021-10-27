@@ -17,7 +17,7 @@ type (
 		Update(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (domain.SalesReturn, error)
 		Delete(ctx echo.Context, db *gorm.DB, salesReturn *domain.SalesReturn) (bool, error)
 		FindById(ctx echo.Context, db *gorm.DB, key string, value string) (domain.SalesReturn, error)
-		FindAll(ctx echo.Context, db *gorm.DB) ([]domain.SalesReturn, error)
+		FindAll(ctx echo.Context, db *gorm.DB) ([]web.SalesReturnGet, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SalesReturnDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.SalesReturnDatatable, int64, int64, error)
 		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.SalesReturnGet, error)
@@ -33,12 +33,35 @@ func NewSalesReturnRepository() SalesReturnRepository {
 }
 
 func (repository SalesReturnRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, salesReturn *web.SalesReturnPost) (domain.SalesReturn, error) {
+	storeConsignment := domain.StoreConsignment{}
+
+	if salesReturn.StoreConsignmentId > 0 {
+		db.Model(&storeConsignment).Where("id", salesReturn.StoreConsignmentId).First(&storeConsignment)
+	}
+
 	model := domain.SalesReturn{}
+	model.ModelId = salesReturn.ModelId
+	model.Model = salesReturn.Model
 	model.Number = "SR"+helpers.IntToString(int(time.Now().Unix()))
 	model.CustomerId = salesReturn.CustomerId
 	model.StoreConsignmentId = salesReturn.StoreConsignmentId
 	model.CreatedBy = helpers.StringToInt(ctx.Get("userInfo").(map[string]interface{})["id"].(string))
+	model.Total = salesReturn.Total
+	model.Discount = model.Total * (storeConsignment.Discount/100)
+	model.Total = model.Total - model.Discount
 	db.Create(&model)
+
+	receivableModel := domain.Receivable{}
+	receivableDetailsModel := domain.ReceivableDetail{}
+
+	db.Model(&receivableModel).Where("model = ? AND model_id = ?", model.Model, model.ModelId).Update("receivables", gorm.Expr("receivables - ?", model.Total)).First(&receivableModel)
+
+	receivableDetailsModel.ReceivableId = receivableModel.Id
+	receivableDetailsModel.Total = model.Total
+	receivableDetailsModel.DatePay = time.Now()
+	receivableDetailsModel.PaymentMethodId = 0
+	receivableDetailsModel.Note = "Retur Konsinyasi "+model.Number
+	db.Create(&receivableDetailsModel)
 
 	salesReturnRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(model.Id))
 	return salesReturnRes, nil
@@ -73,8 +96,18 @@ func (repository SalesReturnRepositoryImpl) FindById(ctx echo.Context, db *gorm.
 	return salesReturnRes, nil
 }
 
-func (repository SalesReturnRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (salesReturnRes []domain.SalesReturn, err error) {
-	db.Find(&salesReturnRes)
+func (repository SalesReturnRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (salesReturnRes []web.SalesReturnGet, err error) {
+	qry := db.Table("sales_returns").Select("sales_returns.*")
+	for k, v := range ctx.QueryParams() {
+		if v[0] != "" {
+			qry = qry.Where(k+" = ?", v[0])
+		}
+	}
+	qry.Scan(&salesReturnRes)
+
+	for key, val := range salesReturnRes {
+		db.Table("sales_return_details").Where("sales_return_id = ?", val.Id).Scan(&salesReturnRes[key].SalesReturnDetail)
+	}
 	return salesReturnRes, nil
 }
 

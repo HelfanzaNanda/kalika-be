@@ -187,7 +187,7 @@ func (service *SalesConsignmentServiceImpl) Delete(ctx echo.Context, id int) (re
 }
 
 func (service *SalesConsignmentServiceImpl) FindById(ctx echo.Context, id int) (res web.Response, err error) {
-	salesConsignment := web.SalesConsignmentPost{}
+	salesConsignment := web.SalesConsignmentGet{}
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 
@@ -198,10 +198,12 @@ func (service *SalesConsignmentServiceImpl) FindById(ctx echo.Context, id int) (
 	salesConsignmentDetailSearch := make(map[string][]string)
 	salesConsignmentDetailSearch["sales_consignment_id"] = append(paymentSearch["model_id"], helpers.IntToString(salesConsignmentRepo.Id))
 	salesConsignmentDetailRepo, err := service.SalesConsignmentDetailRepository.FindAll(ctx, tx, salesConsignmentDetailSearch)
+	storeConsignmentRepo, err := service.StoreConsignmentRepository.FindById(ctx, tx, "id", helpers.IntToString(salesConsignmentRepo.StoreConsignmentId))
 
 	salesConsignment.SalesConsignment = salesConsignmentRepo
 	salesConsignment.Payment = paymentRepo
 	salesConsignment.SalesConsignmentDetails = salesConsignmentDetailRepo
+	salesConsignment.StoreConsignment = storeConsignmentRepo
 
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
@@ -236,6 +238,8 @@ func (service *SalesConsignmentServiceImpl) Datatable(ctx echo.Context) (res web
 	for _, v := range recipeRepo {
 		v.Action = `<div class="flex">`
 		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-4 text-theme-12" id="print-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="printer" class="w-4 h-4 mr-1"></i> Cetak</button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-4 text-theme-9" id="return-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="truck" class="w-4 h-4 mr-1"></i> Retur </button>`
 		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
 		v.Action += `</div>`
 

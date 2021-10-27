@@ -49,6 +49,12 @@ func (service *SalesReturnServiceImpl) Create(ctx echo.Context) (res web.Respons
 
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
+
+	for key, val := range o.SalesReturnDetails {
+		o.Total += val.UnitPrice * float64(val.Qty)
+		o.SalesReturnDetails[key].Total = val.UnitPrice * float64(val.Qty)
+	}
+
 	salesReturnRepo, err := service.SalesReturnRepository.Create(ctx, tx, o)
 	if err != nil {
 		return helpers.Response(err.Error(), "create sales return error", nil), err
@@ -60,10 +66,10 @@ func (service *SalesReturnServiceImpl) Create(ctx echo.Context) (res web.Respons
 	}
 	o.Total = salesReturnDetailRepo.Total
 	
-	_, err = service.SalesReturnRepository.Update(ctx, tx, o)
-	if err != nil {
-		return helpers.Response(err.Error(), "update total expense error", nil), err
-	}
+	//_, err = service.SalesReturnRepository.Update(ctx, tx, o)
+	//if err != nil {
+	//	return helpers.Response(err.Error(), "update total expense error", nil), err
+	//}
 	o.SalesReturnDetails = salesReturnDetailRepo.SalesReturnDetails
 	
 
@@ -160,9 +166,6 @@ func (service *SalesReturnServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
 	salesRepo, totalData, totalFiltered, _ := service.SalesReturnRepository.Datatable(ctx, tx, draw, limit, start, search)
-	// if err != nil {
-	// 	return helpers.Response(err.Error(), "", nil), err
-	// }
 
 	data := make([]interface{}, 0)
 	for _, v := range salesRepo {

@@ -20,6 +20,7 @@ type (
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.CustomOrderDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.CustomOrderDatatable, int64, int64, error)
 		FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.CustomOrderReportFilterDatatable) ([]web.CustomOrderGet, error)
+		CompletingResponse(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (web.CustomOrderGet, error)
 	}
 
 	CustomOrderRepositoryImpl struct {
@@ -31,19 +32,19 @@ func NewCustomOrderRepository() CustomOrderRepository {
 	return &CustomOrderRepositoryImpl{}
 }
 
-func (repository CustomOrderRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (domain.CustomOrder, error) {
+func (repository *CustomOrderRepositoryImpl) Create(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (domain.CustomOrder, error) {
 	db.Create(&customOrder)
 	customOrderRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(customOrder.Id))
 	return customOrderRes, nil
 }
 
-func (repository CustomOrderRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (domain.CustomOrder, error) {
+func (repository *CustomOrderRepositoryImpl) Update(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (domain.CustomOrder, error) {
 	db.Where("id = ?", customOrder.Id).Updates(&customOrder)
 	customOrderRes,_ := repository.FindById(ctx, db, "id", helpers.IntToString(customOrder.Id))
 	return customOrderRes, nil
 }
 
-func (repository CustomOrderRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (bool, error) {
+func (repository *CustomOrderRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (bool, error) {
 	results := db.Where("id = ?", customOrder.Id).Delete(&customOrder)
 	if results.RowsAffected < 1 {
 		return false, errors.New("NOT_FOUND|customOrder tidak ditemukan")
@@ -51,7 +52,7 @@ func (repository CustomOrderRepositoryImpl) Delete(ctx echo.Context, db *gorm.DB
 	return true, nil
 }
 
-func (repository CustomOrderRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (customOrderRes domain.CustomOrder, err error) {
+func (repository *CustomOrderRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, key string, value string) (customOrderRes domain.CustomOrder, err error) {
 	results := db.Where(key+" = ?", value).First(&customOrderRes)
 	if results.RowsAffected < 1 {
 		return customOrderRes, errors.New("NOT_FOUND|customOrder tidak ditemukan")
@@ -59,12 +60,25 @@ func (repository CustomOrderRepositoryImpl) FindById(ctx echo.Context, db *gorm.
 	return customOrderRes, nil
 }
 
-func (repository CustomOrderRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (customOrderRes []domain.CustomOrder, err error) {
+func (repository *CustomOrderRepositoryImpl) CompletingResponse(ctx echo.Context, db *gorm.DB, customOrder *domain.CustomOrder) (res web.CustomOrderGet, err error) {
+	res.CustomOrder = *customOrder
+	db.Model(&domain.PaymentMethod{}).Select("payment_methods.name").Where("id = ?", customOrder.PaymentMethodId).First(&res.PaymentMethodName)
+	db.Model(&domain.User{}).Select("users.name").Where("id = ?", customOrder.CreatedBy).First(&res.CreatedByName)
+	db.Model(&domain.Seller{}).Where("id = ?", customOrder.SellerId).First(&res.Seller)
+	db.Model(&domain.Store{}).Select("stores.name").Where("id = ?", customOrder.StoreId).First(&res.StoreName)
+	db.Model(&domain.Product{}).Select("products.name").Where("id = ?", customOrder.ProductId).First(&res.ProductName)
+	db.Model(&domain.CakeType{}).Where("id = ?", customOrder.TypeCakeId).First(&res.TypeCake)
+	db.Model(&domain.CakeVariant{}).Where("id = ?", customOrder.VariantCakeId).First(&res.VariantCake)
+
+	return res, nil
+}
+
+func (repository *CustomOrderRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (customOrderRes []domain.CustomOrder, err error) {
 	db.Find(&customOrderRes)
 	return customOrderRes, nil
 }
 
-func (repository CustomOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.CustomOrderDatatable, totalData int64, totalFiltered int64, err error) {
+func (repository *CustomOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) (datatableRes []web.CustomOrderDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("custom_orders").
 		Select(`
 			custom_orders.*,
@@ -91,7 +105,7 @@ func (repository CustomOrderRepositoryImpl) Datatable(ctx echo.Context, db *gorm
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository CustomOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.CustomOrderDatatable, totalData int64, totalFiltered int64, err error) {
+func (repository *CustomOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (datatableRes []web.CustomOrderDatatable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("custom_orders")
 	qry.Select("custom_orders.*, payment_methods.name payment_method_name, users.name created_by_name")
 	qry.Joins(`
@@ -122,7 +136,7 @@ func (repository CustomOrderRepositoryImpl) ReportDatatable(ctx echo.Context, db
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository CustomOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.CustomOrderReportFilterDatatable) (saleRes []web.CustomOrderGet, err error) {
+func (repository *CustomOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, filter *web.CustomOrderReportFilterDatatable) (saleRes []web.CustomOrderGet, err error) {
 	qry := db.Table("custom_orders")
 	qry.Select("custom_orders.*, payment_methods.name payment_method_name, users.name created_by_name")
 	qry.Joins(`

@@ -45,13 +45,30 @@ func (repository *ReportRepositoryImpl) ProfitLoss(ctx echo.Context, db *gorm.DB
 
 func (repository *ReportRepositoryImpl) ReceivableLedger(ctx echo.Context, db *gorm.DB) (res []web.ReportLedgerReceivable, err error) {
 	data := []web.ReportLedgerReceivable{}
+	salesConsignmentData := []web.ReportLedgerReceivable{}
+	returnSalesConsignmentData := []web.ReportLedgerReceivable{}
 	db.Model(&domain.Receivable{}).
-		Select("sales_consignments.date as date, sales_consignments.number as number, store_consignments.store_name as customer, receivables.total as debit, (SELECT COALESCE(sum(receivable_details.total), 0) FROM receivable_details WHERE receivable_details.receivable_id = receivables.id) AS credit").
+		Select("sales_consignments.date as date, sales_consignments.number as number, store_consignments.store_name as customer, receivables.total as debit, (SELECT COALESCE(sum(receivable_details.total), 0) FROM receivable_details WHERE receivable_details.receivable_id = receivables.id AND payment_method_id > 0) AS credit").
 		Where("receivables.model = ?", "SalesConsignment").
 		Joins("JOIN sales_consignments ON sales_consignments.id = receivables.model_id").
 		Joins("JOIN store_consignments ON store_consignments.id = sales_consignments.store_consignment_id").
 		Order("receivables.date asc").
-		Find(&data)
+		Find(&salesConsignmentData)
+
+	db.Model(&domain.SalesReturn{}).
+		Select("sales_returns.created_at as date, sales_returns.number as number, store_consignments.store_name as customer, 0 as debit, sales_returns.total AS credit").
+		Where("sales_returns.model = ?", "SalesConsignment").
+		Joins("JOIN sales_consignments ON sales_consignments.id = sales_returns.model_id").
+		Joins("JOIN store_consignments ON store_consignments.id = sales_returns.store_consignment_id").
+		Order("sales_returns.created_at asc").
+		Find(&returnSalesConsignmentData)
+
+	data = append(data, salesConsignmentData...)
+	data = append(data, returnSalesConsignmentData...)
+
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].Date.Before(data[j].Date)
+	})
 
 	tempBalance := 0.0
 

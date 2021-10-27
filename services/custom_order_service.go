@@ -116,12 +116,13 @@ func (service CustomOrderServiceImpl) FindById(ctx echo.Context, id int) (res we
 	defer helpers.CommitOrRollback(tx)
 
 	customOrderRepo, err := service.CustomOrderRepository.FindById(ctx, tx, "id", helpers.IntToString(id))
-
 	if err != nil {
 		return helpers.Response(err.Error(), "", nil), err
 	}
 
-	return helpers.Response("OK", "Sukses Mengambil Data", customOrderRepo), err
+	completeCustomOrderRepo, err := service.CustomOrderRepository.CompletingResponse(ctx, tx, &customOrderRepo)
+
+	return helpers.Response("OK", "Sukses Mengambil Data", completeCustomOrderRepo), err
 }
 
 func (service CustomOrderServiceImpl) FindAll(ctx echo.Context) (res web.Response, err error) {
@@ -150,6 +151,7 @@ func (service *CustomOrderServiceImpl) Datatable(ctx echo.Context) (res web.Data
 	for _, v := range customOrderRepo {
 		v.Action = `<div class="flex">`
 		v.Action += `<button type="button" class="btn-edit flex mr-3" id="edit-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+		v.Action += `<button type="button" class="btn-edit flex mr-4 text-theme-12" id="print-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="printer" class="w-4 h-4 mr-1"></i> Cetak</button>`
 		v.Action += `<button type="button" class="btn-delete flex text-theme-6" id="delete-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
 		v.Action += `</div>`
 

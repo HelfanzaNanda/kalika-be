@@ -175,8 +175,6 @@ func Routes(db *gorm.DB) *echo.Echo {
 	cashRegisterService := services.NewCashRegisterService(cashRegisterRepository, db)
 	cashRegisterController := controllers.NewCashRegisterController(cashRegisterService)
 
-	productPriceRepository := repository.NewProductPriceRepository()
-
 	roleRepository := repository.NewRoleRepository()
 	roleService := services.NewRoleService(roleRepository, db)
 	roleController := controllers.NewRoleController(roleService)
@@ -198,6 +196,10 @@ func Routes(db *gorm.DB) *echo.Echo {
 	productLocationRepository := repository.NewProductLocationRepository()
 	productLocationService := services.NewProductLocationService(productLocationRepository, db)
 	productLocationController := controllers.NewProductLocationController(productLocationService)
+
+	productPriceRepository := repository.NewProductPriceRepository()
+	productPriceService := services.NewProductPriceService(productPriceRepository, db)
+	productPriceController := controllers.NewProductPriceController(productPriceService)
 
 	checkStockService := services.NewCheckStockService(productLocationRepository, db)
 	checkStockController := controllers.NewCheckStockController(checkStockService)
@@ -558,6 +560,9 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/product_locations", productLocationController.Create)
 	api.PUT("/product_locations/:id", productLocationController.Update)
 	api.DELETE("/product_locations/:id", productLocationController.Delete)
+
+	api.GET("/product_prices", productPriceController.FindAll)
+	api.GET("/product_prices/:id", productPriceController.FindById)
 
 	api.GET("/profit_loss", reportController.ProfitLoss)
 	api.GET("/ledger_receivables", reportController.ReceivableLedger)

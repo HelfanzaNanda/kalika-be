@@ -82,5 +82,9 @@ var migration = map[string]func(){
 	"0051": func() { db.AutoMigrate(&domain.Receivable{}) },
 	"0052": func() { db.AutoMigrate(&domain.GeneralSetting{}) },
 	"0053": func() { db.AutoMigrate(&domain.GeneralSetting{}) },
+	"0054": func() { db.AutoMigrate(&domain.ProductionRequest{}) },
+	"0055": func() { db.AutoMigrate(&domain.ProductionRequestDetail{}) },
+	"0056": func() { db.AutoMigrate(&domain.StoreMutation{}) },
+	"0057": func() { db.AutoMigrate(&domain.StoreMutationDetail{}) },
 
 }

@@ -9,7 +9,7 @@ import (
 )
 
 var Default = map[string]Config{
-	"APP_URL": "192.168.100.4",
+	"APP_URL": "localhost",
 	"APP_ENV": "production",
 	"APP_PORT": "4000",
 	"DB_DRIVER": "mysql",

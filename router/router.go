@@ -193,6 +193,18 @@ func Routes(db *gorm.DB) *echo.Echo {
 	stockOpnameService := services.NewStockOpnameService(stockOpnameRepository, stockOpnameDetailRepository, db)
 	stockOpnameController := controllers.NewStockOpnameController(stockOpnameService)
 
+	storeMutationDetailRepository := repository.NewStoreMutationDetailRepository()
+
+	storeMutationRepository := repository.NewStoreMutationRepository()
+	storeMutationService := services.NewStoreMutationService(storeMutationRepository, storeMutationDetailRepository, db)
+	storeMutationController := controllers.NewStoreMutationController(storeMutationService)
+
+	productionRequestDetailRepository := repository.NewProductionRequestDetailRepository()
+
+	productionRequestRepository := repository.NewProductionRequestRepository()
+	productionRequestService := services.NewProductionRequestService(productionRequestRepository, productionRequestDetailRepository, db)
+	productionRequestController := controllers.NewProductionRequestController(productionRequestService)
+
 	productLocationRepository := repository.NewProductLocationRepository()
 	productLocationService := services.NewProductLocationService(productLocationRepository, db)
 	productLocationController := controllers.NewProductLocationController(productLocationService)
@@ -554,6 +566,22 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.POST("/stock_opname_datatables", stockOpnameController.Datatable)
 	api.PUT("/stock_opnames/:id", stockOpnameController.Update)
 	api.DELETE("/stock_opnames/:id", stockOpnameController.Delete)
+
+	api.GET("/store_mutations", storeMutationController.FindAll)
+	api.GET("/store_mutations_pdf/:id", storeMutationController.GeneratePdf)
+	api.GET("/store_mutations/:id", storeMutationController.FindById)
+	api.POST("/store_mutations", storeMutationController.Create)
+	api.POST("/store_mutation_datatables", storeMutationController.Datatable)
+	api.PUT("/store_mutations/:id", storeMutationController.Update)
+	api.DELETE("/store_mutations/:id", storeMutationController.Delete)
+
+	api.GET("/production_requests", productionRequestController.FindAll)
+	api.GET("/production_requests_pdf/:id", productionRequestController.GeneratePdf)
+	api.GET("/production_requests/:id", productionRequestController.FindById)
+	api.POST("/production_requests", productionRequestController.Create)
+	api.POST("/production_request_datatables", productionRequestController.Datatable)
+	api.PUT("/production_requests/:id", productionRequestController.Update)
+	api.DELETE("/production_requests/:id", productionRequestController.Delete)
 
 	api.GET("/product_locations", productLocationController.FindAll)
 	api.GET("/product_locations/:id", productLocationController.FindById)

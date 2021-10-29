@@ -173,7 +173,7 @@ func (service *StockOpnameServiceImpl) Datatable(ctx echo.Context) (res web.Data
 		v.Action = `<div class="flex">`
 		v.Action += `<button type="button" class="btn-edit flex " id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
 		v.Action += `<button type="button" class="btn-delete flex mx-3 text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
-		v.Action += `<button type="button" class="btn-pdf flex text-theme-6" id="pdf-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="file-text" class="w-4 h-4 mr-1"></i> Pdf </button>`
+		v.Action += `<button type="button" class="btn-pdf flex text-theme-12" id="pdf-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="file-text" class="w-4 h-4 mr-1"></i> Cetak </button>`
 		v.Action += `</div>`
 
 		data = append(data, v)

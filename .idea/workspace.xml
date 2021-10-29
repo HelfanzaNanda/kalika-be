@@ -6,9 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="3dbea7a9-1d8a-4844-bae1-64bfcc57e984" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/migration.go" beforeDir="false" afterPath="$PROJECT_DIR$/database/migration.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/production_request_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/production_request_controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/product_location_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/product_location_repo.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repository/production_request_repo.go" beforeDir="false" afterPath="$PROJECT_DIR$/repository/production_request_repo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/production_request_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/production_request_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/stock_opname_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/stock_opname_service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +59,7 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/repository" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>

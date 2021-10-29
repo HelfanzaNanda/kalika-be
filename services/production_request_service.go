@@ -23,6 +23,7 @@ type (
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
 		GeneratePdf(ctx echo.Context, productionRequestId int) (web.Response, error)
+		Approve(ctx echo.Context, productionRequestId int) (web.Response, error)
 	}
 
 	ProductionRequestServiceImpl struct {
@@ -171,9 +172,14 @@ func (service *ProductionRequestServiceImpl) Datatable(ctx echo.Context) (res we
 	data := make([]interface{}, 0)
 	for _, v := range recipeRepo {
 		v.Action = `<div class="flex">`
-		v.Action += `<button type="button" class="btn-edit flex " id="edit-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
-		v.Action += `<button type="button" class="btn-delete flex mx-3 text-theme-6" id="delete-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
-		v.Action += `<button type="button" class="btn-pdf flex text-theme-6" id="pdf-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="file-text" class="w-4 h-4 mr-1"></i> Pdf </button>`
+		if v.Status == "submission" {
+			v.Action += `<button type="button" class="btn-edit flex " id="edit-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit </button>`
+			v.Action += `<button type="button" class="btn-delete flex mx-3 text-theme-6" id="delete-data" data-id=` + helpers.IntToString(v.Id) + `> <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete </button>`
+		}
+		v.Action += `<button type="button" class="btn-pdf flex text-theme-12 mr-2" id="pdf-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="file-text" class="w-4 h-4 mr-1"></i> Cetak </button>`
+		if v.Status == "submission" {
+			v.Action += `<button type="button" class="btn-approve flex text-theme-9" id="approve-data" data-id=`+helpers.IntToString(v.Id)+`> <i data-feather="check" class="w-4 h-4 mr-1"></i> Setujui </button>`
+		}
 		v.Action += `</div>`
 
 		data = append(data, v)
@@ -210,4 +216,17 @@ func (service *ProductionRequestServiceImpl) GeneratePdf(ctx echo.Context, produ
 
 	//return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 	return res, err
+}
+
+func (service *ProductionRequestServiceImpl) Approve(ctx echo.Context, productionRequestId int) (res web.Response, err error) {
+	o := domain.ProductionRequest{}
+	o.Status = "approved"
+	o.Id = productionRequestId
+
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+
+	service.ProductionRequestRepository.Update(ctx, tx, &o)
+	service.ProductionRequestRepository.ProcessApprovedProduction(ctx, tx, &o)
+	return helpers.Response("OK", "Sukses Menyetujui Data", nil), err
 }

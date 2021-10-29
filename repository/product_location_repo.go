@@ -66,6 +66,7 @@ func (r *ProductLocationRepositoryImpl) FindById(ctx echo.Context, db *gorm.DB, 
 }
 
 func (r *ProductLocationRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (productLocationRes []web.ProductLocationGet, err error) {
+	isFilterDivision := false
 	productLocations := []domain.ProductLocation{}
 	product := domain.Product{}
 	categoryProduct := domain.Category{}
@@ -74,9 +75,17 @@ func (r *ProductLocationRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (
 
 	qry := db.Table("product_locations").Select("product_locations.*")
 	for k, v := range ctx.QueryParams() {
+		if k == "categories.division_id" {
+			isFilterDivision = true
+		}
 		if v[0] != "" && k != "id" {
 			qry = qry.Where(k+" = ?", v[0])
 		}
+	}
+	if isFilterDivision {
+		qry.Joins("JOIN products ON products.id = product_locations.product_id")
+		qry.Joins("JOIN categories ON categories.id = products.category_id")
+		qry.Order("products.category_id")
 	}
 	qry.Scan(&productLocations)
 
@@ -85,8 +94,10 @@ func (r *ProductLocationRepositoryImpl) FindAll(ctx echo.Context, db *gorm.DB) (
 		result.ProductLocation = val
 		db.Model(product).Where("id", val.ProductId).First(&result.Product)
 		db.Model(categoryProduct).Where("id", result.Product.CategoryId).First(&result.Product.Category)
-		db.Model(divisionProduct).Where("id", result.Product.DivisionId).First(&result.Product.Division)
-		db.Model(store).Where("id", val.StoreId).First(&result.Store)
+		if !isFilterDivision {
+			db.Model(divisionProduct).Where("id", result.Product.Category.DivisionId).First(&result.Product.Division)
+			db.Model(store).Where("id", val.StoreId).First(&result.Store)
+		}
 		productLocationRes = append(productLocationRes, result)
 	}
 	return productLocationRes, nil
@@ -165,7 +176,7 @@ func (r *ProductLocationRepositoryImpl) StockAddition(ctx echo.Context, db *gorm
 	return false, nil
 }
 
-func (repository ProductLocationRepositoryImpl) CheckStockDataTable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (res []web.CheckStockDataTable, totalData int64, totalFiltered int64, err error) {
+func (r *ProductLocationRepositoryImpl) CheckStockDataTable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) (res []web.CheckStockDataTable, totalData int64, totalFiltered int64, err error) {
 	qry := db.Table("product_locations")
 	qry.Select(`
 		product_locations.quantity qty,
@@ -196,7 +207,7 @@ func (repository ProductLocationRepositoryImpl) CheckStockDataTable(ctx echo.Con
 	return res, totalData, totalFiltered, nil
 }
 
-func (repository ProductLocationRepositoryImpl) CheckStockPdf(ctx echo.Context, db *gorm.DB, filter *web.CheckStockFilter) (res []web.CheckStockGet, err error) {
+func (r *ProductLocationRepositoryImpl) CheckStockPdf(ctx echo.Context, db *gorm.DB, filter *web.CheckStockFilter) (res []web.CheckStockGet, err error) {
 	qry := db.Table("product_locations")
 	qry.Select(`
 		product_locations.quantity qty,

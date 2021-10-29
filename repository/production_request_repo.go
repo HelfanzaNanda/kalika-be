@@ -13,6 +13,7 @@ type (
 	ProductionRequestRepository interface{
 		Create(echo.Context, *gorm.DB, *domain.ProductionRequest) (web.ProductionRequestGet, error)
 		Update(echo.Context, *gorm.DB, *domain.ProductionRequest) (web.ProductionRequestGet, error)
+		ProcessApprovedProduction(echo.Context, *gorm.DB, *domain.ProductionRequest) (domain.ProductionRequest, error)
 		Delete(echo.Context, *gorm.DB, *domain.ProductionRequest) (bool, error)
 		FindById(echo.Context, *gorm.DB, string, string) (web.ProductionRequestGet, error)
 		FindAll(echo.Context, *gorm.DB) ([]domain.ProductionRequest, error)
@@ -79,4 +80,15 @@ func (repository *ProductionRequestRepositoryImpl) Datatable(ctx echo.Context, d
 	qry.Order("production_requests.id desc")
 	qry.Preload("Store").Preload("Division").Find(&productionRequestRes)
 	return productionRequestRes, totalData, totalFiltered, nil
+}
+
+func (repository *ProductionRequestRepositoryImpl) ProcessApprovedProduction(ctx echo.Context, db *gorm.DB, productionRequest *domain.ProductionRequest) (res domain.ProductionRequest, err error) {
+	productionRequestDetails := []domain.ProductionRequestDetail{}
+	db.Where("id = ?", productionRequest.Id).Updates(&productionRequest)
+	db.Where("production_request_id = ?", productionRequest.Id).Find(&productionRequestDetails)
+
+	for _, val := range productionRequestDetails {
+		db.Model(&domain.ProductLocation{}).Where("model = ? AND product_id = ? AND store_id = ?", "Product", val.ProductId, 1).Update("quantity", val.ProductionQty)
+	}
+	return *productionRequest, nil
 }

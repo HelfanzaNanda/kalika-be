@@ -579,6 +579,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/production_requests_pdf/:id", productionRequestController.GeneratePdf)
 	api.GET("/production_requests/:id", productionRequestController.FindById)
 	api.POST("/production_requests", productionRequestController.Create)
+	api.POST("/production_requests/approve/:id", productionRequestController.Approve)
 	api.POST("/production_request_datatables", productionRequestController.Datatable)
 	api.PUT("/production_requests/:id", productionRequestController.Update)
 	api.DELETE("/production_requests/:id", productionRequestController.Delete)

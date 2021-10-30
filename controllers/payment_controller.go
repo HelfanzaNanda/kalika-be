@@ -15,6 +15,7 @@ type PaymentController interface {
 	Update(ctx echo.Context) error
 	Delete(ctx echo.Context) error
 	Datatable(ctx echo.Context) error
+	GeneratePdf(ctx echo.Context) error
 }
 type PaymentControllerImpl struct {
 		PaymentService services.PaymentService
@@ -61,5 +62,10 @@ func (dc *PaymentControllerImpl) Delete(ctx echo.Context) error {
 
 func (dc *PaymentControllerImpl) Datatable(ctx echo.Context) error {
 	paymentResponse, _ := dc.PaymentService.Datatable(ctx)
+	return ctx.JSON(202, paymentResponse)
+}
+
+func (dc *PaymentControllerImpl) GeneratePdf(ctx echo.Context) error {
+	paymentResponse, _ := dc.PaymentService.GeneratePdf(ctx)
 	return ctx.JSON(202, paymentResponse)
 }

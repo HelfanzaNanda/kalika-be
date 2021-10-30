@@ -21,6 +21,7 @@ type (
 		FindById(ctx echo.Context, id int) (res web.Response, err error)
 		FindAll(ctx echo.Context) (web.Response, error)
 		Datatable(ctx echo.Context) (res web.Datatable, err error)
+		GeneratePdf(ctx echo.Context) (web.Response, error)
 	}
 
 	PaymentServiceImpl struct {
@@ -121,8 +122,13 @@ func (service *PaymentServiceImpl) Datatable(ctx echo.Context) (res web.Datatabl
 	limit := strings.TrimSpace(params.Get("length"))
 	start := strings.TrimSpace(params.Get("start"))
 	search := strings.TrimSpace(params.Get("search[value]"))
+	filter := make(map[string]string)
+	filter["start_date"] = strings.TrimSpace(params.Get("start_date"))
+	filter["end_date"] = strings.TrimSpace(params.Get("end_date"))
+	filter["store_id"] = strings.TrimSpace(params.Get("store_id"))
+	filter["created_by"] = strings.TrimSpace(params.Get("created_by"))
 
-	paymentRepo, totalData, totalFiltered, _ := service.PaymentRepository.Datatable(ctx, tx, draw, limit, start, search)
+	paymentRepo, totalData, totalFiltered, _ := service.PaymentRepository.Datatable(ctx, tx, draw, limit, start, search, filter)
 
 	data := make([]interface{}, 0)
 	for _, v := range paymentRepo {
@@ -142,3 +148,45 @@ func (service *PaymentServiceImpl) Datatable(ctx echo.Context) (res web.Datatabl
 	return res, nil
 }
 
+
+func (service PaymentServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, err error) {
+	o := new(web.PaymentReportFilterDatatable)
+	if err := ctx.Bind(o); err != nil {
+		return helpers.Response(err.Error(), "Error Data Binding", nil), err
+	}
+	
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+	
+	paymentRepo, err := service.PaymentRepository.FindByCreatedAt(ctx, tx, o)
+	var datas [][]string
+	var total float64 = 0
+	for _, item := range paymentRepo {
+		froot := []string{}
+		froot = append(froot, item.Number)
+		if item.Model == "PurchaseOrder" {
+			froot = append(froot, "Order Pembelian")	
+		}else if item.Model == "SalesConsignment" {
+			froot = append(froot, "Penjualan Konsinyasi")
+		}else if item.Model == "Sales" {
+			froot = append(froot, "Penjualan")
+		}else if item.Model == "CustomOrder" {
+			froot = append(froot, "Penjualan Pesanan")
+		}else {
+			froot = append(froot, item.Model)
+		}
+		froot = append(froot, helpers.FormatRupiah(item.Total))
+		froot = append(froot, item.PaymentMethod)
+		froot = append(froot, item.Date.Format("02 Jan 2006 15:04:05"))
+		froot = append(froot, item.CreatedByName)
+		datas = append(datas, froot)
+		total += item.Total
+	}
+	title := "laporan_pembayaran"
+	headings := []string{"No. Ref", "Tipe", "Total", "Metode", "Dibuat Pada", "Dibuat Oleh"}
+	footer := map[string]float64{}
+	footer["Total"] = total
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
+	
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
+}

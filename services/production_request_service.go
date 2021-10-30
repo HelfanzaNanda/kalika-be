@@ -195,27 +195,26 @@ func (service *ProductionRequestServiceImpl) Datatable(ctx echo.Context) (res we
 }
 
 func (service *ProductionRequestServiceImpl) GeneratePdf(ctx echo.Context, productionRequestId int) (res web.Response, err error) {
-	//tx := service.db.Begin()
-	//defer helpers.CommitOrRollback(tx)
-	//
-	//productionRequestRepo, err := service.ProductionRequestDetailRepository.Pdf(ctx, tx, productionRequestId)
-	//var datas [][]string
-	//for _, item := range productionRequestRepo {
-	//	froot := []string{}
-	//		froot = append(froot, item.ProductName)
-	//		froot = append(froot, item.CategoryName)
-	//		froot = append(froot, helpers.IntToString(item.MinimumStock))
-	//		froot = append(froot, helpers.IntToString(item.BookStock))
-	//		froot = append(froot, helpers.IntToString(item.PhysicalStock))
-	//		datas = append(datas, froot)
-	//}
-	//title := "laporan-stock-opname"
-	//headings := []string{"Produk", "Kategori", "Minimum Stok", "Stok Buku", "Stok Fisik"}
-	//footer := map[string]float64{}
-	//resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	tx := service.db.Begin()
+	defer helpers.CommitOrRollback(tx)
+	
+	productionRequestRepo, err := service.ProductionRequestDetailRepository.Pdf(ctx, tx, productionRequestId)
+	var datas [][]string
+	for _, item := range productionRequestRepo {
+		froot := []string{}
+			froot = append(froot, item.ProductName)
+			froot = append(froot, item.CategoryName)
+			froot = append(froot, helpers.IntToString(item.CurrentStock))
+			froot = append(froot, helpers.IntToString(item.ProductionQty))
+			froot = append(froot, helpers.IntToString(item.ProductionQty))
+			datas = append(datas, froot)
+	}
+	title := "laporan_stock_opname"
+	headings := []string{"Produk", "Kategori", "Sisa", "Prod", "hasil"}
+	footer := map[string]float64{}
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, "", "")
 
-	//return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
-	return res, err
+	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }
 
 func (service *ProductionRequestServiceImpl) Approve(ctx echo.Context, productionRequestId int) (res web.Response, err error) {

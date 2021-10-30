@@ -3,10 +3,7 @@ package helpers
 import (
 	"fmt"
 	"strings"
-	//"kalika-be/config"
-
-	// "os"
-
+	"time"
 	"github.com/johnfercher/maroto/pkg/color"
 	"github.com/johnfercher/maroto/pkg/consts"
 	"github.com/johnfercher/maroto/pkg/pdf"
@@ -15,14 +12,39 @@ import (
 	// "github.com/divrhino/fruitful-pdf/data"
 )
 
-func GeneratePdf(ctx echo.Context, title string, headings []string, datas [][]string, footer map[string]float64) (pdfUrl string, err error) {
+func GeneratePdf(ctx echo.Context, title string, headings []string, datas [][]string, footer map[string]float64, startDate string, endDate string) (pdfUrl string, err error) {
 	m := pdf.NewMaroto(consts.Portrait, consts.A4)
 	m.SetPageMargins(20, 10, 20)
+	
+	titleStartDate := time.Now()
+	if startDate != "" {
+		titleStartDate, err = time.Parse("2006-01-02", startDate)
+		if err != nil {
+			fmt.Println(" parse time error :", err)
+			return "", err
+		}
+	}
+	titleEndDate := ""
+	filenameEndDate := ""
+	if endDate != "" {
+		endDate, err := time.Parse("2006-01-02", endDate)
+		if err != nil {
+			fmt.Println(" parse time error :", err)
+			return "", err
+		}
+		titleEndDate = endDate.Format("02_Jan_2006")
+		filenameEndDate = endDate.Format("02_Jan_2006_15_04_05")
+	}
 
-	buildHeading(m, title)
+	titleHeading := title + "_" + titleStartDate.Format("02_Jan_2006") + " s/d " + titleEndDate
+	if titleEndDate == "" {
+		titleHeading = title + "_" + titleStartDate.Format("02_Jan_2006")
+	}
+	buildHeading(m, titleHeading)
 	buildList(m, headings, datas)
 	buildFooter(m, footer)
-	filename := title + ".pdf"
+
+	filename := title + "_" + titleStartDate.Format("02_Jan_2006_15_04_05") + "_" + filenameEndDate +".pdf"
 	err = m.OutputFileAndClose("exports/"+filename)
 	if err != nil {
 		fmt.Println("⚠️  Could not save PDF:", err)
@@ -35,7 +57,7 @@ func GeneratePdf(ctx echo.Context, title string, headings []string, datas [][]st
 func buildHeading(m pdf.Maroto, title string) {
 	m.Row(10, func() {
 		m.Col(12, func() {
-			m.Text(strings.Title(strings.Replace(title, "-", " ", -1)), props.Text{
+			m.Text(strings.Title(strings.Replace(title, "_", " ", -1)), props.Text{
 				Top:   3,
 				Style: consts.Bold,
 				Align: consts.Center,

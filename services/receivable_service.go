@@ -208,12 +208,12 @@ func (service ReceivableServiceImpl) GeneratePdf(ctx echo.Context) (res web.Resp
 		totalReceivable += item.Total
 		remainingReceivable += item.Receivables
 	}
-	title := "laporan-piutang"
+	title := "laporan_piutang"
 	headings := []string{"Kustomer", "Total Piutang", "Sisa Piutang", "Tanggal", "Note", "Dibuat Oleh"}
 	footer := map[string]float64{}
 	footer["Total Piutang"] = totalReceivable
 	footer["Sisa Piutang"] = remainingReceivable
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

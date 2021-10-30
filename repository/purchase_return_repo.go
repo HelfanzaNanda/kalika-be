@@ -113,7 +113,7 @@ func (repository PurchaseReturnRepositoryImpl) ReportDatatable(ctx echo.Context,
 		qry.Where("(purchase_returns.id = ? OR purchase_returns.date LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != "" {
-		qry.Where("(purchase_returns.created_at > ? AND purchase_returns.created_at < ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(purchase_returns.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
@@ -132,7 +132,7 @@ func (repository PurchaseReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context,
 	`)
 	qry.Joins("join users on users.id = purchase_returns.created_by")
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(purchase_returns.created_at > ? AND purchase_returns.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+		qry.Where("(DATE(purchase_returns.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Order("purchase_returns.id desc")
 	qry.Find(&purchaseReturnRes)

@@ -209,12 +209,12 @@ func (service DebtServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response, 
 		totalDebt += item.Total
 		remainingDebt += item.Debts
 	}
-	title := "laporan-hutang"
+	title := "laporan_hutang"
 	headings := []string{"Supplier", "Total Hutang", "Sisa Hutang", "Tanggal", "Note", "Dibuat Oleh"}
 	footer := map[string]float64{}
 	footer["Total Hutang"] = totalDebt
 	footer["Sisa Hutang"] = remainingDebt
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

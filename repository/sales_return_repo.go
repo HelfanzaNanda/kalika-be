@@ -20,7 +20,7 @@ type (
 		FindAll(ctx echo.Context, db *gorm.DB) ([]web.SalesReturnGet, error)
 		Datatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string) ([]web.SalesReturnDatatable, int64, int64, error)
 		ReportDatatable(ctx echo.Context, db *gorm.DB, draw string, limit string, start string, search string, filter map[string]string) ([]web.SalesReturnDatatable, int64, int64, error)
-		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.SalesReturnGet, error)
+		FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) ([]web.SalesReturnPdf, error)
 	}
 
 	SalesReturnRepositoryImpl struct {
@@ -157,7 +157,7 @@ func (repository SalesReturnRepositoryImpl) ReportDatatable(ctx echo.Context, db
 		qry.Where("(sales_returns.id = ? OR sales_returns.number LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != "" {
-		qry.Where("(sales_returns.created_at > ? AND sales_returns.created_at < ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(sales_returns.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
@@ -168,7 +168,7 @@ func (repository SalesReturnRepositoryImpl) ReportDatatable(ctx echo.Context, db
 	return datatableRes, totalData, totalFiltered, nil
 }
 
-func (repository SalesReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (saleReturnRes []web.SalesReturnGet, err error) {
+func (repository SalesReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (saleReturnRes []web.SalesReturnPdf, err error) {
 	qry := db.Table("sales_returns")
 	qry.Select(`
 		sales_returns.*,
@@ -181,8 +181,8 @@ func (repository SalesReturnRepositoryImpl) FindByCreatedAt(ctx echo.Context, db
 		left join customers on customers.id = sales_returns.customer_id
 		join users on users.id = sales_returns.created_by
 	`)
-	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(sales_returns.created_at > ? AND sales_returns.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+	if dateRange.StartDate != "" && dateRange.EndDate != "" {
+		qry.Where("(DATE(sales_returns.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Order("sales_returns.id desc")
 	qry.Find(&saleReturnRes)

@@ -223,11 +223,11 @@ func (service CustomOrderServiceImpl) GeneratePdf(ctx echo.Context) (res web.Res
 			total += item.Total
 		
 	}
-	title := "laporan-penjualan-pesanan"
+	title := "laporan_penjualan_pesanan"
 	headings := []string{"No. Ref", "Dibuat Pada", "Dibuat Oleh", "Total", "Metode"}
 	footer := map[string]float64{}
 	footer["Total"] = total
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

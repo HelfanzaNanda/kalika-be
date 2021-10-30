@@ -96,7 +96,7 @@ func (repository SalesConsignmentRepositoryImpl) ReportDatatable(ctx echo.Contex
 		qry.Where("(sales_consignments.id = ? OR sales_consignments.number LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != ""{
-		qry.Where("(sales_consignments.created_at >= ? AND sales_consignments.created_at <= ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(sales_consignments.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	if filter["created_by"] != "" {
 		qry.Where("(sales_consignments.created_by = ?)", filter["created_by"])
@@ -125,7 +125,7 @@ func (repository SalesConsignmentRepositoryImpl) FindByCreatedAt(ctx echo.Contex
 		JOIN store_consignments ON store_consignments.id = sales_consignments.store_consignment_id
 	`)
 	if filter.StartDate != "" && filter.EndDate != ""{
-		qry.Where("(sales_consignments.created_at >= ? AND sales_consignments.created_at <= ?)", filter.StartDate, filter.EndDate)
+		qry.Where("(DATE(sales_consignments.created_at) BETWEEN ? AND ?)", filter.StartDate, filter.EndDate)
 	}
 	if filter.CreatedBy != 0 {
 		qry.Where("(sales_consignments.created_by = ?)", filter.CreatedBy)

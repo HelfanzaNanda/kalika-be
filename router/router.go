@@ -530,6 +530,7 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/payments/:id", paymentController.FindById)
 	api.POST("/payments", paymentController.Create)
 	api.POST("/payment_datatables", paymentController.Datatable)
+	api.POST("/payment_pdf", paymentController.GeneratePdf)
 	api.PUT("/payments/:id", paymentController.Update)
 	api.DELETE("/payments/:id", paymentController.Delete)
 
@@ -593,10 +594,14 @@ func Routes(db *gorm.DB) *echo.Echo {
 	api.GET("/product_prices", productPriceController.FindAll)
 	api.GET("/product_prices/:id", productPriceController.FindById)
 
-	api.GET("/profit_loss", reportController.ProfitLoss)
-	api.GET("/ledger_receivables", reportController.ReceivableLedger)
-	api.GET("/ledger_debts", reportController.DebtLedger)
-	api.GET("/ledger_cash_banks", reportController.CashBankLedger)
+	api.POST("/profit_loss", reportController.ProfitLoss)
+	api.POST("/profit_loss_pdf", reportController.GeneratePdfProfitLoss)
+	api.POST("/ledger_receivables", reportController.ReceivableLedger)
+	api.POST("/ledger_receivable_pdf", reportController.GeneratePdfReceivableLedger)
+	api.POST("/ledger_debts", reportController.DebtLedger)
+	api.POST("/ledger_debt_pdf", reportController.GeneratePdfDebtLedger)
+	api.POST("/ledger_cash_banks", reportController.CashBankLedger)
+	api.POST("/ledger_cash_bank_pdf", reportController.GeneratePdfCashBankLedger)
 
 	return e
 }

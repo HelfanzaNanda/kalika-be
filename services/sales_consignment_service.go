@@ -309,11 +309,11 @@ func (service SalesConsignmentServiceImpl) GeneratePdf(ctx echo.Context) (res we
 			total += item.Total
 		
 	}
-	title := "laporan-penjualan-konsiyasi"
+	title := "laporan_penjualan_konsiyasi"
 	headings := []string{"No. Ref", "Dibuat Pada", "Toko", "Total", "Diskon", "Dibuat Oleh",}
 	footer := map[string]float64{}
 	footer["Total"] = total
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

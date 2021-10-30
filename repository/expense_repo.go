@@ -98,7 +98,7 @@ func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *go
 	`)
 	qry.Count(&totalData)
 	if dateRange.StartDate != "" && dateRange.EndDate != "" {
-		qry.Where("(expense.created_at > ? AND expense.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+		qry.Where("(DATE(expense.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Group("category.name")
 	qry.Order("expense.id desc")
@@ -109,7 +109,7 @@ func (repository ExpenseRepositoryImpl) ReportDatatable(ctx echo.Context, db *go
 func (repository ExpenseRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.DB, dateRange *web.DateRange) (expenseRes []domain.Expense, err error) {
 	qry := db.Table("expenses")
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(expenses.created_at > ? AND expenses.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+		qry.Where("(DATE(expenses.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Order("expenses.id desc")
 	qry.Find(&expenseRes)

@@ -242,11 +242,11 @@ func (service SalesReturnServiceImpl) GeneratePdf(ctx echo.Context) (res web.Res
 
 		total += item.Total
 	}
-	title := "laporan-retur-penjualan"
+	title := "laporan_retur_penjualan"
 	headings := []string{"No. Ref", "Kustomer", "Konsiyasi", "Total", "Dibuat Oleh"}
 	footer := map[string]float64{}
 	footer["Total"] = total
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

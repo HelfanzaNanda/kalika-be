@@ -102,7 +102,7 @@ func (repository PurchaseOrderRepositoryImpl) ReportDatatable(ctx echo.Context, 
 		qry.Where("(purchase_orders.id = ? OR purchase_orders.number LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != "" {
-		qry.Where("(purchase_orders.created_at > ? AND purchase_orders.created_at < ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(purchase_orders.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
@@ -125,7 +125,7 @@ func (repository PurchaseOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, 
 		left join suppliers on suppliers.id = purchase_orders.supplier_id
 	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(purchase_orders.created_at > ? AND purchase_orders.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+		qry.Where("(DATE(purchase_orders.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Order("purchase_orders.id desc")
 	qry.Find(&purchaseOrderRes)

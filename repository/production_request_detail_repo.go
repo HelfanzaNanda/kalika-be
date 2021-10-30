@@ -17,6 +17,7 @@ type (
 		DeleteByProductionRequest(echo.Context, *gorm.DB, int) (bool, error)
 		FindById(echo.Context, *gorm.DB, string, string) (domain.ProductionRequestDetail, error)
 		FindAll(echo.Context, *gorm.DB, map[string][]string) ([]web.ProductionRequestDetailGet, error)
+		Pdf(echo.Context, *gorm.DB, int) ([]web.ProductionRequestDetailReportGet, error)
 	}
 
 	ProductionRequestDetailRepositoryImpl struct {
@@ -87,4 +88,22 @@ func (repository *ProductionRequestDetailRepositoryImpl) DeleteByProductionReque
 		return false, errors.New("NOT_FOUND|productionRequestDetail tidak ditemukan")
 	}
 	return true, nil
+}
+
+func (repository *ProductionRequestDetailRepositoryImpl) Pdf(ctx echo.Context, db *gorm.DB, productionRequestId int) (res []web.ProductionRequestDetailReportGet, err error) {
+	qry := db.Table("production_request_details")
+	qry.Select(`
+		production_request_details.current_stock, production_request_details.production_qty,
+		products.name product_name, categories.name category_name
+	`)
+	qry.Joins(`
+		JOIN products ON products.id = production_request_details.product_id
+		JOIN categories ON categories.id = production_request_details.category_id
+	`)
+	if productionRequestId != 0 {
+		qry.Where("(production_request_details.production_request_id = ?)", productionRequestId)
+	}
+	qry.Order("production_request_details.id desc")
+	qry.Find(&res)
+	return res, nil
 }

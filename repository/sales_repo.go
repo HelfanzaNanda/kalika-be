@@ -143,7 +143,7 @@ func (repository SalesRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm
 		qry.Where("(sales.id = ? OR sales.number LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != ""{
-		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(sales.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	if filter["store_id"] != "" {
 		qry.Where("(sales.store_id = ?)", filter["store_id"])
@@ -177,7 +177,7 @@ func (repository SalesRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm
 			JOIN users ON users.id = sales.created_by
 		`)
 	if filter.StartDate != "" && filter.EndDate != ""{
-		qry.Where("(sales.created_at > ? AND sales.created_at < ?)", filter.StartDate, filter.EndDate)
+		qry.Where("(DATE(sales.created_at) BETWEEN ? AND ?)", filter.StartDate, filter.EndDate)
 	}
 	if filter.StoreId != 0 {
 		qry.Where("(sales.store_id = ?)", filter.StoreId)

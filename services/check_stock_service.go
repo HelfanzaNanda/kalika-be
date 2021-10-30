@@ -76,10 +76,10 @@ func (service CheckStockServiceImpl) GeneratePdf(ctx echo.Context) (res web.Resp
 			froot = append(froot, item.CategoryName)
 			datas = append(datas, froot)
 	}
-	title := "laporan-check-stok"
+	title := "laporan_check_stok"
 	headings := []string{"Produk", "Stok", "Minimum Stok", "Divisi", "Kategori"}
 	footer := map[string]float64{}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, "", "")
 
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

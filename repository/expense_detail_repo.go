@@ -99,7 +99,7 @@ func (repository ExpenseDetailRepositoryImpl) ReportDatatable(ctx echo.Context, 
 		join expenses expense on expense.id = detail.expense_id
 	`)
 	if daterange.StartDate != "" && daterange.EndDate != "" {
-		qry.Where("(expense.created_at > ? AND expense.created_at < ?)", daterange.StartDate, daterange.EndDate)
+		qry.Where("(DATE(expense.created_at) BETWEEN ? AND ?)", daterange.StartDate, daterange.EndDate)
 	}
 	qry.Group("category.name")
 	qry.Find(&datatableRes)

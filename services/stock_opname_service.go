@@ -203,10 +203,10 @@ func (service StockOpnameServiceImpl) GeneratePdf(ctx echo.Context, stockOpnameI
 			froot = append(froot, helpers.IntToString(item.PhysicalStock))
 			datas = append(datas, froot)
 	}
-	title := "laporan-stock-opname"
+	title := "laporan_stock_opname"
 	headings := []string{"Produk", "Kategori", "Minimum Stok", "Stok Buku", "Stok Fisik"}
 	footer := map[string]float64{}
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, "", "")
 
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

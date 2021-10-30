@@ -129,7 +129,7 @@ func (repository DebtRepositoryImpl) FindByCreatedAt(ctx echo.Context, db *gorm.
 		left join suppliers on suppliers.id = debts.supplier_id
 	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(debts.created_at > ? AND debts.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+		qry.Where("(DATE(debts.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Order("id desc")
 	qry.Find(&debtRes)
@@ -153,7 +153,7 @@ func (repository DebtRepositoryImpl) ReportDatatable(ctx echo.Context, db *gorm.
 		qry.Where("(debts.id = ? OR debts.date LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != "" {
-		qry.Where("(debts.created_at > ? AND debts.created_at < ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(debts.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {

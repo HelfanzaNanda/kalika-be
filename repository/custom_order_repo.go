@@ -118,7 +118,7 @@ func (repository *CustomOrderRepositoryImpl) ReportDatatable(ctx echo.Context, d
 		qry.Where("(custom_orders.id = ? OR custom_orders.number LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != ""{
-		qry.Where("(custom_orders.created_at >= ? AND custom_orders.created_at <= ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(custom_orders.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	if filter["created_by"] != "" {
 		qry.Where("(custom_orders.created_by = ?)", filter["created_by"])
@@ -144,7 +144,7 @@ func (repository *CustomOrderRepositoryImpl) FindByCreatedAt(ctx echo.Context, d
 		JOIN payment_methods ON payment_methods.id = custom_orders.payment_method_id
 	`)
 	if filter.StartDate != "" && filter.EndDate != ""{
-		qry.Where("(custom_orders.created_at >= ? AND custom_orders.created_at <= ?)", filter.StartDate, filter.EndDate)
+		qry.Where("(DATE(custom_orders.created_at) BETWEEN ? AND ?)", filter.StartDate, filter.EndDate)
 	}
 	if filter.CreatedBy != 0 {
 		qry.Where("(custom_orders.created_by = ?)", filter.CreatedBy)

@@ -146,7 +146,7 @@ func (repository ReceivableRepositoryImpl) ReportDatatable(ctx echo.Context, db 
 		qry.Where("(receivables.id = ? OR receivables.date LIKE ?)", search, "%"+search+"%")
 	}
 	if filter["start_date"] != "" && filter["end_date"] != "" {
-		qry.Where("(receivables.created_at > ? AND receivables.created_at < ?)", filter["start_date"], filter["end_date"])
+		qry.Where("(DATE(receivables.created_at) BETWEEN ? AND ?)", filter["start_date"], filter["end_date"])
 	}
 	qry.Count(&totalFiltered)
 	if helpers.StringToInt(limit) > 0 {
@@ -171,7 +171,7 @@ func (repository ReceivableRepositoryImpl) FindByCreatedAt(ctx echo.Context, db 
 		left join store_consignments on store_consignments.id = receivables.store_consignment_id
 	`)
 	if dateRange.StartDate != "" && dateRange.EndDate != ""{
-		qry.Where("(receivables.created_at > ? AND receivables.created_at < ?)", dateRange.StartDate, dateRange.EndDate)
+		qry.Where("(DATE(receivables.created_at) BETWEEN ? AND ?)", dateRange.StartDate, dateRange.EndDate)
 	}
 	qry.Order("receivables.id desc")
 	qry.Find(&receivableRes)

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"strings"
 	// "time"
 
@@ -189,8 +188,6 @@ func (service *ExpenseServiceImpl) ReportDatatable(ctx echo.Context) (res web.Re
 	if err := ctx.Bind(o); err != nil {
 		return helpers.Response(err.Error(), "Error Data Binding", nil), err
 	}
-	fmt.Println("#### STARTDATE : ", o.StartDate)
-	fmt.Println("#### ENDDATE : ", o.EndDate)
 	tx := service.db.Begin()
 	defer helpers.CommitOrRollback(tx)
 	expenseRepo, _ := service.ExpenseDetailRepository.ReportDatatable(ctx, tx, o)
@@ -217,11 +214,11 @@ func (service ExpenseServiceImpl) GeneratePdf(ctx echo.Context) (res web.Respons
 		datas = append(datas, froot)
 		total += item.Total
 	}
-	title := "laporan-biaya"
+	title := "laporan_biaya"
 	headings := []string{"Nama Biaya", "Total"}
 	footer := map[string]float64{}
 	footer["Total Biaya"] = total
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 	
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }

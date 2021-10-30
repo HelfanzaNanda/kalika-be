@@ -314,12 +314,12 @@ func (service SalesServiceImpl) GeneratePdf(ctx echo.Context) (res web.Response,
 		}
 		
 	}
-	title := "laporan-penjualan"
+	title := "laporan_penjualan"
 	headings := []string{"Dibuat Pada", "Dibuat Oleh", "No. Ref", "Diskon", "Total", "Metode"}
 	footer := map[string]float64{}
 	footer["Diskon"] = discount
 	footer["Total"] = total
-	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer)
+	resultPdf, err := helpers.GeneratePdf(ctx, title, headings, datas, footer, o.StartDate, o.EndDate)
 
 	return helpers.Response("OK", "Sukses Export PDF", resultPdf), err
 }
